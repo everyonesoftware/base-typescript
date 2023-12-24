@@ -8,6 +8,7 @@
     "url": "https://github.com/everyonesoftware/base-typescript"
   },
   "version": "1.0.0",
+  "main": "outputs/sources/index",
   "scripts": {
     "compile": "tsc",
     "lint": "eslint sources --ext ts --max-warnings 0",
