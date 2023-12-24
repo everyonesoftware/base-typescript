@@ -1,8 +1,7 @@
 {
-  "name": "base-typescript",
+  "name": "@everyonesoftware/base-typescript",
   "displayName": "Base TypeScript Library",
   "description": "A collection of functions and types that almost all everyone software projects will use.",
-  "publisher": "everyonesoftware",
   "license": "ISC",
   "repository": {
     "type": "git",
