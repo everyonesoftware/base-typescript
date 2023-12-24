@@ -19,12 +19,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run unit tests
-        run: npm run just-unit-tests
-
-      - name: Run integration tests (on Linux)
-        run: xvfb-run -a npm run just-integration-tests
-        if: runner.os == 'Linux'
-      - name: Run integration tests (not on Linux)
-        run: npm run just-integration-tests
-        if: runner.os != 'Linux'
+      - name: Run tests
+        run: npm run just-tests
