@@ -12,7 +12,7 @@
     "compile": "tsc",
     "lint": "eslint sources --ext ts --max-warnings 0",
     "build": "npm run compile && npm run lint",
-    "just-tests": "c8 --exclude sources/extension.ts --exclude tests/integration mocha --spec=outputs/tests/unit",
+    "just-tests": "c8 --exclude sources/extension.ts --exclude tests/integration mocha --spec=outputs/tests",
     "test": "npm run build && npm run just-tests"
   },
   "devDependencies": {
