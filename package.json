@@ -1,8 +1,7 @@
 {
-  "name": "base-typescript",
+  "name": "@everyonesoftware/base-typescript",
   "displayName": "Base TypeScript Library",
   "description": "A collection of functions and types that almost all everyone software projects will use.",
-  "publisher": "everyonesoftware",
   "license": "ISC",
   "repository": {
     "type": "git",
@@ -13,7 +12,7 @@
     "compile": "tsc",
     "lint": "eslint sources --ext ts --max-warnings 0",
     "build": "npm run compile && npm run lint",
-    "just-tests": "c8 --exclude sources/extension.ts --exclude tests/integration mocha --spec=outputs/tests/unit",
+    "just-tests": "c8 --exclude sources/extension.ts --exclude tests/integration mocha --spec=outputs/tests",
     "test": "npm run build && npm run just-tests"
   },
   "devDependencies": {
