@@ -1,5 +1,14 @@
 .git
+.github
+.vscode
 node_modules
 outputs/coverage
 outputs/coverage-temp
+outputs/tests
+sources
+tests
+.eslintrc.json
+.gitignore
+.npmignore
+tsconfig.json
 *.tgz
