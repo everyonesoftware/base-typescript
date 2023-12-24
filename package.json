@@ -1,0 +1,55 @@
+{
+  "name": "base-typescript",
+  "displayName": "Base TypeScript Library",
+  "description": "A collection of functions and types that almost all everyone software projects will use.",
+  "publisher": "everyonesoftware",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/everyonesoftware/base-typescript"
+  },
+  "version": "1.0.0",
+  "scripts": {
+    "compile": "tsc",
+    "lint": "eslint sources --ext ts --max-warnings 0",
+    "build": "npm run compile && npm run lint",
+    "just-tests": "c8 --exclude sources/extension.ts --exclude tests/integration mocha --spec=outputs/tests/unit",
+    "test": "npm run build && npm run just-tests"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.2",
+    "@types/assert": "1.5.10",
+    "assert": "2.1.0",
+    "mocha": "10.2.0",
+    "c8": "8.0.1",
+    "source-map-support": "0.5.21"
+  },
+  "mocha": {
+      "color": true,
+      "ui": "tdd",
+      "spec": "./outputs/tests/**/*.js",
+      "extension": [
+          "js"
+      ],
+      "require": [
+          "source-map-support/register"
+      ]
+  },
+  "c8": {
+    "all": true,
+    "src": ["sources", "tests"],
+    "temp-directory": "outputs/coverage-temp",
+    "report-dir": "outputs/coverage",
+    "reporter": [
+      "html",
+      "lcov",
+      "text",
+      "text-summary"
+    ]
+  }
+}

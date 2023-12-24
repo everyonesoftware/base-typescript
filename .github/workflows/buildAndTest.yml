@@ -1,0 +1,30 @@
+name: BuildAndTest
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  buildAndTest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run unit tests
+        run: npm run just-unit-tests
+
+      - name: Run integration tests (on Linux)
+        run: xvfb-run -a npm run just-integration-tests
+        if: runner.os == 'Linux'
+      - name: Run integration tests (not on Linux)
+        run: npm run just-integration-tests
+        if: runner.os != 'Linux'
