@@ -8,4 +8,5 @@ export * from "./json";
 export * from "./list";
 export * from "./stringIterator";
 export * from "./strings";
+export * from "./text";
 export * from "./types";
