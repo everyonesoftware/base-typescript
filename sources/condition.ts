@@ -189,6 +189,84 @@ export class Condition
             });
         }
     }
+
+    public assertLessThan(value: number, upperBound: number, expression?: string, message?: string): void
+    {
+        if (!(value < upperBound))
+        {
+            throw this.createError({
+                expected: `less than ${upperBound}`,
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    public assertLessThanOrEqualTo(value: number, upperBound: number, expression?: string, message?: string): void
+    {
+        if (!(value <= upperBound))
+        {
+            throw this.createError({
+                expected: `less than or equal to ${upperBound}`,
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    public assertGreaterThanOrEqualTo(value: number, lowerBound: number, expression?: string, message?: string): void
+    {
+        if (!(lowerBound <= value))
+        {
+            throw this.createError({
+                expected: `greater than or equal to ${lowerBound}`,
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    public assertGreaterThan(value: number, lowerBound: number, expression?: string, message?: string): void
+    {
+        if (!(lowerBound < value))
+        {
+            throw this.createError({
+                expected: `greater than ${lowerBound}`,
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    public assertBetween(lowerBound: number, value: number, upperBound: number, expression?: string, message?: string): void
+    {
+        this.assertLessThanOrEqualTo(lowerBound, upperBound, "lowerBound");
+        if (!(lowerBound <= value && value <= upperBound))
+        {
+            throw this.createError({
+                expected: (lowerBound === upperBound ? `${lowerBound}` : `between ${lowerBound} and ${upperBound}`),
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    public assertAccessIndex(index: number, count: number, expression?: string, message?: string): void
+    {
+        this.assertGreaterThanOrEqualTo(count, 1, "count");
+        this.assertBetween(0, index, count - 1, expression, message);
+    }
+
+    public assertInsertIndex(index: number, count: number, expression?: string, message?: string): void
+    {
+        this.assertGreaterThanOrEqualTo(count, 0, "count");
+        this.assertBetween(0, index, count, expression, message);
+    }
 }
 
 /**

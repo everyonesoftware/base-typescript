@@ -1,10 +1,8 @@
 import * as assert from "assert";
 
-import { PreConditionError } from "../sources/condition";
-import * as english from "../sources/english";
-import * as strings from "../sources/strings";
+import { andList, join, PreConditionError } from "../sources/index";
 
-suite("english", () =>
+suite("english.ts", () =>
 {
     suite("andList(string[])", () =>
     {
@@ -12,14 +10,14 @@ suite("english", () =>
         {
             test(`with ${JSON.stringify(values)}`, () =>
             {
-                assert.throws(() => english.andList(values!), expectedError);
+                assert.throws(() => andList(values!), expectedError);
             });
         }
 
         andListErrorTest(
             undefined,
             new PreConditionError(
-                strings.join("\n", [
+                join("\n", [
                     "Expression: values",
                     "Expected: not undefined and not null",
                     "Actual: undefined",
@@ -27,7 +25,7 @@ suite("english", () =>
                 andListErrorTest(
             null,
             new PreConditionError(
-                strings.join("\n", [
+                join("\n", [
                     "Expression: values",
                     "Expected: not undefined and not null",
                     "Actual: null",
@@ -37,7 +35,7 @@ suite("english", () =>
         {
             test(`with ${JSON.stringify(values)}`, () =>
             {
-                assert.strictEqual(english.andList(values), expected);
+                assert.strictEqual(andList(values), expected);
             });
         }
 
