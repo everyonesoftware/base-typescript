@@ -1,9 +1,66 @@
 import { Pre } from "./condition";
+import { JavascriptIterable } from "./iterable";
+
+/**
+ * The interface that is returned by a {@link JavascriptIterator}.
+ */
+export interface JavascriptIteratorResult<T>
+{
+    /**
+     * Whether the {@link JavascriptIterator} is done.
+     */
+    done: boolean;
+    /**
+     * The current value the {@link JavascriptIterator} points at.
+     */
+    value: T;
+}
+
+/**
+ * A JavaScript/TypeScript object that is used to iterate over a collection of values.
+ */
+export interface JavascriptIterator<T>
+{
+    /**
+     * Move to the next value in the collection.
+     */
+    next(): JavascriptIteratorResult<T>;
+}
+
+export class JavascriptIteratorAdapter<T> implements JavascriptIterator<T>
+{
+    private readonly iterator: Iterator<T>;
+
+    private constructor(iterator: Iterator<T>)
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
+
+        this.iterator = iterator;
+    }
+
+    public static create<T>(iterator: Iterator<T>): JavascriptIteratorAdapter<T>
+    {
+        return new JavascriptIteratorAdapter<T>(iterator);
+    }
+    
+    public next(): JavascriptIteratorResult<T>
+    {
+        const result: JavascriptIteratorResult<T> = {
+            done: !this.iterator.next(),
+            value: undefined!,
+        };
+        if (!result.done)
+        {
+            result.value = this.iterator.getCurrent();
+        }
+        return result;
+    }
+}
 
 /**
  * A type that can be used to iterate over a collection.
  */
-export abstract class Iterator<T>
+export abstract class Iterator<T> implements JavascriptIterable<T>
 {
     /**
      * Move to the next value in the collection. Return whether this {@link Iterator} points to a
@@ -52,79 +109,10 @@ export abstract class Iterator<T>
 
         return result;
     }
-}
 
-/**
- * An {@link Iterator} that maintains the current index of the value being pointed at in the
- * collection.
- */
-export abstract class IndexableIterator<T> extends Iterator<T>
-{
-    /**
-     * Get the current index of the value this {@link IndexableIterator} points to.
-     */
-    public abstract getCurrentIndex(): number;
-}
-
-/**
- * An {@link Iterator} that iterates over the characters in a {@link string}.
- */
-export class StringIterator extends IndexableIterator<string>
-{
-    private readonly value: string;
-    private currentIndex: number;
-    private started: boolean;
-
-    public constructor(value: string)
+    public [Symbol.iterator](): JavascriptIterator<T>
     {
-        super();
-
-        this.value = value;
-        this.currentIndex = 0;
-        this.started = false;
+        return JavascriptIteratorAdapter.create(this);
     }
-
-    public static create(value: string): StringIterator
-    {
-        Pre.condition.assertNotUndefinedAndNotNull(value, "value");
-
-        return new StringIterator(value);
-    }
-
-    public override getCurrentIndex(): number
-    {
-        Pre.condition.assertTrue(this.hasCurrent(), "this.hasCurrent()");
-
-        return this.currentIndex;
-    }
-
-    public override next(): boolean
-    {
-        if (!this.hasStarted())
-        {
-            this.started = true;
-        }
-        else if (this.hasCurrent())
-        {
-            this.currentIndex++;
-        }
-        return this.hasCurrent();
-    }
-
-    public override hasStarted(): boolean
-    {
-        return this.started;
-    }
-
-    public override hasCurrent(): boolean
-    {
-        return this.hasStarted() && this.currentIndex < this.value.length;
-    }
-
-    public override getCurrent(): string
-    {
-        Pre.condition.assertTrue(this.hasCurrent(), "this.hasCurrent()");
-
-        return this.value[this.currentIndex];
-    }
+    
 }

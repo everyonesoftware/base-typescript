@@ -1,8 +1,8 @@
 import * as assert from "assert";
 
-import * as types from "../sources/types"
+import { isArray, isString } from "../sources/index"
 
-suite("types", () =>
+suite("types.ts", () =>
 {
     suite("isString(unknown)", () =>
     {
@@ -10,7 +10,7 @@ suite("types", () =>
         {
             test(`with ${value}`, () =>
             {
-                assert.strictEqual(types.isString(value), expected);
+                assert.strictEqual(isString(value), expected);
             });
         }
 
@@ -20,5 +20,25 @@ suite("types", () =>
         isStringTest({}, false);
         isStringTest("", true);
         isStringTest("hello", true);
+    });
+
+    suite("isArray(unknown)", () =>
+    {
+        function isArrayTest(value: unknown, expected: boolean): void
+        {
+            test(`with ${value}`, () =>
+            {
+                assert.strictEqual(isArray(value), expected);
+            });
+        }
+
+        isArrayTest(undefined, false);
+        isArrayTest(null, false);
+        isArrayTest(50, false);
+        isArrayTest({}, false);
+        isArrayTest("", false);
+        isArrayTest("hello", false);
+        isArrayTest([], true);
+        isArrayTest(["a", "b"], true);
     });
 });

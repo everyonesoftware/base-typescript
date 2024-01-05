@@ -2,9 +2,9 @@ import * as assert from "assert";
 
 import * as english from "../sources/english";
 import * as strings from "../sources/strings";
-import { PreConditionError } from "../sources/condition";
+import { PreConditionError } from "../sources/index";
 
-suite("strings", () =>
+suite("strings.ts", () =>
 {
     suite("join(string, string[])", () =>
     {
