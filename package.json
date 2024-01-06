@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/everyonesoftware/base-typescript"
   },
-  "version": "5.0.0",
+  "version": "6.0.0",
   "module": "outputs/package/index.esm.js",
   "main": "outputs/package/index.js",
   "typings": "outputs/package/index.d.ts",
