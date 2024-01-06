@@ -1,7 +1,7 @@
 // Copied from https://janessagarrow.com/blog/typescript-and-esbuild/
 
 const { build } = require("esbuild");
-const { dependencies, peerDependencies } = require("./package.json")
+const { dependencies, engines, peerDependencies } = require("./package.json")
 const { Generator } = require('npm-dts');
 
 const entryPoint = "sources/index.ts";
@@ -15,11 +15,15 @@ new Generator({
 const external = [];
 if (dependencies)
 {
-  external.push(Object.keys(dependencies));
+  external.push(...Object.keys(dependencies));
+}
+if (engines)
+{
+  external.push(...Object.keys(engines));
 }
 if (peerDependencies)
 {
-  external.push(Object.keys(peerDependencies));
+  external.push(...Object.keys(peerDependencies));
 }
 
 const sharedConfig = {
