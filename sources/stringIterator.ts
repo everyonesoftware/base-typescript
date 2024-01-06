@@ -1,10 +1,11 @@
-import { Pre } from "./condition";
-import { IndexableIterator } from "./indexable";
+import { IndexableIteratorBase } from "./indexableIteratorBase";
+import { Iterator } from "./iterator";
+import { Pre } from "./pre";
 
 /**
  * An {@link Iterator} that iterates over the characters in a {@link string}.
  */
-export class StringIterator extends IndexableIterator<string>
+export class StringIterator extends IndexableIteratorBase<string>
 {
     private readonly value: string;
     private currentIndex: number;

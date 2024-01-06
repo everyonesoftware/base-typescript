@@ -1,4 +1,4 @@
-import * as assert from "assert"
+import * as assert from "assert";
 import { escapeAndQuote, TextToken, TextTokenType, TextTokenizer, toLowercase, toUppercase, toCamelCase, toPascalCase, toSnakeCase, toUpperSnakeCase, toKebabCase, toUpperKebabCase } from "../sources/index";
 
 suite("text.ts", () =>
@@ -392,7 +392,7 @@ suite("text.ts", () =>
         toCamelCaseTest("First Sentence. Second Sentence", "firstSentence. secondSentence");
         toCamelCaseTest("I Am Trying", "iAmTrying");
         toCamelCaseTest("abcDef ghiJkl", "abcDefGhiJkl");
-        toCamelCaseTest("lee7 c0d3", "lee7C0D3")
+        toCamelCaseTest("lee7 c0d3", "lee7C0D3");
         toCamelCaseTest("simple3test", "simple3Test");
         toCamelCaseTest("a-kebab-case-example", "aKebabCaseExample");
         toCamelCaseTest("a_snake_case_example", "aSnakeCaseExample");
@@ -427,7 +427,7 @@ suite("text.ts", () =>
         toPascalCaseTest("First Sentence. Second Sentence", "FirstSentence. SecondSentence");
         toPascalCaseTest("I Am Trying", "IAmTrying");
         toPascalCaseTest("abcDef ghiJkl", "AbcDefGhiJkl");
-        toPascalCaseTest("lee7 c0d3", "Lee7C0D3")
+        toPascalCaseTest("lee7 c0d3", "Lee7C0D3");
         toPascalCaseTest("simple3test", "Simple3Test");
         toPascalCaseTest("a-kebab-case-example", "AKebabCaseExample");
         toPascalCaseTest("a_snake_case_example", "ASnakeCaseExample");
@@ -465,7 +465,7 @@ suite("toSnakeCase(string)", () =>
     toSnakeCaseTest("a b . . . c d", "a_b . . . c_d");
     toSnakeCaseTest("I Am Trying", "i_am_trying");
     toSnakeCaseTest("abcDef ghiJkl", "abc_def_ghi_jkl");
-    toSnakeCaseTest("lee7 c0d3", "lee7_c0_d3")
+    toSnakeCaseTest("lee7 c0d3", "lee7_c0_d3");
     toSnakeCaseTest("simple3test", "simple3_test");
     toSnakeCaseTest("a-kebab-case-example", "a_kebab_case_example");
     toSnakeCaseTest("a_snake_case_example", "a_snake_case_example");
@@ -501,7 +501,7 @@ suite("toUpperSnakeCase(string)", () =>
     toUpperSnakeCaseTest("a b . . . c d", "A_B . . . C_D");
     toUpperSnakeCaseTest("I Am Trying", "I_AM_TRYING");
     toUpperSnakeCaseTest("abcDef ghiJkl", "ABC_DEF_GHI_JKL");
-    toUpperSnakeCaseTest("lee7 c0d3", "LEE7_C0_D3")
+    toUpperSnakeCaseTest("lee7 c0d3", "LEE7_C0_D3");
     toUpperSnakeCaseTest("simple3test", "SIMPLE3_TEST");
     toUpperSnakeCaseTest("a-kebab-case-example", "A_KEBAB_CASE_EXAMPLE");
     toUpperSnakeCaseTest("a_snake_case_example", "A_SNAKE_CASE_EXAMPLE");
@@ -539,7 +539,7 @@ suite("toKebabCase(string)", () =>
     toKebabCaseTest("a b . . . c d", "a-b . . . c-d");
     toKebabCaseTest("I Am Trying", "i-am-trying");
     toKebabCaseTest("abcDef ghiJkl", "abc-def-ghi-jkl");
-    toKebabCaseTest("lee7 c0d3", "lee7-c0-d3")
+    toKebabCaseTest("lee7 c0d3", "lee7-c0-d3");
     toKebabCaseTest("simple3test", "simple3-test");
     toKebabCaseTest("a-kebab-case-example", "a-kebab-case-example");
     toKebabCaseTest("a_snake_case_example", "a-snake-case-example");
@@ -575,7 +575,7 @@ suite("toUpperKebabCase(string)", () =>
     toUpperKebabCaseTest("a b . . . c d", "A-B . . . C-D");
     toUpperKebabCaseTest("I Am Trying", "I-AM-TRYING");
     toUpperKebabCaseTest("abcDef ghiJkl", "ABC-DEF-GHI-JKL");
-    toUpperKebabCaseTest("lee7 c0d3", "LEE7-C0-D3")
+    toUpperKebabCaseTest("lee7 c0d3", "LEE7-C0-D3");
     toUpperKebabCaseTest("simple3test", "SIMPLE3-TEST");
     toUpperKebabCaseTest("a-kebab-case-example", "A-KEBAB-CASE-EXAMPLE");
     toUpperKebabCaseTest("a_snake_case_example", "A-SNAKE-CASE-EXAMPLE");

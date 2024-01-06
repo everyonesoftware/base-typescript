@@ -4,6 +4,7 @@
 node_modules
 outputs/coverage
 outputs/coverage-temp
+outputs/sources
 outputs/tests
 sources
 tests

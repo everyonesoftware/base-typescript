@@ -1,10 +1,10 @@
-import * as assert from "assert"
+import * as assert from "assert";
 
-import { andList, escapeAndQuote, join, Condition, Pre, Post, PostConditionError, PreConditionError } from "../sources/index"
+import { andList, escapeAndQuote, join, Condition, PostConditionError } from "../sources/";
 
 suite("condition.ts", () =>
 {
-    suite(Condition.name, () =>
+    suite("Condition", () =>
     {
         suite("create((string) => Error)", () =>
         {
@@ -709,58 +709,6 @@ suite("condition.ts", () =>
                 "Expected: between 0 and 2",
                 "Actual: 3",
             ])));
-        });
-    });
-
-    suite(Pre.name, () =>
-    {
-        test("Condition is not undefined and not null", () =>
-        {
-            assert.notStrictEqual(Pre.condition, undefined);
-            assert.notStrictEqual(Pre.condition, null);
-        });
-    });
-
-    suite(PreConditionError.name, () =>
-    {
-        suite("constructor(string|undefined)", () =>
-        {
-            test("with no arguments", () =>
-            {
-                const error: PreConditionError = new PreConditionError();
-                assert.notStrictEqual(error, undefined);
-                assert.notStrictEqual(error, null);
-                assert.strictEqual(error.name, "Error");
-                assert.strictEqual(error.message, "");
-                assert.notStrictEqual(error.stack, undefined);
-                assert.notStrictEqual(error.stack, null);
-            });
-        });
-    });
-
-    suite(Post.name, () =>
-    {
-        test("Condition is not undefined and not null", () =>
-        {
-            assert.notStrictEqual(Post.condition, undefined);
-            assert.notStrictEqual(Post.condition, null);
-        });
-    });
-
-    suite(PostConditionError.name, () =>
-    {
-        suite("constructor(string|undefined)", () =>
-        {
-            test("with no arguments", () =>
-            {
-                const error: PostConditionError = new PostConditionError();
-                assert.notStrictEqual(error, undefined);
-                assert.notStrictEqual(error, null);
-                assert.strictEqual(error.name, "Error");
-                assert.strictEqual(error.message, "");
-                assert.notStrictEqual(error.stack, undefined);
-                assert.notStrictEqual(error.stack, null);
-            });
         });
     });
 });

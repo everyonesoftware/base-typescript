@@ -1,12 +1,15 @@
 import * as assert from "assert";
 
-import { join, ArrayIterator, PreConditionError } from "../sources/index"
+import { join, ArrayIterator, PreConditionError } from "../sources/";
+import { iteratorTests } from "./iteratorTests";
 
 suite("arrayIterator.ts", () =>
 {
-    suite(ArrayIterator.name, () =>
+    suite("ArrayIterator", () =>
     {
-        suite("create(string)", () =>
+        iteratorTests(() => ArrayIterator.create<number>([]));
+
+        suite("create(T[])", () =>
         {
             function createErrorTest<T>(value: T[], expectedError: Error): void
             {
@@ -59,91 +62,55 @@ suite("arrayIterator.ts", () =>
             createTest([2, "", true]);
         });
 
-        suite("start()", () =>
+        test("start()", () =>
         {
-            test("with empty iterator", () =>
+            const iterator: ArrayIterator<string> = ArrayIterator.create(["a", "b", "c"]);
+            assert.strictEqual(iterator.hasStarted(), false);
+
+            for (let i: number = 0; i < 2; i++)
             {
-                const iterator: ArrayIterator<boolean> = ArrayIterator.create([]);
-                assert.strictEqual(iterator.hasStarted(), false);
-
-                for (let i: number = 0; i < 2; i++)
-                {
-                    const startResult = iterator.start();
-                    assert.strictEqual(startResult, iterator);
-                    assert.strictEqual(iterator.hasStarted(), true);
-                    assert.strictEqual(iterator.hasCurrent(), false);
-                }
-            });
-
-            test("with non-empty iterator", () =>
-            {
-                const iterator: ArrayIterator<string> = ArrayIterator.create(["a", "b", "c"]);
-                assert.strictEqual(iterator.hasStarted(), false);
-
-                for (let i: number = 0; i < 2; i++)
-                {
-                    const startResult = iterator.start();
-                    assert.strictEqual(startResult, iterator);
-                    assert.strictEqual(iterator.hasStarted(), true);
-                    assert.strictEqual(iterator.hasCurrent(), true);
-                    assert.strictEqual(iterator.getCurrent(), "a");
-                    assert.strictEqual(iterator.getCurrentIndex(), 0);
-                }
-            });
+                const startResult = iterator.start();
+                assert.strictEqual(startResult, iterator);
+                assert.strictEqual(iterator.hasStarted(), true);
+                assert.strictEqual(iterator.hasCurrent(), true);
+                assert.strictEqual(iterator.getCurrent(), "a");
+                assert.strictEqual(iterator.getCurrentIndex(), 0);
+            }
         });
 
-        suite("takeCurrent()", () =>
+        test("takeCurrent()", () =>
         {
-            test("when the Iterator doesn't have a current value", () =>
-            {
-                const iterator: ArrayIterator<string> = ArrayIterator.create([]);
-                for (let i = 0; i < 2; i++)
-                {
-                    assert.throws(() => iterator.takeCurrent(),
-                        new PreConditionError(join("\n", [
-                            "Expression: this.hasCurrent()",
-                            "Expected: true",
-                            "Actual: false",
-                        ])));
-                    assert.strictEqual(iterator.hasStarted(), false);
-                    assert.strictEqual(iterator.hasCurrent(), false);
-                }
-            });
+            const values: string[] = ["a", "b", "c"];
+            const iterator: ArrayIterator<string> = ArrayIterator.create(values);
 
-            test("when the Iterator has a current value", () =>
-            {
-                const values: string[] = ["a", "b", "c"];
-                const iterator: ArrayIterator<string> = ArrayIterator.create(values);
+            assert.throws(() => iterator.takeCurrent(),
+                    new PreConditionError(join("\n", [
+                        "Expression: iterator.hasCurrent()",
+                        "Expected: true",
+                        "Actual: false",
+                    ])));
+                assert.strictEqual(iterator.hasStarted(), false);
+                assert.strictEqual(iterator.hasCurrent(), false);
 
+            iterator.start();
+            for (let i = 0; i < values.length; i++)
+            {
+                assert.strictEqual(iterator.takeCurrent(), values[i]);
+                assert.strictEqual(iterator.hasStarted(), true);
+                assert.strictEqual(iterator.hasCurrent(), (i < values.length - 1));
+            }
+
+            for (let i = 0; i < 2; i++)
+            {
                 assert.throws(() => iterator.takeCurrent(),
-                        new PreConditionError(join("\n", [
-                            "Expression: this.hasCurrent()",
-                            "Expected: true",
-                            "Actual: false",
-                        ])));
-                    assert.strictEqual(iterator.hasStarted(), false);
-                    assert.strictEqual(iterator.hasCurrent(), false);
-
-                iterator.start();
-                for (let i = 0; i < values.length; i++)
-                {
-                    assert.strictEqual(iterator.takeCurrent(), values[i]);
-                    assert.strictEqual(iterator.hasStarted(), true);
-                    assert.strictEqual(iterator.hasCurrent(), (i < values.length - 1));
-                }
-
-                for (let i = 0; i < 2; i++)
-                {
-                    assert.throws(() => iterator.takeCurrent(),
-                        new PreConditionError(join("\n", [
-                            "Expression: this.hasCurrent()",
-                            "Expected: true",
-                            "Actual: false",
-                        ])));
-                    assert.strictEqual(iterator.hasStarted(), true);
-                    assert.strictEqual(iterator.hasCurrent(), false);
-                }
-            });
+                    new PreConditionError(join("\n", [
+                        "Expression: iterator.hasCurrent()",
+                        "Expected: true",
+                        "Actual: false",
+                    ])));
+                assert.strictEqual(iterator.hasStarted(), true);
+                assert.strictEqual(iterator.hasCurrent(), false);
+            }
         });
 
         suite("next()", () =>
@@ -184,7 +151,6 @@ suite("arrayIterator.ts", () =>
                 });
             }
 
-            nextTest([]);
             nextTest(["a"]);
             nextTest(["a", "b", "c"]);
         });
@@ -232,6 +198,28 @@ suite("arrayIterator.ts", () =>
             forOfTest([]);
             forOfTest(["a"]);
             forOfTest(["a", "b", "c"]);
+        });
+
+        suite("toArray()", () =>
+        {
+            function toArrayTest<T>(values: T[]): void
+            {
+                test(`with ${JSON.stringify(values)}`, () =>
+                {
+                    const iterator: ArrayIterator<T> = ArrayIterator.create(values);
+                    assert.strictEqual(iterator.hasStarted(), false);
+                    assert.strictEqual(iterator.hasCurrent(), false);
+
+                    const iteratorValues: T[] = iterator.toArray();
+                    assert.deepStrictEqual(iteratorValues, values);
+                    assert.strictEqual(iterator.hasStarted(), true);
+                    assert.strictEqual(iterator.hasCurrent(), false);
+                });
+            }
+
+            toArrayTest([]);
+            toArrayTest([1]);
+            toArrayTest(["a", "b", "c"]);
         });
     });
 });
