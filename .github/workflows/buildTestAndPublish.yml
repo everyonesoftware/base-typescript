@@ -21,9 +21,6 @@ jobs:
       - name: Run tests
         run: npm run just-tests
 
-      - name: Package
-        run: npm run just-package
-
       - name: Prepare to publish to https://registry.npmjs.org
         uses: actions/setup-node@v4
         with:

@@ -10,7 +10,7 @@
   "version": "6.0.0",
   "module": "outputs/package/index.esm.js",
   "main": "outputs/package/index.js",
-  "typings": "outputs/package/index.d.ts",
+  "types": "outputs/package/index.d.ts",
   "files": [
     "outputs/package/",
     "CHANGELOG.md",
@@ -19,11 +19,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc && eslint sources tests --ext ts --max-warnings 0",
+    "build": "tsc && eslint sources tests --ext ts --max-warnings 0 && node ./package.js",
     "just-tests": "c8 mocha --spec=outputs/tests",
-    "test": "npm run build && npm run just-tests",
-    "just-package": "node ./package.js",
-    "package": "npm run test && npm run just-package"
+    "test": "npm run build && npm run just-tests"
   },
   "devDependencies": {
     "@types/assert": "1.5.10",
