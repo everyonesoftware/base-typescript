@@ -1,5 +1,9 @@
-import { Pre } from "./condition";
+import { IterableBase } from "./iterableBase";
+import { Iterator } from "./iterator";
+import { List } from "./list";
+import { Pre } from "./pre";
 import { join } from "./strings";
+import { isString } from "./types";
 
 export enum JsonSegmentType
 {
@@ -12,10 +16,36 @@ export enum JsonSegmentType
     Unknown,
 }
 
-export interface JsonSegment
+export abstract class JsonSegment
 {
-    getType(): JsonSegmentType;
-    toString(): string;
+    public static boolean(value: boolean): JsonBoolean
+    {
+        return JsonBoolean.create(value);
+    }
+
+    public static number(value: number): JsonNumber
+    {
+        return JsonNumber.create(value);
+    }
+
+    public static string(value: string, quote: string = `"`, endQuote: boolean = true): JsonString
+    {
+        return JsonString.create(value, quote, endQuote);
+    }
+
+    public static null(): JsonNull
+    {
+        return JsonNull.create();
+    }
+
+    public static object(): JsonObject
+    {
+        return JsonObject.create();
+    }
+
+    public abstract getType(): JsonSegmentType;
+
+    public abstract toString(): string;
 }
 
 export class JsonBoolean implements JsonSegment
@@ -183,16 +213,18 @@ export class JsonProperty
     }
 }
 
-export class JsonObject implements JsonSegment
+export class JsonObject extends IterableBase<JsonProperty> implements JsonSegment
 {
-    private readonly properties: JsonProperty[];
+    private readonly properties: List<JsonProperty>;
     private readonly closed: boolean;
 
     private constructor(closed: boolean = true)
     {
+        super();
+
         Pre.condition.assertNotUndefinedAndNotNull(closed, "closed");
 
-        this.properties = [];
+        this.properties = List.create();
         this.closed = closed;
     }
 
@@ -206,18 +238,35 @@ export class JsonObject implements JsonSegment
         return JsonSegmentType.Object;
     }
 
-    public toString(): string
+    public override toString(): string
     {
-        return `{${join(",", this.properties.map(p => p.toString()))}${this.closed ? "}" : ""}`;
+        return `{${join(",", this.map(p => p.toString()).toArray())}${this.closed ? "}" : ""}`;
     }
 
-    public add(property: JsonProperty): this
+    public add(propertyName: string, propertyValue: JsonSegment): this;
+    public add(property: JsonProperty): this;
+    public add(propertyOrName: string|JsonProperty, propertyValue?: JsonSegment): this
     {
-        Pre.condition.assertNotUndefinedAndNotNull(property, "property");
+        if (isString(propertyOrName))
+        {
+            Pre.condition.assertNotEmpty(propertyOrName, "propertyName");
+            Pre.condition.assertNotUndefinedAndNotNull(propertyValue, "propertyValue");
 
-        this.properties.push(property);
+            propertyOrName = JsonProperty.create(propertyOrName, propertyValue);
+        }
+        else
+        {
+            Pre.condition.assertNotUndefinedAndNotNull(propertyOrName, "property");
+        }
+
+        this.properties.add(propertyOrName);
 
         return this;
+    }
+
+    public override iterate(): Iterator<JsonProperty>
+    {
+        return this.properties.iterate();
     }
 }
 

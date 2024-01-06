@@ -1,13 +1,4 @@
-/**
- * A collection of parameters that can be passed to an assert error message function.
- */
-export interface AssertMessageParameters
-{
-    expected: string,
-    actual: string,
-    expression?: string,
-    message?: string,
-}
+import { AssertMessageParameters } from "./assertMessageParameters";
 
 /**
  * A collection of condition methods that can be used to assert the state of an application.
@@ -267,48 +258,4 @@ export class Condition
         this.assertGreaterThanOrEqualTo(count, 0, "count");
         this.assertBetween(0, index, count, expression, message);
     }
-}
-
-/**
- * An error that is thrown when a pre-condition fails.
- */
-export class PreConditionError extends Error
-{
-    public constructor(message?: string)
-    {
-        super(message);
-    }
-}
-
-/**
- * An error that is thrown when a post-condition fails.
- */
-export class PostConditionError extends Error
-{
-    public constructor(message?: string)
-    {
-        super(message);
-    }
-}
-
-/**
- * A type that encapsulates conditions that should exist before an operation takes place.
- */
-export class Pre
-{
-    /**
-     * The condition object that can be used to assert pre-conditions.
-     */
-    public static readonly condition: Condition = Condition.create((message: string) => new PreConditionError(message));
-}
-
-/**
- * A type that encapsulates conditions that should exist after an operation has taken place.
- */
-export class Post
-{
-    /**
-     * The condition object that can be used to assert post-conditions.
-     */
-    public static readonly condition: Condition = Condition.create((message: string) => new PostConditionError(message));
 }

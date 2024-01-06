@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { isArray, isString } from "../sources/index"
+import { isArray, isString } from "../sources/index";
 
 suite("types.ts", () =>
 {

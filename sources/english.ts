@@ -1,4 +1,4 @@
-import { Pre } from "./condition";
+import { Pre } from "./pre";
 
 export function andList(values: string[]): string
 {

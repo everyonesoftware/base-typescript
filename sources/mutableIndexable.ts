@@ -1,17 +1,17 @@
+import { Indexable } from "./indexable";
 import { IndexableIterator } from "./indexableIterator";
-import { Iterable } from "./iterable";
 import { JavascriptIterator } from "./javascript";
+import { List } from "./list";
 import { MapIterable } from "./mapIterable";
-import { MutableIndexable } from "./mutableIndexable";
 
 /**
- * An object that can access its elements by index.
+ * An object that can modify its elements by index.
  */
-export abstract class Indexable<T> implements Iterable<T>
+export abstract class MutableIndexable<T> implements Indexable<T>
 {
-    public static create<T>(values?: T[]): Indexable<T>
+    public static create<T>(values?: T[]): MutableIndexable<T>
     {
-        return MutableIndexable.create(values);
+        return List.create(values);
     }
 
     public abstract iterate(): IndexableIterator<T>;
@@ -24,15 +24,14 @@ export abstract class Indexable<T> implements Iterable<T>
 
     public abstract [Symbol.iterator](): JavascriptIterator<T>;
 
-    /**
-     * Get the number of values in this {@link Indexable}.
-     */
     public abstract getCount(): number;
 
-    /**
-     * Get the value at the provided index.
-     * @param index The index of the value to return.
-     */
     public abstract get(index: number): T;
-}
 
+    /**
+     * Set the value at the provided index.
+     * @param index The index of the value to set.
+     * @param value The value to set at the provided index.
+     */
+    public abstract set(index: number, value: T): this;
+}

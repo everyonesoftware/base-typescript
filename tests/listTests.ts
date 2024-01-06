@@ -28,7 +28,7 @@ suite("list.ts", () =>
 
             test("with empty array", () =>
             {
-                const list: List<number> = List.create([]);
+                const list: List<number> = List.create<number>([]);
                 assert.notStrictEqual(list, undefined);
                 assert.deepStrictEqual(list.toArray(), []);
                 assert.strictEqual(list.toString(), "[]");
@@ -69,7 +69,7 @@ suite("list.ts", () =>
             {
                 test(`with ${andList([list, index, value].map(x => x.toString()))}`, () =>
                 {
-                    const backupList: List<Number> = List.create(list);
+                    const backupList: List<number> = List.create(list);
                     assert.throws(() => list.set(index, value), expectedError);
                     assert.deepStrictEqual(list, backupList);
                 });
@@ -122,7 +122,7 @@ suite("list.ts", () =>
             {
                 test(`with ${andList([list, index].map(x => x.toString()))}`, () =>
                 {
-                    const backupList: List<Number> = List.create(list);
+                    const backupList: List<number> = List.create(list);
                     assert.throws(() => list.get(index), expectedError);
                     assert.deepStrictEqual(list, backupList);
                 });
@@ -316,7 +316,7 @@ suite("list.ts", () =>
             insertAllTest(List.create([1]), 1, [2, 3], [1, 2, 3]);
             insertAllTest(List.create([1, 4]), 1, [2, 3], [1, 2, 3, 4]);
 
-            insertAllTest(List.create(), 0, List.create([]), []);
+            insertAllTest(List.create(), 0, List.create(), []);
             insertAllTest(List.create(), 0, List.create([1]), [1]);
             insertAllTest(List.create([2]), 0, List.create([1]), [1, 2]);
             insertAllTest(List.create([1]), 1, List.create([2]), [1, 2]);

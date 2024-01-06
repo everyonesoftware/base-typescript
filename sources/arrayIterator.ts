@@ -1,7 +1,10 @@
-import { Pre } from "./condition";
-import { IndexableIterator } from "./indexable";
+import { IndexableIteratorBase } from "./indexableIteratorBase";
+import { Pre } from "./pre";
 
-export class ArrayIterator<T> extends IndexableIterator<T>
+/**
+ * An {@link Iterator} that iterates over the values in an {@link Array}.
+ */
+export class ArrayIterator<T> extends IndexableIteratorBase<T>
 {
     private readonly values: T[];
     private currentIndex: number;
@@ -23,14 +26,14 @@ export class ArrayIterator<T> extends IndexableIterator<T>
         return new ArrayIterator<T>(values);
     }
 
-    public override getCurrentIndex(): number
+    public getCurrentIndex(): number
     {
         Pre.condition.assertTrue(this.hasCurrent(), "this.hasCurrent()");
 
         return this.currentIndex;
     }
 
-    public override next(): boolean
+    public next(): boolean
     {
         if (!this.hasStarted())
         {
@@ -43,17 +46,17 @@ export class ArrayIterator<T> extends IndexableIterator<T>
         return this.hasCurrent();
     }
 
-    public override hasStarted(): boolean
+    public hasStarted(): boolean
     {
         return this.started;
     }
 
-    public override hasCurrent(): boolean
+    public hasCurrent(): boolean
     {
         return this.hasStarted() && this.currentIndex < this.values.length;
     }
 
-    public override getCurrent(): T
+    public getCurrent(): T
     {
         Pre.condition.assertTrue(this.hasCurrent(), "this.hasCurrent()");
 

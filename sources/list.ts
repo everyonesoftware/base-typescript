@@ -1,10 +1,11 @@
 import { ArrayIterator } from "./arrayIterator";
-import { Pre } from "./condition";
-import { IndexableIterator, MutableIndexable } from "./indexable";
+import { IndexableIterator } from "./indexableIterator";
 import { Iterable } from "./iterable";
+import { MutableIndexableBase } from "./mutableIndexableBase";
+import { Pre } from "./pre";
 import { isArray } from "./types";
 
-export class List<T> extends MutableIndexable<T>
+export class List<T> extends MutableIndexableBase<T>
 {
     private readonly values: T[];
 

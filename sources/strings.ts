@@ -1,4 +1,4 @@
-import { Pre } from "./condition";
+import { Pre } from "./pre";
 
 /**
  * Join the provided values with the provided separator in between each value.

@@ -100,7 +100,7 @@ suite("stringIterator.ts", () =>
                 {
                     assert.throws(() => iterator.takeCurrent(),
                         new PreConditionError(join("\n", [
-                            "Expression: this.hasCurrent()",
+                            "Expression: iterator.hasCurrent()",
                             "Expected: true",
                             "Actual: false",
                         ])));
@@ -116,7 +116,7 @@ suite("stringIterator.ts", () =>
 
                 assert.throws(() => iterator.takeCurrent(),
                         new PreConditionError(join("\n", [
-                            "Expression: this.hasCurrent()",
+                            "Expression: iterator.hasCurrent()",
                             "Expected: true",
                             "Actual: false",
                         ])));
@@ -135,7 +135,7 @@ suite("stringIterator.ts", () =>
                 {
                     assert.throws(() => iterator.takeCurrent(),
                         new PreConditionError(join("\n", [
-                            "Expression: this.hasCurrent()",
+                            "Expression: iterator.hasCurrent()",
                             "Expected: true",
                             "Actual: false",
                         ])));
