@@ -1,5 +1,5 @@
 import { Iterator } from "./iterator";
-import { JavascriptIteratorAdapter } from "./javascriptIteratorAdapter";
+import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { Pre } from "./pre";
 
 /**
@@ -63,7 +63,7 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
         return Iterator.map(this, mapping);
     }
 
-    public [Symbol.iterator](): JavascriptIteratorAdapter<TOutput>
+    public [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<TOutput>
     {
         return Iterator[Symbol.iterator](this);
     }

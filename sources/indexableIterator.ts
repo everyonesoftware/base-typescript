@@ -1,6 +1,6 @@
 import { ArrayIterator } from "./arrayIterator";
 import { Iterator } from "./iterator";
-import { JavascriptIteratorAdapter } from "./javascriptIteratorAdapter";
+import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { MapIterator } from "./mapIterator";
 
 /**
@@ -30,7 +30,7 @@ export abstract class IndexableIterator<T> implements Iterator<T>
 
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterator<T, TOutput>;
 
-    public abstract [Symbol.iterator](): JavascriptIteratorAdapter<T>;
+    public abstract [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<T>;
 
     /**
      * Get the current index of the value this {@link IndexableIterator} points to.

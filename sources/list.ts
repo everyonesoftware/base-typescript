@@ -1,89 +1,102 @@
-import { ArrayIterator } from "./arrayIterator";
+import { JavascriptArrayList } from "./javascriptArrayList";
 import { IndexableIterator } from "./indexableIterator";
-import { Iterable } from "./iterable";
-import { MutableIndexableBase } from "./mutableIndexableBase";
+import { JavascriptIterable, JavascriptIterator } from "./javascript";
+import { MapIterable } from "./mapIterable";
+import { MutableIndexable } from "./mutableIndexable";
 import { Pre } from "./pre";
-import { isArray } from "./types";
 
-export class List<T> extends MutableIndexableBase<T>
+export abstract class List<T> implements MutableIndexable<T>
 {
-    private readonly values: T[];
-
-    private constructor()
+    public static create<T>(values?: JavascriptIterable<T>): List<T>
     {
-        super();
-
-        this.values = [];
+        return JavascriptArrayList.create(values);
     }
 
-    public static create<T>(values?: T[] | Iterable<T>): List<T>
-    {
-        const result = new List<T>();
-        if (values !== undefined)
-        {
-            result.addAll(values);
-        }
-        return result;
-    }
+    public abstract iterate(): IndexableIterator<T>;
 
-    public override getCount(): number
-    {
-        return this.values.length;
-    }
+    public abstract toArray(): T[];
 
-    public override set(index: number, value: T): this
+    public abstract toString(): string;
+
+    public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterable<T, TOutput>;
+
+    public abstract getCount(): number;
+
+    public abstract get(index: number): T;
+
+    public abstract set(index: number, value: T): this;
+
+    public abstract [Symbol.iterator](): JavascriptIterator<T>;
+
+    /**
+     * Add the provided value to the end of this {@link List}.
+     * @param value The value to add.
+     */
+    public abstract add(value: T): this;
+
+    /**
+     * Add the provided value to the provided {@link List}.
+     * @param list The {@link List} to add the value to.
+     * @param value The value to add.
+     */
+    public static add<T,TList extends List<T>>(list: TList, value: T): TList
     {
-        Pre.condition.assertAccessIndex(index, this.getCount(), "index");
+        Pre.condition.assertNotUndefinedAndNotNull(list, "list");
         
-        this.values[index] = value;
-
-        return this;
+        return list.insert(list.getCount(), value);
     }
 
-    public override get(index: number): T
-    {
-        Pre.condition.assertAccessIndex(index, this.getCount(), "index");
+    /**
+     * Add the provided values to the end of this {@link List}.
+     * @param values The values to add.
+     */
+    public abstract addAll(values: JavascriptIterable<T>): this;
 
-        return this.values[index];
+    /**
+     * Add the provided values to the end of the provided {@link List}.
+     * @param list The {@link List} to add the values to.
+     * @param values The values to add.
+     */
+    public static addAll<T,TList extends List<T>>(list: TList, values: JavascriptIterable<T>): TList
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(list, "list");
+        Pre.condition.assertNotUndefinedAndNotNull(values, "values");
+
+        return list.insertAll(list.getCount(), values);
     }
 
-    public override iterate(): IndexableIterator<T>
-    {
-        return ArrayIterator.create(this.values);
-    }
+    /**
+     * Insert the value at the index in this {@link List}.
+     * @param index The index to insert the value at.
+     * @param value The value to insert.
+     */
+    public abstract insert(index: number, value: T): this;
 
-    public add(value: T): this
-    {
-        this.values.push(value);
-        return this;
-    }
+    /**
+     * Insert the values at the index in this {@link List}.
+     * @param index The index to insert the values at.
+     * @param values The values to insert.
+     */
+    public abstract insertAll(index: number, values: JavascriptIterable<T>): this;
 
-    public addAll(values: T[] | Iterable<T>): this
+    /**
+     * Insert the values at the index in this {@link List}.
+     * @param list The list to insert the values into.
+     * @param index The index to insert the values at.
+     * @param values The values to insert.
+     */
+    public static insertAll<T,TList extends List<T>>(list: TList, index: number, values: JavascriptIterable<T>): TList
     {
+        Pre.condition.assertNotUndefinedAndNotNull(list, "list");
+        Pre.condition.assertInsertIndex(index, list.getCount(), "index");
+        Pre.condition.assertNotUndefinedAndNotNull(values, "values");
+
+        let insertIndex: number = index;
         for (const value of values)
         {
-            this.add(value);
+            list.insert(insertIndex, value);
+            insertIndex++;
         }
-        return this;
-    }
-
-    public insert(index: number, value: T): this
-    {
-        Pre.condition.assertInsertIndex(index, this.getCount(), "index");
-
-        this.values.splice(index, 0, value);
-        return this;
-    }
-
-    public insertAll(index: number, values: T[] | Iterable<T>): this
-    {
-        Pre.condition.assertInsertIndex(index, this.getCount(), "index");
-
-        if (!isArray(values))
-        {
-            values = values.toArray();
-        }
-        this.values.splice(index, 0, ...values);
-        return this;
+        return list;
     }
 }

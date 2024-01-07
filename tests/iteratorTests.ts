@@ -2,6 +2,47 @@ import * as assert from "assert";
 
 import { Iterator, JavascriptIterator, JavascriptIteratorResult, MapIterator, PreConditionError } from "../sources/index";
 
+suite("iterator.ts", () =>
+{
+    suite("Iterator<T>", () =>
+    {
+        suite("create(T[])", () =>
+        {
+            function createErrorTest<T>(values: T[], expected: Error): void
+            {
+                test(`with ${JSON.stringify(values)}`, () =>
+                {
+                    assert.throws(() => Iterator.create(values), expected);
+                });
+            }
+
+            createErrorTest(undefined!, new PreConditionError(
+                "Expression: values",
+                "Expected: not undefined and not null",
+                "Actual: undefined",
+            ));
+            createErrorTest(null!, new PreConditionError(
+                "Expression: values",
+                "Expected: not undefined and not null",
+                "Actual: null",
+            ));
+
+            function createTest<T>(values: T[]): void
+            {
+                test(`with ${JSON.stringify(values)}`, () =>
+                {
+                    const iterator: Iterator<T> = Iterator.create(values);
+                    assert.deepStrictEqual(iterator.toArray(), values);
+                });
+            }
+
+            createTest([]);
+            createTest([1, 2, 3]);
+            createTest([false, true]);
+        });
+    });
+});
+
 export function iteratorTests<T>(creator: () => Iterator<T>): void
 {
     suite(Iterator.name, () =>

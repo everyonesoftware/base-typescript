@@ -3,13 +3,14 @@ import { Iterator } from "./iterator";
 import { JavascriptIterable, JavascriptIterator } from "./javascript";
 import { MapIterable } from "./mapIterable";
 import { Pre } from "./pre";
+import { ToStringFunctions } from "./toStringFunctions";
 
 /**
  * An object that can be iterated over.
  */
 export abstract class Iterable<T> implements JavascriptIterable<T>
 {
-    public static create<T>(values?: T[]): Iterable<T>
+    public static create<T>(values?: JavascriptIterable<T>): Iterable<T>
     {
         return Indexable.create(values);
     }
@@ -46,16 +47,19 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     /**
      * Get the {@link String} representation of this {@link Iterable}.
      */
-    public abstract toString(): string;
+    public abstract toString(toStringFunctions?: ToStringFunctions): string;
 
     /**
      * Get the {@link String} representation of the provided {@link Iterable}.
      */
-    public static toString<T>(iterable: Iterable<T>): string
+    public static toString<T>(iterable: Iterable<T>, toStringFunctions?: ToStringFunctions): string
     {
         Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
 
-        return JSON.stringify(iterable.toArray());
+        const iterableArray: T[] = iterable.toArray();
+        return toStringFunctions
+            ? toStringFunctions.toString(iterableArray)
+            : JSON.stringify(iterableArray);
     }
 
     /**
