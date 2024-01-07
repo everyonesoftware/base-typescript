@@ -1,8 +1,8 @@
-import { IndexableIterator } from "./indexableIterator";
-import { JavascriptIterable } from "./javascript";
-import { JavascriptIteratorAdapter } from "./javascriptIteratorAdapter";
+import { JavascriptIterable, JavascriptIterator } from "./javascript";
+import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { MapIterator } from "./mapIterator";
 import { Pre } from "./pre";
+import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToIteratorAdapter";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -13,9 +13,11 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
      * Create a new {@link Iterator} that contains the provided values.
      * @param values The values that the new {@link Iterator} will iterate over.
      */
-    public static create<T>(values: T[]): Iterator<T>
+    public static create<T>(values: JavascriptIterator<T> | JavascriptIterable<T>): Iterator<T>
     {
-        return IndexableIterator.create(values);
+        Pre.condition.assertNotUndefinedAndNotNull(values, "values");
+
+        return JavascriptIteratorToIteratorAdapter.create(values);
     }
 
     /**
@@ -76,17 +78,17 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
         return result;
     }
 
-    public abstract [Symbol.iterator](): JavascriptIteratorAdapter<T>;
+    public abstract [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<T>;
 
     /**
-     * Convert the provided {@link Iterator} to a {@link JavascriptIteratorAdapter}.
+     * Convert the provided {@link Iterator} to a {@link IteratorToJavascriptIteratorAdapter}.
      * @param iterator The {@link Iterator} to convert.
      */
-    public static [Symbol.iterator]<T>(iterator: Iterator<T>): JavascriptIteratorAdapter<T>
+    public static [Symbol.iterator]<T>(iterator: Iterator<T>): IteratorToJavascriptIteratorAdapter<T>
     {
         Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
 
-        return JavascriptIteratorAdapter.create(iterator);
+        return IteratorToJavascriptIteratorAdapter.create(iterator);
     }
 
     /**

@@ -1,6 +1,6 @@
 import { IndexableIterator } from "./indexableIterator";
 import { Iterable } from "./iterable";
-import { JavascriptIterator } from "./javascript";
+import { JavascriptIterable, JavascriptIterator } from "./javascript";
 import { MapIterable } from "./mapIterable";
 import { MutableIndexable } from "./mutableIndexable";
 
@@ -9,7 +9,7 @@ import { MutableIndexable } from "./mutableIndexable";
  */
 export abstract class Indexable<T> implements Iterable<T>
 {
-    public static create<T>(values?: T[]): Indexable<T>
+    public static create<T>(values?: JavascriptIterable<T>): Indexable<T>
     {
         return MutableIndexable.create(values);
     }

@@ -1,3 +1,4 @@
+import { JavascriptIterable } from "./javascript";
 import { Pre } from "./pre";
 
 /**
@@ -6,13 +7,13 @@ import { Pre } from "./pre";
  * @param values The values to join.
  * @returns The joined {@link string}.
  */
-export function join(separator: string, values: string[]): string
+export function join(separator: string, values: JavascriptIterable<string>): string
 {
     if (separator === undefined || separator === null)
     {
         separator = "";
     }
-    return values.join(separator);
+    return Array.from(values).join(separator);
 }
 
 export function escape(value: string | undefined | null, dontEscape?: string[]): string

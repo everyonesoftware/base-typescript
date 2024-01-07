@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { isArray, isString } from "../sources/index";
+import { Indexable, Iterable, List, MutableIndexable, andList, hasFunction, hasProperty, isArray, isFunction, isObject, isObjectOrArrayOrNull as isObjectArrayOrNull, isString } from "../sources/";
 
 suite("types.ts", () =>
 {
@@ -22,6 +22,30 @@ suite("types.ts", () =>
         isStringTest("hello", true);
     });
 
+    suite("isFunction(unknown)", () =>
+    {
+        function isFunctionTest(value: unknown, expected: boolean): void
+        {
+            test(`with ${JSON.stringify(value)}`, () =>
+            {
+                assert.strictEqual(isFunction(value), expected);
+            });
+        }
+
+        isFunctionTest(undefined, false);
+        isFunctionTest(null, false);
+        isFunctionTest(false, false);
+        isFunctionTest(true, false);
+        isFunctionTest(123, false);
+        isFunctionTest("abc", false);
+        isFunctionTest({}, false);
+        isFunctionTest([], false);
+
+        isFunctionTest(isArray, true);
+        isFunctionTest(isFunction, true);
+        isFunctionTest(() => 123, true);
+    });
+
     suite("isArray(unknown)", () =>
     {
         function isArrayTest(value: unknown, expected: boolean): void
@@ -38,7 +62,152 @@ suite("types.ts", () =>
         isArrayTest({}, false);
         isArrayTest("", false);
         isArrayTest("hello", false);
+        isArrayTest(Iterable.create(), false);
+        isArrayTest(Indexable.create(), false);
+        isArrayTest(MutableIndexable.create(), false);
+        isArrayTest(List.create(), false);
+
         isArrayTest([], true);
         isArrayTest(["a", "b"], true);
+        isArrayTest(new Array(), true);
+        isArrayTest(Array.from([1, 2]), true);
+    });
+
+    suite("isObjectOrNull(unknown)", () =>
+    {
+        function isObjectOrNullTest(value: unknown, expected: boolean): void
+        {
+            test(`with ${JSON.stringify(value)}`, () =>
+            {
+                assert.strictEqual(isObjectArrayOrNull(value), expected);
+            });
+        }
+
+        isObjectOrNullTest(undefined, false);
+        isObjectOrNullTest(50, false);
+        isObjectOrNullTest("", false);
+        isObjectOrNullTest("hello", false);
+        
+        isObjectOrNullTest({}, true);
+        isObjectOrNullTest(null, true);
+        isObjectOrNullTest([], true);
+        isObjectOrNullTest(["a", "b"], true);
+        isObjectOrNullTest(new Array(), true);
+        isObjectOrNullTest(Array.from([1, 2]), true);
+        isObjectOrNullTest(Iterable.create(), true);
+        isObjectOrNullTest(Indexable.create(), true);
+        isObjectOrNullTest(MutableIndexable.create(), true);
+        isObjectOrNullTest(List.create(), true);
+    });
+
+    suite("isObjectArrayOrNull(unknown)", () =>
+    {
+        function isObjectArrayOrNullTest(value: unknown, expected: boolean): void
+        {
+            test(`with ${JSON.stringify(value)}`, () =>
+            {
+                assert.strictEqual(isObjectArrayOrNull(value), expected);
+            });
+        }
+
+        isObjectArrayOrNullTest(undefined, false);
+        isObjectArrayOrNullTest(50, false);
+        isObjectArrayOrNullTest("", false);
+        isObjectArrayOrNullTest("hello", false);
+        
+        isObjectArrayOrNullTest({}, true);
+        isObjectArrayOrNullTest(null, true);
+        isObjectArrayOrNullTest([], true);
+        isObjectArrayOrNullTest(["a", "b"], true);
+        isObjectArrayOrNullTest(new Array(), true);
+        isObjectArrayOrNullTest(Array.from([1, 2]), true);
+        isObjectArrayOrNullTest(Iterable.create(), true);
+        isObjectArrayOrNullTest(Indexable.create(), true);
+        isObjectArrayOrNullTest(MutableIndexable.create(), true);
+        isObjectArrayOrNullTest(List.create(), true);
+    });
+
+    suite("isObject(unknown)", () =>
+    {
+        function isObjectTest(value: unknown, expected: boolean): void
+        {
+            test(`with ${JSON.stringify(value)}`, () =>
+            {
+                assert.strictEqual(isObject(value), expected);
+            });
+        }
+
+        isObjectTest(undefined, false);
+        isObjectTest(50, false);
+        isObjectTest("", false);
+        isObjectTest("hello", false);
+        isObjectTest(null, false);
+        isObjectTest([], false);
+        isObjectTest(["a", "b"], false);
+        isObjectTest(new Array(), false);
+        isObjectTest(Array.from([1, 2]), false);
+        
+        isObjectTest({}, true);
+        isObjectTest(Iterable.create(), true);
+        isObjectTest(Indexable.create(), true);
+        isObjectTest(MutableIndexable.create(), true);
+        isObjectTest(List.create(), true);
+    });
+
+    suite("hasProperty(TValue,TPropertyKey extends PropertyKey)", () =>
+    {
+        function hasPropertyTest<TPropertyKey extends PropertyKey>(value: unknown, propertyKey: TPropertyKey, expected: boolean): void
+        {
+            test(`with ${andList([value, propertyKey].map(x => JSON.stringify(x)))}`, () =>
+            {
+                const result: boolean = hasProperty(value, propertyKey);
+                assert.strictEqual(result, expected);
+                if (value !== undefined && value !== null)
+                {
+                    if (result)
+                    {
+                        assert.notStrictEqual((value as any)[propertyKey], undefined);
+                    }
+                    else
+                    {
+                        assert.strictEqual((value as any)[propertyKey], undefined);
+                    }
+                }
+            });
+        }
+
+        hasPropertyTest(undefined, "spam", false);
+        hasPropertyTest(null, "spam", false);
+        hasPropertyTest([], "spam", false);
+        hasPropertyTest([], "length", true);
+        hasPropertyTest({}, "spam", false);
+        hasPropertyTest("", "spam", false);
+        hasPropertyTest("", "length", true);
+        hasPropertyTest(5, "spam", false);
+        hasPropertyTest(5, "toString", true);
+    });
+
+    suite("hasFunction(TValue,TPropertyKey extends PropertyKey)", () =>
+    {
+        function hasFunctionTest<TPropertyKey extends PropertyKey>(value: unknown, propertyKey: TPropertyKey, expected: boolean): void
+        {
+            test(`with ${andList([value, propertyKey].map(x => JSON.stringify(x)))}`, () =>
+            {
+                assert.strictEqual(hasFunction(value, propertyKey), expected);
+            });
+        }
+
+        hasFunctionTest(undefined, "spam", false);
+        hasFunctionTest(null, "spam", false);
+        hasFunctionTest([], "spam", false);
+        hasFunctionTest([], "length", false);
+        hasFunctionTest([], Symbol.iterator, true);
+        hasFunctionTest({}, "spam", false);
+        hasFunctionTest("", "spam", false);
+        hasFunctionTest("", "length", false);
+        hasFunctionTest("", "at", true);
+        hasFunctionTest("", Symbol.iterator, true);
+        hasFunctionTest(5, "spam", false);
+        hasFunctionTest(5, "toString", true);
     });
 });

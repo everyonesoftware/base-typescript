@@ -5,7 +5,7 @@ import { Pre } from "./pre";
 /**
  * A JavaScript/TypeScript object that is used to iterate over a collection of values.
  */
-export class JavascriptIteratorAdapter<T> implements JavascriptIterator<T>
+export class IteratorToJavascriptIteratorAdapter<T> implements JavascriptIterator<T>
 {
     private readonly iterator: Iterator<T>;
 
@@ -16,9 +16,9 @@ export class JavascriptIteratorAdapter<T> implements JavascriptIterator<T>
         this.iterator = iterator;
     }
 
-    public static create<T>(iterator: Iterator<T>): JavascriptIteratorAdapter<T>
+    public static create<T>(iterator: Iterator<T>): IteratorToJavascriptIteratorAdapter<T>
     {
-        return new JavascriptIteratorAdapter<T>(iterator);
+        return new IteratorToJavascriptIteratorAdapter<T>(iterator);
     }
     
     public next(): JavascriptIteratorResult<T>

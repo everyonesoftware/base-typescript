@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { Iterable, List, PreConditionError, andList, join } from "../sources/index";
+import { Iterable, List, PreConditionError, andList, join } from "../sources/";
 
 suite("list.ts", () =>
 {
