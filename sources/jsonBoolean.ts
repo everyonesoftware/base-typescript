@@ -1,8 +1,10 @@
 import { JsonSegment } from "./jsonSegment";
 import { JsonSegmentType } from "./jsonSegmentType";
+import { JsonToken } from "./jsonToken";
+import { JsonTokenType } from "./jsonTokenType";
 import { Pre } from "./pre";
 
-export class JsonBoolean implements JsonSegment
+export class JsonBoolean implements JsonSegment, JsonToken
 {
     private readonly value: boolean;
 
@@ -18,18 +20,28 @@ export class JsonBoolean implements JsonSegment
         return new JsonBoolean(value);
     }
 
+    public getTokenType(): JsonTokenType.Boolean
+    {
+        return JsonTokenType.Boolean;
+    }
+
+    public getText(): string
+    {
+        return `${this.value}`;
+    }
+
     public getValue(): boolean
     {
         return this.value;
     }
 
-    public getType(): JsonSegmentType.Boolean
+    public getSegmentType(): JsonSegmentType.Boolean
     {
         return JsonSegmentType.Boolean;
     }
 
     public toString(): string
     {
-        return JSON.stringify(this.value);
+        return this.getText();
     }
 }

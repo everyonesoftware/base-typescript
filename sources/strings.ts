@@ -1,5 +1,27 @@
 import { JavascriptIterable } from "./javascript";
 import { Pre } from "./pre";
+import { Post } from "./post";
+
+export function toString(value: undefined | null | { toString(): string }): string
+{
+    let result: string;
+    if (value === undefined)
+    {
+        result = "undefined";
+    }
+    else if (value === null)
+    {
+        result = "null";
+    }
+    else
+    {
+        result = value.toString();
+    }
+
+    Post.condition.assertNotUndefinedAndNotNull(result, "result");
+
+    return result;
+}
 
 /**
  * Join the provided values with the provided separator in between each value.

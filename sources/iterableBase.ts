@@ -26,4 +26,6 @@ export abstract class IterableBase<T> implements Iterable<T>
     {
         return Iterable[Symbol.iterator](this);
     }
+
+    public abstract getCount(): number;
 }

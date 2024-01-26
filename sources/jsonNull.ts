@@ -1,7 +1,9 @@
 import { JsonSegment } from "./jsonSegment";
 import { JsonSegmentType } from "./jsonSegmentType";
+import { JsonToken } from "./jsonToken";
+import { JsonTokenType } from "./jsonTokenType";
 
-export class JsonNull implements JsonSegment
+export class JsonNull implements JsonSegment, JsonToken
 {
     private constructor()
     {
@@ -12,7 +14,17 @@ export class JsonNull implements JsonSegment
         return new JsonNull();
     }
 
-    public getType(): JsonSegmentType.Null
+    public getTokenType(): JsonTokenType.Null
+    {
+        return JsonTokenType.Null;
+    }
+
+    public getText(): string
+    {
+        return "null";
+    }
+
+    public getSegmentType(): JsonSegmentType.Null
     {
         return JsonSegmentType.Null;
     }

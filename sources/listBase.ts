@@ -30,5 +30,8 @@ export abstract class ListBase<T> extends MutableIndexableBase<T> implements Lis
 
     public abstract insert(index: number, value: T): this;
 
-    public abstract insertAll(index: number, values: JavascriptIterable<T>): this;
+    public insertAll(index: number, values: JavascriptIterable<T>): this
+    {
+        return List.insertAll(this, index, values);
+    }
 }

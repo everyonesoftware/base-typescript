@@ -33,7 +33,7 @@ suite("jsonNumber.ts", () =>
                 {
                     const json: JsonNumber = JsonNumber.create(value);
                     assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getType(), JsonSegmentType.Number);
+                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Number);
                 });
             }
 
