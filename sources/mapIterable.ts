@@ -49,4 +49,9 @@ export class MapIterable<TInput,TOutput> implements Iterable<TOutput>
     {
         return Iterable[Symbol.iterator](this);
     }
+
+    public getCount(): number
+    {
+        return this.innerIterable.getCount();
+    }
 }

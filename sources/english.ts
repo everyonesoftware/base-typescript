@@ -1,30 +1,45 @@
+import { Iterator } from "./iterator";
+import { JavascriptIterable } from "./javascript";
 import { Pre } from "./pre";
 
-export function andList(values: string[]): string
+export function andList(values: JavascriptIterable<string>): string
 {
+    return list("and", values);
+}
+
+export function orList(values: string[]): string
+{
+    return list("or", values);
+}
+
+function list(conjunction: string, values: JavascriptIterable<string>): string
+{
+    Pre.condition.assertNotEmpty(conjunction, "conjunction");
     Pre.condition.assertNotUndefinedAndNotNull(values, "values");
 
-    let result: string;
-    if (values.length === 0)
+    let result: string = "";
+    let index = 0;
+    const iterator: Iterator<string> = Iterator.create(values).start();
+    while (iterator.hasCurrent())
     {
-        result = "";
-    }
-    else if (values.length === 1)
-    {
-        result = values[0];
-    }
-    else if (values.length === 2)
-    {
-        result = `${values[0]} and ${values[1]}`;
-    }
-    else
-    {
-        result = "";
-        for (let i: number = 0; i < values.length - 1; i++)
+        const currentValue: string = iterator.takeCurrent();
+        if (index >= 1)
         {
-            result += `${values[i]}, `;
+            if (iterator.hasCurrent())
+            {
+                result += `, `;
+            }
+            else
+            {
+                if (index >= 2)
+                {
+                    result += `,`;
+                }
+                result += ` ${conjunction} `;
+            }
         }
-        result += `and ${values[values.length - 1]}`;
+        result += currentValue;
+        index++;
     }
     return result;
 }

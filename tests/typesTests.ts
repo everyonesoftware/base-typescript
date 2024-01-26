@@ -1,9 +1,47 @@
 import * as assert from "assert";
 
-import { Indexable, Iterable, List, MutableIndexable, andList, hasFunction, hasProperty, isArray, isFunction, isObject, isObjectOrArrayOrNull as isObjectArrayOrNull, isString } from "../sources/";
+import { Indexable, Iterable, List, MutableIndexable, andList, hasFunction, hasProperty, isArray, isBoolean, isFunction, isNumber, isObject, isObjectOrArrayOrNull as isObjectArrayOrNull, isString } from "../sources/";
 
 suite("types.ts", () =>
 {
+    suite("isBoolean(unknown)", () =>
+    {
+        function isBooleanTest(value: unknown, expected: boolean): void
+        {
+            assert.strictEqual(isBoolean(value), expected);
+        }
+
+        isBooleanTest(undefined, false);
+        isBooleanTest(null, false);
+        isBooleanTest("", false);
+        isBooleanTest("true", false);
+        isBooleanTest(123, false);
+        isBooleanTest({}, false);
+        isBooleanTest([], false);
+        isBooleanTest(true, true);
+        isBooleanTest(false, true);
+    });
+
+    suite("isNumber(unknown)", () =>
+    {
+        function isNumberTest(value: unknown, expected: boolean): void
+        {
+            assert.strictEqual(isNumber(value), expected);
+        }
+
+        isNumberTest(undefined, false);
+        isNumberTest(null, false);
+        isNumberTest("", false);
+        isNumberTest("123", false);
+        isNumberTest({}, false);
+        isNumberTest([], false);
+        isNumberTest(true, false);
+        isNumberTest(false, false);
+        isNumberTest(123, true);
+        isNumberTest(Infinity, true);
+        isNumberTest(NaN, true);
+    });
+
     suite("isString(unknown)", () =>
     {
         function isStringTest(value: unknown, expected: boolean): void

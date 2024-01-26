@@ -9,7 +9,7 @@ suite("jsonNull.ts", () =>
         test("create()", () =>
         {
             const json: JsonNull = JsonNull.create();
-            assert.strictEqual(json.getType(), JsonSegmentType.Null);
+            assert.strictEqual(json.getSegmentType(), JsonSegmentType.Null);
             assert.strictEqual(json.toString(), "null");
         });
     });

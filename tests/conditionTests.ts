@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { andList, escapeAndQuote, join, Condition, PostConditionError } from "../sources/";
+import { andList, escapeAndQuote, join, Condition, PostConditionError, JavascriptIterable, PreConditionError } from "../sources/";
 
 suite("condition.ts", () =>
 {
@@ -709,6 +709,79 @@ suite("condition.ts", () =>
                 "Expected: between 0 and 2",
                 "Actual: 3",
             ])));
+        });
+
+        suite("assertOneOf<T>(JavascriptIterable<T>,T,string?,string?)", () =>
+        {
+            function assertOneOfTest<T>(possibilities: JavascriptIterable<T>, value: T, expression?: string, message?: string, expectedError?: Error): void
+            {
+                test(`with ${andList([possibilities, value, expression, message].map(x => JSON.stringify(x)))}`, () =>
+                {
+                    const condition: Condition = Condition.create();
+                    if (expectedError)
+                    {
+                        assert.throws(() => condition.assertOneOf(possibilities, value, expression, message), expectedError);
+                    }
+                    else
+                    {
+                        condition.assertOneOf(possibilities, value, expression, message);
+                    }
+                });
+            }
+
+            assertOneOfTest(
+                undefined!,
+                5,
+                undefined,
+                undefined,
+                new PreConditionError(
+                    "Expression: possibilities",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+            assertOneOfTest(
+                null!,
+                5,
+                undefined,
+                undefined,
+                new PreConditionError(
+                    "Expression: possibilities",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
+            assertOneOfTest(
+                [],
+                5,
+                undefined,
+                undefined,
+                new PreConditionError(
+                    "Expected: one of ",
+                    "Actual: 5",
+                ));
+            assertOneOfTest(
+                [],
+                5,
+                "fake-expression",
+                "fake-message",
+                new PreConditionError(
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: one of ",
+                    "Actual: 5",
+                ));
+            assertOneOfTest(
+                [1, 2, 3],
+                5,
+                "fake-expression",
+                "fake-message",
+                new PreConditionError(
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: one of 1,2,3",
+                    "Actual: 5",
+                ));
+            assertOneOfTest([5], 5);
+            assertOneOfTest([1, 3, 5, 7], 5);
         });
     });
 });

@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { Map, NotFoundError, andList } from "../sources";
+import { Iterator, JavascriptIterable, Map, NotFoundError, andList } from "../sources";
 
 suite("map.ts", () =>
 {
@@ -11,6 +11,8 @@ suite("map.ts", () =>
             const map: Map<number,string> = Map.create();
             assert.strictEqual(map.getCount(), 0);
         });
+
+        mapTests(Map.create);
     });
 });
 
@@ -97,6 +99,40 @@ export function mapTests(creator: () => Map<number,string>): void
             toStringTest(creator(), "{}");
             toStringTest(creator().set(1, "one"), "{1:one}");
             toStringTest(creator().set(2, "2").set(1, "one"), "{2:2,1:one}");
+        });
+
+        suite("iterateKeys()", () =>
+        {
+            function iterateKeysTests(map: Map<number,string>, expected: JavascriptIterable<number>): void
+            {
+                test(`with ${map.toString()}`, () =>
+                {
+                    const keyIterator: Iterator<number> = map.iterateKeys();
+                    assert.deepStrictEqual(keyIterator.toArray(), [...expected]);
+                });
+            }
+
+            iterateKeysTests(creator(), []);
+            iterateKeysTests(creator().set(5, "five"), [5]);
+            iterateKeysTests(creator().set(5, "five").set(6, "six"), [5, 6]);
+            iterateKeysTests(creator().set(5, "5").set(6, "6").set(7, "7"), [5, 6, 7]);
+        });
+
+        suite("iterateValues()", () =>
+        {
+            function iterateValuesTests(map: Map<number,string>, expected: JavascriptIterable<string>): void
+            {
+                test(`with ${map.toString()}`, () =>
+                {
+                    const valueIterator: Iterator<string> = map.iterateValues();
+                    assert.deepStrictEqual(valueIterator.toArray(), [...expected]);
+                });
+            }
+
+            iterateValuesTests(creator(), []);
+            iterateValuesTests(creator().set(5, "five"), ["five"]);
+            iterateValuesTests(creator().set(5, "five").set(6, "six"), ["five", "six"]);
+            iterateValuesTests(creator().set(5, "5").set(6, "6").set(7, "7"), ["5", "6", "7"]);
         });
     });
 }

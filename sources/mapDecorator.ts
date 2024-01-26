@@ -19,6 +19,11 @@ export abstract class MapDecorator<TKey,TValue> extends MapBase<TKey,TValue>
         this.innerMap = innerMap;
     }
 
+    public override getCount(): number
+    {
+        return this.innerMap.getCount();
+    }
+
     public override containsKey(key: TKey): boolean
     {
         return this.innerMap.containsKey(key);

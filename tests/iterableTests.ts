@@ -13,6 +13,7 @@ suite("iterable.ts", () =>
                 const iterable: Iterable<number> = Iterable.create();
                 assert.notStrictEqual(iterable, undefined);
                 assert.deepStrictEqual(iterable.toArray(), []);
+                assert.strictEqual(iterable.getCount(), 0);
             });
 
             test("with empty array", () =>
@@ -20,6 +21,7 @@ suite("iterable.ts", () =>
                 const iterable: Iterable<number> = Iterable.create<number>([]);
                 assert.notStrictEqual(iterable, undefined);
                 assert.deepStrictEqual(iterable.toArray(), []);
+                assert.strictEqual(iterable.getCount(), 0);
             });
 
             test("with non-empty array", () =>
@@ -27,6 +29,7 @@ suite("iterable.ts", () =>
                 const iterable: Iterable<number> = Iterable.create([1, 2, 3]);
                 assert.notStrictEqual(iterable, undefined);
                 assert.deepStrictEqual(iterable.toArray(), [1, 2, 3]);
+                assert.strictEqual(iterable.getCount(), 3);
             });
         });
     });

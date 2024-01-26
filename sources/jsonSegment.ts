@@ -17,9 +17,9 @@ export abstract class JsonSegment
         return JsonNumber.create(value);
     }
 
-    public static string(value: string, quote: string = `"`, endQuote: boolean = true): JsonString
+    public static string(value: string, quote: string = `"`): JsonString
     {
-        return JsonString.create(value, quote, endQuote);
+        return JsonString.create(value, quote);
     }
 
     public static null(): JsonNull
@@ -32,7 +32,7 @@ export abstract class JsonSegment
         return JsonObject.create();
     }
 
-    public abstract getType(): JsonSegmentType;
+    public abstract getSegmentType(): JsonSegmentType;
 
     public abstract toString(): string;
 }

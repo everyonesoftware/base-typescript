@@ -32,7 +32,7 @@ suite("jsonSegment.ts", () =>
                 {
                     const json: JsonBoolean = JsonSegment.boolean(value);
                     assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getType(), JsonSegmentType.Boolean);
+                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Boolean);
                 });
             }
 
@@ -67,7 +67,7 @@ suite("jsonSegment.ts", () =>
                 {
                     const json: JsonNumber = JsonSegment.number(value);
                     assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getType(), JsonSegmentType.Number);
+                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Number);
                 });
             }
 
@@ -80,70 +80,69 @@ suite("jsonSegment.ts", () =>
 
         suite("string(string,string,boolean)", () =>
         {
-            function stringErrorTest(value: string, quote: string, endQuote: boolean, expected: Error): void
+            function stringErrorTest(value: string, quote: string, expected: Error): void
             {
-                test(`with ${andList([escapeAndQuote(value), escapeAndQuote(quote), endQuote.toString()])}`, () =>
+                test(`with ${andList([value, quote].map(x => escapeAndQuote(x)))}`, () =>
                 {
-                    assert.throws(() => JsonSegment.string(value, quote, endQuote), expected);
+                    assert.throws(() => JsonSegment.string(value, quote), expected);
                 });
             }
 
-            stringErrorTest(undefined!, `"`, false, new PreConditionError(
+            stringErrorTest(undefined!, `"`, new PreConditionError(
                 "Expression: value",
                 "Expected: not undefined and not null",
                 "Actual: undefined",
             ));
-            stringErrorTest(null!, `"`, false, new PreConditionError(
+            stringErrorTest(null!, `"`, new PreConditionError(
                 "Expression: value",
                 "Expected: not undefined and not null",
                 "Actual: null",
             ));
-            stringErrorTest("", null!, false, new PreConditionError(
+            stringErrorTest("", null!, new PreConditionError(
                 "Expression: quote",
                 "Expected: not undefined and not null",
                 "Actual: null",
             ));
-            stringErrorTest("", "", false, new PreConditionError(
+            stringErrorTest("", "", new PreConditionError(
                 "Expression: quote.length",
                 "Expected: 1",
                 "Actual: 0",
             ));
-            stringErrorTest("", "ab", false, new PreConditionError(
+            stringErrorTest("", "ab", new PreConditionError(
                 "Expression: quote.length",
                 "Expected: 1",
                 "Actual: 2",
             ));
 
-            function stringTest(value: string, quote: string, endQuote: boolean, expectedQuote: string = quote, expectedEndQuote: boolean = endQuote): void
+            function stringTest(value: string, quote: string, expectedQuote: string = quote): void
             {
-                test(`with ${andList([escapeAndQuote(value), escapeAndQuote(quote), endQuote.toString()])}`, () =>
+                test(`with ${andList([value, quote].map(x => escapeAndQuote(x)))}`, () =>
                 {
-                    const json: JsonString = JsonSegment.string(value, quote, endQuote);
+                    const json: JsonString = JsonSegment.string(value, quote);
                     assert.strictEqual(json.getValue(), value);
                     assert.strictEqual(json.getQuote(), expectedQuote);
-                    assert.strictEqual(json.hasEndQuote(), expectedEndQuote);
-                    assert.strictEqual(json.getType(), JsonSegmentType.String);
+                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.String);
                 });
             }
 
-            stringTest("", undefined!, false, `"`);
-            stringTest("", `'`, false);
-            stringTest("abc", `'`, false);
-            stringTest("", `'`, true);
-            stringTest("abc", `'`, true);
+            stringTest("", undefined!, `"`);
+            stringTest("", `'`);
+            stringTest("abc", `'`);
+            stringTest("", `'`);
+            stringTest("abc", `'`);
         });
 
         test("null()", () =>
         {
             const json: JsonNull = JsonSegment.null();
-            assert.strictEqual(json.getType(), JsonSegmentType.Null);
+            assert.strictEqual(json.getSegmentType(), JsonSegmentType.Null);
             assert.strictEqual(json.toString(), "null");
         });
 
         test("object()", () =>
         {
             const json: JsonObject = JsonSegment.object();
-            assert.strictEqual(json.getType(), JsonSegmentType.Object);
+            assert.strictEqual(json.getSegmentType(), JsonSegmentType.Object);
             assert.deepStrictEqual(json.toArray(), []);
         });
     });

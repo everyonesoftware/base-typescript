@@ -32,7 +32,7 @@ suite("jsonBoolean.ts", () =>
                 {
                     const json: JsonBoolean = JsonBoolean.create(value);
                     assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getType(), JsonSegmentType.Boolean);
+                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Boolean);
                 });
             }
 

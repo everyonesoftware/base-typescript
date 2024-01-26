@@ -45,6 +45,11 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     }
 
     /**
+     * Get the number of values in this {@link Iterable}.
+     */
+    public abstract getCount(): number;
+
+    /**
      * Get the {@link String} representation of this {@link Iterable}.
      */
     public abstract toString(toStringFunctions?: ToStringFunctions): string;
