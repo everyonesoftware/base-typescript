@@ -146,6 +146,7 @@ suite("jsonTokenizer.ts", () =>
             createTest("]", [JsonToken.rightSquareBracket()]);
             createTest("[]", [JsonToken.leftSquareBracket(), JsonToken.rightSquareBracket()]);
             createTest(",", [JsonToken.comma()]);
+            createTest(":", [JsonToken.colon()]);
             createTest("*", [JsonToken.unknown("*")]);
             createTest(`"\u0020"`, [JsonToken.string(`\u0020`)]);
             createTest(`"\u0021"`, [JsonToken.string(`\u0021`)]);
@@ -160,6 +161,8 @@ suite("jsonTokenizer.ts", () =>
             createTest(`1e0`, [JsonToken.number(1)]);
             createTest(`1e+0`, [JsonToken.number(1)]);
             createTest(`1e-0`, [JsonToken.number(1)]);
+            createTest(`1e10`, [JsonToken.number(1e10)]);
+            createTest(`1e987`, [JsonToken.number(1e987)]);
             createTest(`1.2e2`, [JsonToken.number(1.2e2)]);
             createTest(`223.456e7`, [JsonToken.number(223.456e7)]);
         });

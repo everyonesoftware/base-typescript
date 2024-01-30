@@ -2,6 +2,7 @@ import { orList } from "./english";
 import { JsonArray } from "./jsonArray";
 import { JsonBoolean } from "./jsonBoolean";
 import { JsonNull } from "./jsonNull";
+import { JsonNumber } from "./jsonNumber";
 import { JsonObject } from "./jsonObject";
 import { JsonSegment } from "./jsonSegment";
 import { JsonString } from "./jsonString";
@@ -11,8 +12,7 @@ import { JsonTokenizer } from "./jsonTokenizer";
 import { ParseError } from "./parseError";
 import { Post } from "./post";
 import { Pre } from "./pre";
-import { StringIterator } from "./stringIterator";
-import { escapeAndQuote, isLetter } from "./strings";
+import { escapeAndQuote } from "./strings";
 import { isString } from "./types";
 
 export function parseJson(text: string): JsonSegment
@@ -66,6 +66,10 @@ export function parseJsonSegment(tokenizer: JsonTokenizer): JsonSegment
         case JsonTokenType.Null:
             result = tokenizer.takeCurrent() as JsonNull;
             break;
+        
+        case JsonTokenType.Number:
+            result = tokenizer.takeCurrent() as JsonNumber;
+            break;
 
         default:
             throw unexpectedToken(tokenizer);
@@ -101,7 +105,11 @@ export function parseJsonObject(tokenizer: JsonTokenizer): JsonObject
     tokenizer.next(); // Move past '{'
     let endBrace: JsonToken | undefined = undefined;
 
-    while (tokenizer.hasCurrent())
+    let expectEndBrace: boolean = true;
+    let expectProperty: boolean = true;
+    let expectComma: boolean = false;
+
+    while (tokenizer.hasCurrent() && endBrace === undefined)
     {
         skipWhitespace(tokenizer);
 
@@ -110,7 +118,68 @@ export function parseJsonObject(tokenizer: JsonTokenizer): JsonObject
             switch (tokenizer.getCurrent().getTokenType())
             {
                 case JsonTokenType.RightCurlyBrace:
+                    if (!expectEndBrace)
+                    {
+                        throw expectedButFoundInstead("object property", tokenizer.getCurrent().getText(), false);
+                    }
                     endBrace = tokenizer.takeCurrent();
+                    expectEndBrace = false;
+                    expectProperty = false;
+                    expectComma = false;
+                    break;
+
+                case JsonTokenType.Comma:
+                    if (!expectComma)
+                    {
+                        throw expectedButFoundInstead("object property or object closing brace ('}')", tokenizer.getCurrent().getText(), false);
+                    }
+                    tokenizer.next();
+                    expectEndBrace = false;
+                    expectProperty = true;
+                    expectComma = false;
+                    break;
+
+                case JsonTokenType.String:
+                    if (!expectProperty)
+                    {
+                        throw expectedButFoundInstead("object property separator (',') or object closing brace ('}')", tokenizer.getCurrent().getText(), false);
+                    }
+
+                    const propertyName: JsonString = tokenizer.takeCurrent() as JsonString;
+                    skipWhitespace(tokenizer);
+                    if (!tokenizer.hasCurrent())
+                    {
+                        throw missing("property name/value separator", ":");
+                    }
+                    else if (tokenizer.getCurrent().getTokenType() !== JsonTokenType.Colon)
+                    {
+                        throw expectedButFoundInstead("property name/value separator (':')", tokenizer.getCurrent().getText(), false);
+                    }
+                    tokenizer.next();
+                    skipWhitespace(tokenizer);
+
+                    if (!tokenizer.hasCurrent())
+                    {
+                        throw missing("property value");
+                    }
+
+                    switch (tokenizer.getCurrent().getTokenType())
+                    {
+                        case JsonTokenType.LeftSquareBracket:
+                        case JsonTokenType.LeftCurlyBrace:
+                        case JsonTokenType.String:
+                        case JsonTokenType.Boolean:
+                        case JsonTokenType.Null:
+                        case JsonTokenType.Number:
+                            result.set(propertyName.getValue(), parseJsonSegment(tokenizer));
+                            expectEndBrace = true;
+                            expectProperty = false;
+                            expectComma = true;
+                            break;
+
+                        default:
+                            throw expectedButFoundInstead("property value", tokenizer.getCurrent().getText(), false);
+                    }
                     break;
 
                 default:
@@ -119,7 +188,18 @@ export function parseJsonObject(tokenizer: JsonTokenizer): JsonObject
         }
     }
 
-    if (endBrace === undefined)
+    if (expectProperty)
+    {
+        if (expectEndBrace)
+        {
+            throw missing("object property or object closing brace ('}')");
+        }
+        else
+        {
+            throw missing("object property");
+        }
+    }
+    else if (expectEndBrace)
     {
         throw missing("object closing brace", "}");
     }
@@ -137,7 +217,11 @@ export function parseJsonArray(tokenizer: JsonTokenizer): JsonArray
     tokenizer.next(); // Move past '['
     let endBracket: JsonToken | undefined = undefined;
 
-    while (tokenizer.hasCurrent())
+    let expectEndBracket: boolean = true;
+    let expectElement: boolean = true;
+    let expectComma: boolean = false;
+
+    while (tokenizer.hasCurrent() && endBracket === undefined)
     {
         skipWhitespace(tokenizer);
 
@@ -146,52 +230,63 @@ export function parseJsonArray(tokenizer: JsonTokenizer): JsonArray
             switch (tokenizer.getCurrent().getTokenType())
             {
                 case JsonTokenType.RightSquareBracket:
+                    if (!expectEndBracket)
+                    {
+                        throw expectedButFoundInstead("array element", tokenizer.getCurrent().getText(), false);
+                    }
                     endBracket = tokenizer.takeCurrent();
+                    expectEndBracket = false;
+                    expectElement = false;
+                    expectComma = false;
+                    break;
+
+                case JsonTokenType.Comma:
+                    if (!expectComma)
+                    {
+                        throw expectedButFoundInstead("array element or array closing bracket (']')", tokenizer.getCurrent().getText(), false);
+                    }
+                    tokenizer.next();
+                    expectEndBracket = false;
+                    expectElement = true;
+                    expectComma = false;
+                    break;
+
+                case JsonTokenType.LeftSquareBracket:
+                case JsonTokenType.LeftCurlyBrace:
+                case JsonTokenType.String:
+                case JsonTokenType.Boolean:
+                case JsonTokenType.Null:
+                case JsonTokenType.Number:
+                    if (!expectElement)
+                    {
+                        throw expectedButFoundInstead("array element separator (',') or array closing bracket (']')", tokenizer.getCurrent().getText(), false);
+                    }
+                    result.add(parseJsonSegment(tokenizer));
+                    expectEndBracket = true;
+                    expectElement = false;
+                    expectComma = true;
                     break;
 
                 default:
-                    throw new ParseError(`Expected element or "]" but found ${tokenizer.getCurrent().getText()} instead.`);
+                    throw new ParseError(`Expected array element or "]", but found ${tokenizer.getCurrent().getText()} instead.`);
             }
         }
     }
 
-    if (endBracket === undefined)
+    if (expectElement)
+    {
+        if (expectEndBracket)
+        {
+            throw missing("array element or array closing bracket (']')");
+        }
+        else
+        {
+            throw missing("array element");
+        }
+    }
+    else if (expectEndBracket)
     {
         throw missing("array closing bracket", "]");
-    }
-
-    return result;
-}
-
-export function parseJsonLiteral(iterator: StringIterator): JsonNull | JsonBoolean
-{
-    Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
-    Pre.condition.assertTrue(iterator.hasCurrent(), "iterator.hasCurrent()");
-    Pre.condition.assertTrue(isLetter(iterator.getCurrent()), "isLetter(iterator.getCurrent())");
-
-    let text: string = iterator.takeCurrent();
-    while (iterator.hasCurrent() && isLetter(iterator.getCurrent()))
-    {
-        text += iterator.takeCurrent();
-    }
-
-    let result: JsonNull | JsonBoolean;
-    switch (text)
-    {
-        case "null":
-            result = JsonNull.create();
-            break;
-
-        case "true":
-            result = JsonBoolean.create(true);
-            break;
-
-        case "false":
-            result = JsonBoolean.create(false);
-            break;
-
-        default:
-            throw expectedButFoundInstead(["null", "true", "false"], text);
     }
 
     return result;

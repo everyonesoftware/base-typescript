@@ -4,9 +4,35 @@ import { JsonNumber } from "./jsonNumber";
 import { JsonObject } from "./jsonObject";
 import { JsonSegmentType } from "./jsonSegmentType";
 import { JsonString } from "./jsonString";
+import { Pre } from "./pre";
+import { isBoolean, isNumber, isString } from "./types";
 
 export abstract class JsonSegment
 {
+    public static toJsonSegment(value: JsonSegment|number|boolean|string|null): JsonSegment
+    {
+        Pre.condition.assertNotUndefined(value, "value");
+
+        if (isNumber(value))
+        {
+            value = JsonNumber.create(value);
+        }
+        else if (isBoolean(value))
+        {
+            value = JsonBoolean.create(value);
+        }
+        else if (isString(value))
+        {
+            value = JsonString.create(value);
+        }
+        else if (value === null)
+        {
+            value = JsonNull.create();
+        }
+
+        return value;
+    }
+
     public static boolean(value: boolean): JsonBoolean
     {
         return JsonBoolean.create(value);

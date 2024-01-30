@@ -29,30 +29,22 @@ suite("jsonArray.ts", () =>
                 [undefined!],
                 new PreConditionError(
                     "Expression: value",
-                    "Expected: not undefined and not null",
+                    "Expected: not undefined",
                     "Actual: undefined",
                 ));
-            createErrorTest(
-                "with null element",
-                [null!],
-                new PreConditionError(
-                    "Expression: value",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
 
-            function createTest(testName: string, elements: JavascriptIterable<JsonSegment>): void
+            function createTest(testName: string, elements: JavascriptIterable<JsonSegment|number|boolean|string|null>): void
             {
                 test(testName, () =>
                 {
-                    const elementsIterable: Iterable<JsonSegment> = Iterable.create(elements);
+                    const elementsIterable: Iterable<JsonSegment> = Iterable.create(elements).map(JsonSegment.toJsonSegment);
                     const json: JsonArray = JsonArray.create(elements);
                     assert.strictEqual(json.getSegmentType(), JsonSegmentType.Array);
                     assert.strictEqual(json.getCount(), elementsIterable.getCount());
                     let index: number = 0;
-                    for (const element of elements)
+                    for (const element of elementsIterable)
                     {
-                        assert.strictEqual(json.get(index), element);
+                        assert.deepStrictEqual(json.get(index), element);
                         index++;
                     }
                 });
@@ -60,6 +52,7 @@ suite("jsonArray.ts", () =>
 
             createTest("with no elements", []);
             createTest("with one element", [JsonNull.create()]);
+            createTest("with one null element", [null]);
             createTest("with two elements", [JsonBoolean.create(false), JsonNull.create()]);
         });
     });

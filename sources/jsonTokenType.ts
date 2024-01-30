@@ -10,6 +10,7 @@ export enum JsonTokenType
     LeftCurlyBrace,
     RightCurlyBrace,
     Comma,
+    Colon,
     Number,
     Boolean,
     Null,

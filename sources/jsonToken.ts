@@ -11,10 +11,6 @@ import { Pre } from "./pre";
  */
 export abstract class JsonToken
 {
-    protected constructor()
-    {
-    }
-
     private static create(tokenType: JsonTokenType, text: string): JsonToken
     {
         return BasicJsonToken.create(tokenType, text);
@@ -59,6 +55,11 @@ export abstract class JsonToken
     public static comma(): JsonToken
     {
         return JsonToken.create(JsonTokenType.Comma, ",");
+    }
+
+    public static colon(): JsonToken
+    {
+        return JsonToken.create(JsonTokenType.Colon, ":");
     }
 
     public static number(value: number): JsonToken

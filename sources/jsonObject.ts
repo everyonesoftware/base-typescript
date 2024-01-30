@@ -29,9 +29,9 @@ export class JsonObject extends MapDecorator<string,JsonSegment> implements Json
         return `{${join(",", this.iterate().map(entry => entry.toString()))}}`;
     }
 
-    public override set(propertyName: string, propertyValue: JsonSegment): this;
+    public override set(propertyName: string, propertyValue: JsonSegment|number|boolean|string|null): this;
     public override set(property: JsonProperty): this;
-    public override set(propertyOrName: string|JsonProperty, propertyValue?: JsonSegment): this
+    public override set(propertyOrName: string|JsonProperty, propertyValue?: JsonSegment|number|boolean|string|null): this
     {
         let propertyName: string;
         if (propertyValue === undefined)
@@ -52,6 +52,8 @@ export class JsonObject extends MapDecorator<string,JsonSegment> implements Json
             Pre.condition.assertNotUndefinedAndNotNull(propertyName, "propertyName");
             Pre.condition.assertNotEmpty(propertyName, "propertyName");
             Pre.condition.assertNotUndefinedAndNotNull(propertyValue, "propertyValue");
+
+            propertyValue = JsonSegment.toJsonSegment(propertyValue);
         }
 
         return super.set(propertyName, propertyValue);

@@ -78,6 +78,11 @@ export class JsonTokenizer extends IteratorBase<JsonToken>
                     this.nextCharacter();
                     break;
 
+                case `:`:
+                    this.currentToken = JsonToken.colon();
+                    this.nextCharacter();
+                    break;
+
                 case `-`:
                     this.currentToken = this.readNumber();
                     break;
