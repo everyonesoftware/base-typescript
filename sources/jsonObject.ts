@@ -1,17 +1,17 @@
 import { JsonProperty } from "./jsonProperty";
 import { JsonSegment } from "./jsonSegment";
 import { JsonSegmentType } from "./jsonSegmentType";
-import { List } from "./list";
-import { ListDecorator } from "./listDecorator";
+import { Map } from "./map";
+import { MapDecorator } from "./mapDecorator";
 import { Pre } from "./pre";
 import { join } from "./strings";
 import { isString } from "./types";
 
-export class JsonObject extends ListDecorator<JsonProperty> implements JsonSegment
+export class JsonObject extends MapDecorator<string,JsonSegment> implements JsonSegment
 {
     private constructor()
     {
-        super(List.create());
+        super(Map.create());
     }
 
     public static create(): JsonObject
@@ -19,34 +19,43 @@ export class JsonObject extends ListDecorator<JsonProperty> implements JsonSegme
         return new JsonObject();
     }
 
-    public getType(): JsonSegmentType.Object
+    public getSegmentType(): JsonSegmentType.Object
     {
         return JsonSegmentType.Object;
     }
 
     public override toString(): string
     {
-        return `{${join(",", this.map(p => p.toString()).toArray())}}`;
+        return `{${join(",", this.iterate().map(entry => entry.toString()))}}`;
     }
 
-    public override add(propertyName: string, propertyValue: JsonSegment): this;
-    public override add(property: JsonProperty): this;
-    public override add(propertyOrName: string|JsonProperty, propertyValue?: JsonSegment): this
+    public override set(propertyName: string, propertyValue: JsonSegment|number|boolean|string|null): this;
+    public override set(property: JsonProperty): this;
+    public override set(propertyOrName: string|JsonProperty, propertyValue?: JsonSegment|number|boolean|string|null): this
     {
-        if (isString(propertyOrName))
+        let propertyName: string;
+        if (propertyValue === undefined)
         {
-            Pre.condition.assertNotEmpty(propertyOrName, "propertyName");
-            Pre.condition.assertNotUndefinedAndNotNull(propertyValue, "propertyValue");
+            Pre.condition.assertNotUndefinedAndNotNull(propertyOrName, "property");
+            Pre.condition.assertTrue(propertyOrName instanceof JsonProperty, "property instanceof JsonProperty");
+            Pre.condition.assertSame(propertyValue, undefined, "propertyValue");
 
-            propertyOrName = JsonProperty.create(propertyOrName, propertyValue);
+            const property: JsonProperty = propertyOrName as JsonProperty;
+            propertyValue = property.getValue();
+            propertyName = property.getName();
         }
         else
         {
-            Pre.condition.assertNotUndefinedAndNotNull(propertyOrName, "property");
+            propertyName = propertyOrName as string;
+            
+            Pre.condition.assertTrue(isString(propertyName), "isString(propertyName)");
+            Pre.condition.assertNotUndefinedAndNotNull(propertyName, "propertyName");
+            Pre.condition.assertNotEmpty(propertyName, "propertyName");
+            Pre.condition.assertNotUndefinedAndNotNull(propertyValue, "propertyValue");
+
+            propertyValue = JsonSegment.toJsonSegment(propertyValue);
         }
 
-        super.add(propertyOrName);
-
-        return this;
+        return super.set(propertyName, propertyValue);
     }
 }

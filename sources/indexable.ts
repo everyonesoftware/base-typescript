@@ -18,16 +18,13 @@ export abstract class Indexable<T> implements Iterable<T>
 
     public abstract toArray(): T[];
 
+    public abstract getCount(): number;
+
     public abstract toString(): string;
 
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterable<T, TOutput>;
 
     public abstract [Symbol.iterator](): JavascriptIterator<T>;
-
-    /**
-     * Get the number of values in this {@link Indexable}.
-     */
-    public abstract getCount(): number;
 
     /**
      * Get the value at the provided index.

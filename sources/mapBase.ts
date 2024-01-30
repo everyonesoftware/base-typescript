@@ -17,7 +17,7 @@ export abstract class MapBase<TKey,TValue> extends IterableBase<[TKey,TValue]> i
         return Map.toString(this);
     }
 
-    public abstract getCount(): number;
+    public abstract override getCount(): number;
 
     public abstract containsKey(key: TKey): boolean;
 

@@ -2,6 +2,24 @@ import { Iterable } from "./iterable";
 import { JavascriptIterable } from "./javascript";
 
 /**
+ * Get whether the provided value is a {@link boolean}.
+ * @param value The value to check.
+ */
+export function isBoolean(value: unknown): value is boolean
+{
+    return typeof value === "boolean";
+}
+
+/**
+ * Get whether the provided value is a {@link number}.
+ * @param value The value to check.
+ */
+export function isNumber(value: unknown): value is number
+{
+    return typeof value === "number";
+}
+
+/**
  * Get whether the provided value is a {@link string}.
  * @param value The value to check.
  */

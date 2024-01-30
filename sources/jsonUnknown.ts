@@ -18,7 +18,7 @@ export class JsonUnknown implements JsonSegment
         return new JsonUnknown(text);
     }
     
-    public getType(): JsonSegmentType.Unknown
+    public getSegmentType(): JsonSegmentType.Unknown
     {
         return JsonSegmentType.Unknown;
     }

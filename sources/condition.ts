@@ -1,4 +1,5 @@
 import { AssertMessageParameters } from "./assertMessageParameters";
+import { JavascriptIterable } from "./javascript";
 
 /**
  * A collection of condition methods that can be used to assert the state of an application.
@@ -68,6 +69,25 @@ export class Condition
     {
         const message: string = Condition.createErrorMessage(parameters);
         return this.createErrorFunction(message);
+    }
+
+    /**
+     * Assert that the provided value is not undefined and not null.
+     * @param value The value to check.
+     * @param expression The name of the expression that produced the value.
+     * @param message An additional message that will be included with the error.
+     */
+    public assertNotUndefined<T>(value: T, expression?: string, message?: string): asserts value is NonNullable<T>
+    {
+        if (value === undefined)
+        {
+            throw this.createError({
+                expected: "not undefined",
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
     }
 
     /**
@@ -257,5 +277,37 @@ export class Condition
     {
         this.assertGreaterThanOrEqualTo(count, 0, "count");
         this.assertBetween(0, index, count, expression, message);
+    }
+
+    /**
+     * Assert that the value is one of the possibilities.
+     * @param possibilities The possible values that the value can be.
+     * @param value The value to check.
+     * @param expression The expression that produced the value.
+     * @param message An optional error message.
+     */
+    public assertOneOf<T>(possibilities: JavascriptIterable<T>, value: T, expression?: string, message?: string): void
+    {
+        this.assertNotUndefinedAndNotNull(possibilities, "possibilities");
+
+        let found: boolean = false;
+        for (const possibility of possibilities)
+        {
+            if (possibility === value)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            throw this.createError({
+                expected: `one of ${possibilities}`,
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
     }
 }

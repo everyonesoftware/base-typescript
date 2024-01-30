@@ -38,7 +38,7 @@ suite("jsonUnknown.ts", () =>
                 {
                     const json: JsonUnknown = JsonUnknown.create(value);
                     assert.strictEqual(json.toString(), value);
-                    assert.strictEqual(json.getType(), JsonSegmentType.Unknown);
+                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Unknown);
                 });
             }
 
