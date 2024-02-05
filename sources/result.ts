@@ -1,6 +1,6 @@
 import { Pre } from "./pre";
 import { SyncResult } from "./syncResult";
-import { Type } from "./types";
+import { Type, isFunction } from "./types";
 
 /**
  * A type that encapsulates the result of an operation.
@@ -84,6 +84,7 @@ export abstract class Result<T>
      * @param errorType The type of error to catch.
      * @param catchFunction The function to run if the error is caught.
      */
+    public abstract catch(catchFunction: (() => T) | ((error: unknown) => T)): Result<T>;
     public abstract catch<TError>(errorType: Type<TError>, catchFunction: (() => T) | ((error: TError) => T)): Result<T>;
 
     /**
@@ -93,24 +94,37 @@ export abstract class Result<T>
      * @param errorType The type of error to catch.
      * @param catchFunction The function to run if the error is caught.
      */
-    public static catch<T,TError>(result: Result<T>, errorType: Type<TError>, catchFunction: (() => T) | ((error: TError) => T)): Result<T>
+    public static catch<T,TError>(parentResult: Result<T>, errorTypeOrCatchFunction: Type<TError> | (() => T) | ((error: unknown) => T), catchFunction?: (() => T) | ((error: TError) => T)): Result<T>
     {
-        Pre.condition.assertNotUndefinedAndNotNull(result, "result");
-        Pre.condition.assertNotUndefinedAndNotNull(errorType, "errorType");
-        Pre.condition.assertNotUndefinedAndNotNull(catchFunction, "catchFunction");
+        Pre.condition.assertNotUndefinedAndNotNull(parentResult, "parentResult");
+
+        if (catchFunction === undefined || catchFunction === null)
+        {
+            Pre.condition.assertNotUndefinedAndNotNull(errorTypeOrCatchFunction, "catchFunction");
+            Pre.condition.assertTrue(isFunction(errorTypeOrCatchFunction), "isFunction(catchFunction)");
+
+            catchFunction = errorTypeOrCatchFunction as (() => T) | ((error: unknown) => T);
+            errorTypeOrCatchFunction = undefined!;
+        }
+        else
+        {
+            Pre.condition.assertNotUndefinedAndNotNull(errorTypeOrCatchFunction, "errorType");
+            Pre.condition.assertNotUndefinedAndNotNull(catchFunction, "catchFunction");
+            Pre.condition.assertTrue(isFunction(catchFunction), "isFunction(catchFunction)");
+        }
 
         return Result.create(() =>
         {
             let resultValue: T;
             try
             {
-                resultValue = result.await();
+                resultValue = parentResult.await();
             }
             catch (error)
             {
-                if (error instanceof errorType)
+                if (errorTypeOrCatchFunction === undefined || errorTypeOrCatchFunction === null || error instanceof errorTypeOrCatchFunction)
                 {
-                    resultValue = catchFunction(error);
+                    resultValue = catchFunction!(error as TError);
                 }
                 else
                 {

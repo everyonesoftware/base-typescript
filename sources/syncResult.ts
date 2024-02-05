@@ -75,8 +75,10 @@ export class SyncResult<T> implements Result<T>
         return Result.onValue(this, onValueFunction);
     }
 
-    public catch<TError>(errorType: Type<TError>, catchFunction: (() => T) | ((error: TError) => T)): Result<T>
+    public catch(catchFunction: (() => T) | ((error: unknown) => T)): Result<T>;
+    public catch<TError>(errorType: Type<TError>, catchFunction: (() => T) | ((error: TError) => T)): Result<T>;
+    catch<TError>(errorTypeOrCatchFunction: Type<TError> | (() => T) | ((error: unknown) => T), catchFunction?: (() => T) | ((error: TError) => T)): Result<T>
     {
-        return Result.catch(this, errorType, catchFunction);
+        return Result.catch(this, errorTypeOrCatchFunction, catchFunction);
     }
 }

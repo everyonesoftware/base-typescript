@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { NotFoundError, PreConditionError, Result, SyncResult } from "../sources";
+import { PreConditionError, Result, SyncResult } from "../sources";
 
 suite("syncResult.ts", () =>
 {
@@ -204,31 +204,48 @@ suite("syncResult.ts", () =>
                         "Actual: null"));
             });
 
-            test("with undefined catchFunction", () =>
-            {
-                const parentResult: SyncResult<number> = SyncResult.create(5);
-                assert.throws(() => parentResult.catch(PreConditionError, undefined!),
-                    new PreConditionError(
-                        "Expression: catchFunction",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined"));
-            });
-
-            test("with null catchFunction", () =>
-            {
-                const parentResult: SyncResult<number> = SyncResult.create(5);
-                assert.throws(() => parentResult.catch(NotFoundError, null!),
-                    new PreConditionError(
-                        "Expression: catchFunction",
-                        "Expected: not undefined and not null",
-                        "Actual: null"));
-            });
-
             test("with error parent", () =>
             {
                 const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
                 const catchResult: Result<number> = parentResult.catch(Error, () => 20);
                 assert.strictEqual(catchResult.await(), 20);
+            });
+
+            test("with error parent, no errorType, and no error parameter", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.catch(() => { counter++; return 21; });
+                assert.strictEqual(1, counter);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.strictEqual(catchResult.await(), 21);
+                    assert.strictEqual(1, counter);
+                }
+            });
+
+            test("with error parent, no errorType, and unknown error parameter", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.catch((error: unknown) =>
+                {
+                    if (error instanceof Error)
+                    {
+                        counter += error.message.length;
+                    }
+                    else
+                    {
+                        counter -= 1;
+                    }
+                    return 21;
+                });
+                assert.strictEqual(3, counter);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.strictEqual(catchResult.await(), 21);
+                    assert.strictEqual(3, counter);
+                }
             });
 
             test("with error parent and catchFunction with side-effects", () =>
@@ -244,11 +261,18 @@ suite("syncResult.ts", () =>
                 }
             });
 
-            test("with errorType that is a super-type of the actual error", () =>
+            test("with errorType that is a super-type of the actual error without error parameter", () =>
             {
                 const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("abc"));
-                const catchResult: Result<number> = parentResult.catch(Error, () => 20);
-                assert.strictEqual(catchResult.await(), 20);
+                const catchResult: Result<number> = parentResult.catch(Error, () => 5);
+                assert.strictEqual(catchResult.await(), 5);
+            });
+
+            test("with errorType that is a super-type of the actual error with error parameter", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("abc"));
+                const catchResult: Result<number> = parentResult.catch(Error, (error: Error) => error.message.length);
+                assert.strictEqual(catchResult.await(), 3);
             });
 
             test("with errorType that is a sub-type of the actual error", () =>
