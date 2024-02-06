@@ -298,5 +298,136 @@ suite("syncResult.ts", () =>
                 assert.strictEqual(catchResult.await(), 1);
             });
         });
+
+        suite("onError<TError>(Type<TError>,(() => void) | ((TError) => void))", () =>
+        {
+            test("with undefined errorType", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.create(5);
+                assert.throws(() => parentResult.onError(undefined!, () => 6),
+                    new PreConditionError(
+                        "Expression: errorType",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
+            });
+
+            test("with null errorType", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.create(5);
+                assert.throws(() => parentResult.onError(null!, () => 6),
+                    new PreConditionError(
+                        "Expression: errorType",
+                        "Expected: not undefined and not null",
+                        "Actual: null"));
+            });
+
+            test("with error parent, no errorType, and no error parameter", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.onError(() => { counter++; });
+                assert.strictEqual(1, counter);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => catchResult.await(),
+                        new Error("abc"));
+                    assert.strictEqual(1, counter);
+                }
+            });
+
+            test("with error parent, no errorType, and unknown error parameter", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.onError((error: unknown) =>
+                {
+                    if (error instanceof Error)
+                    {
+                        counter += error.message.length;
+                    }
+                    else
+                    {
+                        counter -= 1;
+                    }
+                    return 21;
+                });
+                assert.strictEqual(3, counter);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => catchResult.await(),
+                        new Error("abc"));
+                    assert.strictEqual(3, counter);
+                }
+            });
+
+            test("with errorType that is a super-type of the actual error without error parameter", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("abc"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.onError(Error, () => counter++);
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => catchResult.await(),
+                        new PreConditionError("abc"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with errorType that is a super-type of the actual error with error parameter", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("abc"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.onError(Error, (error: Error) => counter += error.message.length);
+                assert.strictEqual(counter, 3);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => catchResult.await(), 
+                        new PreConditionError("abc"));
+                    assert.strictEqual(counter, 3);
+                }
+            });
+
+            test("with errorType that is a sub-type of the actual error", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.onError(PreConditionError, () => counter++);
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => catchResult.await(),
+                        new Error("abc"));
+                    assert.strictEqual(counter, 0);
+                }
+            });
+
+            test("with errorType that is unrelated to the actual error", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("def"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.onError(RangeError, () => counter++);
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => catchResult.await(),
+                        new PreConditionError("def"));
+                    assert.strictEqual(counter, 0);
+                }
+            });
+
+            test("with successful parent", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.create(1);
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.onError(Error, () => counter++);
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.strictEqual(catchResult.await(), 1);
+                    assert.strictEqual(counter, 0);
+                }
+            });
+        });
     });
 });

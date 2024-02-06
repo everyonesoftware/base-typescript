@@ -134,4 +134,58 @@ export abstract class Result<T>
             return resultValue;
         });
     }
+
+    /**
+     * Run the provided onErrorFunction if this {@link Result} contains an error of the provided
+     * type.
+     * @param errorType The type of error to respond to.
+     * @param onErrorFunction The function to run if the error is found.
+     */
+    public abstract onError(onErrorFunction: (() => void) | ((error: unknown) => void)): Result<T>;
+    public abstract onError<TError>(errorType: TError, onErrorFunction: (() => void) | ((error: TError) => void)): Result<T>;
+
+   /**
+    * Run the provided onErrorFunction if the provided parent {@link Result} contains an error of
+    * the provided type.
+    * @param result The parent {@link Result}.
+    * @param errorType The type of error to respond to.
+    * @param onErrorFunction The function to run if the error is found.
+    */
+    public static onError<T,TError>(parentResult: Result<T>, errorTypeOrOnErrorFunction: Type<TError> | (() => void) | ((error: unknown) => void), onErrorFunction?: (() => void) | ((error: TError) => void)): Result<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(parentResult, "parentResult");
+
+        if (onErrorFunction === undefined || onErrorFunction === null)
+        {
+            Pre.condition.assertNotUndefinedAndNotNull(errorTypeOrOnErrorFunction, "onErrorFunction");
+            Pre.condition.assertTrue(isFunction(errorTypeOrOnErrorFunction), "isFunction(onErrorFunction)");
+
+            onErrorFunction = errorTypeOrOnErrorFunction as (() => void) | ((error: unknown) => void);
+            errorTypeOrOnErrorFunction = undefined!;
+        }
+        else
+        {
+            Pre.condition.assertNotUndefinedAndNotNull(errorTypeOrOnErrorFunction, "errorType");
+            Pre.condition.assertNotUndefinedAndNotNull(onErrorFunction, "catchFunction");
+            Pre.condition.assertTrue(isFunction(onErrorFunction), "isFunction(catchFunction)");
+        }
+
+        return Result.create(() =>
+        {
+            let resultValue: T;
+            try
+            {
+                resultValue = parentResult.await();
+            }
+            catch (error)
+            {
+                if (errorTypeOrOnErrorFunction === undefined || errorTypeOrOnErrorFunction === null || error instanceof errorTypeOrOnErrorFunction)
+                {
+                    onErrorFunction!(error as TError);
+                }
+                throw error;
+            }
+            return resultValue;
+        });
+    }
 }
