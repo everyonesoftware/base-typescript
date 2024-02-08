@@ -6,32 +6,24 @@ suite("syncResult.ts", () =>
 {
     suite("SyncResult<T>", () =>
     {
-        suite("create(value: T | (() => T))", () =>
+        suite("create((() => T))", () =>
         {
             test("with undefined", () =>
             {
-                const result: SyncResult<undefined> = SyncResult.create(undefined);
-                assert.strictEqual(result.await(), undefined);
+                assert.throws(() => SyncResult.create(undefined!),
+                    new PreConditionError(
+                        "Expression: createFunction",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
             });
 
             test("with null", () =>
             {
-                const result: SyncResult<null> = SyncResult.create(null);
-                assert.strictEqual(result.await(), null);
-            });
-
-            test("with string", () =>
-            {
-                const value: string = "hello";
-                const result: SyncResult<string> = SyncResult.create(value);
-                assert.strictEqual(result.await(), value);
-            });
-
-            test("with number", () =>
-            {
-                const value: number = 51234;
-                const result: SyncResult<number> = SyncResult.create(value);
-                assert.strictEqual(result.await(), value);
+                assert.throws(() => SyncResult.create(null!),
+                    new PreConditionError(
+                        "Expression: createFunction",
+                        "Expected: not undefined and not null",
+                        "Actual: null"));
             });
 
             test("with function that doesn't return a value", () =>
@@ -62,6 +54,72 @@ suite("syncResult.ts", () =>
             {
                 const result: SyncResult<never> = SyncResult.create(() => { throw new Error("oops!"); });
                 assert.throws(() => result.await(), new Error("oops!"));
+            });
+
+            test("with function that returns an Error", () =>
+            {
+                const result: SyncResult<Error> = SyncResult.create(() => { return new Error("oops!"); });
+                assert.deepStrictEqual(result.await(), new Error("oops!"));
+            });
+        });
+
+        suite("value(value: T)", () =>
+        {
+            test("with undefined", () =>
+            {
+                const result: SyncResult<undefined> = SyncResult.value(undefined);
+                assert.strictEqual(result.await(), undefined);
+            });
+
+            test("with null", () =>
+            {
+                const result: SyncResult<null> = SyncResult.value(null);
+                assert.strictEqual(result.await(), null);
+            });
+
+            test("with string", () =>
+            {
+                const value: string = "hello";
+                const result: SyncResult<string> = SyncResult.value(value);
+                assert.strictEqual(result.await(), value);
+            });
+
+            test("with number", () =>
+            {
+                const value: number = 51234;
+                const result: SyncResult<number> = SyncResult.value(value);
+                assert.strictEqual(result.await(), value);
+            });
+
+            test("with function that doesn't return a value", () =>
+            {
+                const result: SyncResult<() => void> = SyncResult.value(() => {});
+                assert.strictEqual(result.await()(), undefined);
+            });
+
+            test("with function that returns undefined", () =>
+            {
+                const result: SyncResult<() => undefined> = SyncResult.value(() => undefined);
+                assert.strictEqual(result.await()(), undefined);
+            });
+
+            test("with function that returns null", () =>
+            {
+                const result: SyncResult<() => null> = SyncResult.value(() => null);
+                assert.strictEqual(result.await()(), null);
+            });
+
+            test("with function that returns a string", () =>
+            {
+                const result: SyncResult<() => string> = SyncResult.value(() => "there");
+                assert.strictEqual(result.await()(), "there");
+            });
+
+            test("with function that throws an Error", () =>
+            {
+                const result: SyncResult<() => Error> = SyncResult.value(() => { throw new Error("oops!"); });
+                assert.throws(() => result.await()(),
+                    new Error("oops!"));
             });
         });
 
@@ -117,26 +175,45 @@ suite("syncResult.ts", () =>
 
             test("with successful parent and successful thenFunction that ignores parentResult value", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(1);
+                const parentResult: SyncResult<number> = SyncResult.value(1);
                 const thenResult: Result<string> = parentResult.then(() => "hello");
                 assert.strictEqual("hello", thenResult.await());
             });
 
             test("with successful parent and successful thenFunction that uses parentResult value", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(1);
+                const parentResult: SyncResult<number> = SyncResult.value(1);
                 const thenResult: Result<string> = parentResult.then((argument: number) => (argument + 1).toString());
                 assert.strictEqual("2", thenResult.await());
             });
 
             test("with successful parent and successful thenFunction that uses parentResult value with side-effects", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(1);
+                const parentResult: SyncResult<number> = SyncResult.value(1);
                 let counter: number = 0;
                 const thenResult: Result<string> = parentResult.then((argument: number) => { counter++; return (argument + 1).toString(); });
                 assert.strictEqual(1, counter);
                 assert.strictEqual("2", thenResult.await());
                 assert.strictEqual(1, counter);
+            });
+
+            test("with successful parent and thenFunction that throws", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(10);
+                let counter: number = 0;
+                const thenResult: SyncResult<string> = parentResult.then((argument: number) =>
+                {
+                    counter++;
+                    throw new Error(`arg: ${argument}`);
+                });
+                assert.strictEqual(counter, 1);
+
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => thenResult.await(),
+                        new Error("arg: 10"));
+                    assert.strictEqual(counter, 1);
+                }
             });
         });
 
@@ -157,7 +234,7 @@ suite("syncResult.ts", () =>
 
             test("with successful parent and successful thenFunction that ignores parentResult value", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(10);
+                const parentResult: SyncResult<number> = SyncResult.value(10);
                 let counter: number = 0;
                 const onValueResult: Result<number> = parentResult.onValue(() => counter++);
                 assert.strictEqual(counter, 1);
@@ -170,7 +247,7 @@ suite("syncResult.ts", () =>
 
             test("with successful parent and successful thenFunction that uses parentResult value", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(2);
+                const parentResult: SyncResult<number> = SyncResult.value(2);
                 let counter: number = 0;
                 const onValueResult: Result<number> = parentResult.onValue((argument: number) => counter += argument);
                 assert.strictEqual(counter, 2);
@@ -180,13 +257,31 @@ suite("syncResult.ts", () =>
                     assert.strictEqual(counter, 2);
                 }
             });
+
+            test("with successful parent and onValueFunction that throws", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(2);
+                let counter: number = 0;
+                const onValueResult: SyncResult<number> = parentResult.onValue((argument: number) =>
+                {
+                    counter += argument;
+                    throw new Error(`argument: ${argument}`);
+                });
+                assert.strictEqual(counter, 2);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => onValueResult.await(),
+                        new Error("argument: 2"));
+                    assert.strictEqual(counter, 2);
+                }
+            });
         });
 
         suite("catch<TError>(Type<TError>,(() => T) | ((TError) => T))", () =>
         {
             test("with undefined errorType", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(5);
+                const parentResult: SyncResult<number> = SyncResult.value(5);
                 assert.throws(() => parentResult.catch(undefined!, () => 6),
                     new PreConditionError(
                         "Expression: errorType",
@@ -196,7 +291,7 @@ suite("syncResult.ts", () =>
 
             test("with null errorType", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(5);
+                const parentResult: SyncResult<number> = SyncResult.value(5);
                 assert.throws(() => parentResult.catch(null!, () => 6),
                     new PreConditionError(
                         "Expression: errorType",
@@ -291,9 +386,17 @@ suite("syncResult.ts", () =>
                     new PreConditionError("def"));
             });
 
+            test("with catchFunction that throws", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("def"));
+                const catchResult: Result<number> = parentResult.catch(Error, () => { throw new TypeError("abc"); });
+                assert.throws(() => catchResult.await(),
+                    new TypeError("abc"));
+            });
+
             test("with successful parent", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(1);
+                const parentResult: SyncResult<number> = SyncResult.value(1);
                 const catchResult: Result<number> = parentResult.catch(Error, () => 2);
                 assert.strictEqual(catchResult.await(), 1);
             });
@@ -303,7 +406,7 @@ suite("syncResult.ts", () =>
         {
             test("with undefined errorType", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(5);
+                const parentResult: SyncResult<number> = SyncResult.value(5);
                 assert.throws(() => parentResult.onError(undefined!, () => 6),
                     new PreConditionError(
                         "Expression: errorType",
@@ -313,7 +416,7 @@ suite("syncResult.ts", () =>
 
             test("with null errorType", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(5);
+                const parentResult: SyncResult<number> = SyncResult.value(5);
                 assert.throws(() => parentResult.onError(null!, () => 6),
                     new PreConditionError(
                         "Expression: errorType",
@@ -416,15 +519,437 @@ suite("syncResult.ts", () =>
                 }
             });
 
+            test("with onErrorFunction that throws", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("def"));
+                let counter: number = 0;
+                const catchResult: Result<number> = parentResult.onError(Error, () => { counter++; throw new Error("abc"); });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => catchResult.await(),
+                        new Error("abc"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
             test("with successful parent", () =>
             {
-                const parentResult: SyncResult<number> = SyncResult.create(1);
+                const parentResult: SyncResult<number> = SyncResult.value(1);
                 let counter: number = 0;
                 const catchResult: Result<number> = parentResult.onError(Error, () => counter++);
                 assert.strictEqual(counter, 0);
                 for (let i = 0; i < 3; i++)
                 {
                     assert.strictEqual(catchResult.await(), 1);
+                    assert.strictEqual(counter, 0);
+                }
+            });
+        });
+
+        suite("convertError<TError>((() => unknown))", () =>
+        {
+            test("with undefined convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(5);
+                assert.throws(() => parentResult.convertError(undefined!),
+                    new PreConditionError(
+                        "Expression: convertErrorFunction",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
+            });
+
+            test("with null convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(5);
+                assert.throws(() => parentResult.convertError(null!),
+                    new PreConditionError(
+                        "Expression: convertErrorFunction",
+                        "Expected: not undefined and not null",
+                        "Actual: null"));
+            });
+
+            test("with successful parent", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(5);
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(() =>
+                {
+                    counter++;
+                    return new Error("abc");
+                });
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.strictEqual(convertErrorResult.await(), 5);
+                    assert.strictEqual(counter, 0);
+                }
+            });
+
+            test("with error parent and non-throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(() =>
+                {
+                    counter++;
+                    return new Error("def");
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent and throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(() =>
+                {
+                    counter++;
+                    throw new Error("def");
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+        });
+
+        suite("convertError<TError>(((unknown) => unknown))", () =>
+        {
+            test("with undefined convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(5);
+                assert.throws(() => parentResult.convertError(undefined!),
+                    new PreConditionError(
+                        "Expression: convertErrorFunction",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
+            });
+
+            test("with null convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(5);
+                assert.throws(() => parentResult.convertError(null!),
+                    new PreConditionError(
+                        "Expression: convertErrorFunction",
+                        "Expected: not undefined and not null",
+                        "Actual: null"));
+            });
+
+            test("with successful parent", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(5);
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError((error: unknown) =>
+                {
+                    counter++;
+                    return new Error(`${error} - abc`);
+                });
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.strictEqual(convertErrorResult.await(), 5);
+                    assert.strictEqual(counter, 0);
+                }
+            });
+
+            test("with error parent and non-throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError((error: unknown) =>
+                {
+                    counter++;
+                    return new Error(`${error} - def`);
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("Error: abc - def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent and throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError((error: unknown) =>
+                {
+                    counter++;
+                    throw new Error(`${error} - def`);
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("Error: abc - def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+        });
+
+        suite("convertError<TError>(Type<TError>,(() => unknown))", () =>
+        {
+            test("with successful parent", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(5);
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, () =>
+                {
+                    counter++;
+                    return new Error("abc");
+                });
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.strictEqual(convertErrorResult.await(), 5);
+                    assert.strictEqual(counter, 0);
+                }
+            });
+
+            test("with error parent, exact error match, and non-throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, () =>
+                {
+                    counter++;
+                    return new Error("def");
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent, super error match, and non-throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, () =>
+                {
+                    counter++;
+                    return new Error("def");
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent, no error match, and non-throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(TypeError, () =>
+                {
+                    counter++;
+                    return new Error("def");
+                });
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new PreConditionError("abc"));
+                    assert.strictEqual(counter, 0);
+                }
+            });
+
+            test("with error parent, exact error match, and throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, () =>
+                {
+                    counter++;
+                    throw new Error("def");
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent, super error match, and throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new TypeError("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, () =>
+                {
+                    counter++;
+                    throw new Error("def");
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent, no error match, and throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new TypeError("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(PreConditionError, () =>
+                {
+                    counter++;
+                    throw new Error("def");
+                });
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new TypeError("abc"));
+                    assert.strictEqual(counter, 0);
+                }
+            });
+        });
+
+        suite("convertError<TError>(Type<TError>,((TError) => unknown))", () =>
+        {
+            test("with successful parent", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.value(5);
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, (error: Error) =>
+                {
+                    counter++;
+                    return new Error(`${error} - abc`);
+                });
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.strictEqual(convertErrorResult.await(), 5);
+                    assert.strictEqual(counter, 0);
+                }
+            });
+
+            test("with error parent, exact error match, and non-throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, (error: Error) =>
+                {
+                    counter++;
+                    return new Error(`${error} - def`);
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("Error: abc - def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent, super error match, and non-throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, (error: Error) =>
+                {
+                    counter++;
+                    return new Error(`${error} - def`);
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("Error: abc - def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent, no error match, and non-throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new PreConditionError("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(TypeError, (error: TypeError) =>
+                {
+                    counter++;
+                    return new Error(`${error} - def`);
+                });
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new PreConditionError("abc"));
+                    assert.strictEqual(counter, 0);
+                }
+            });
+
+            test("with error parent, exact error match, and throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new Error("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, (error: Error) =>
+                {
+                    counter++;
+                    throw new Error(`${error} - def`);
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("Error: abc - def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent, super error match, and throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new TypeError("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(Error, (error: Error) =>
+                {
+                    counter++;
+                    throw new Error(`${error} - def`);
+                });
+                assert.strictEqual(counter, 1);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new Error("TypeError: abc - def"));
+                    assert.strictEqual(counter, 1);
+                }
+            });
+
+            test("with error parent, no error match, and throwing convertErrorFunction", () =>
+            {
+                const parentResult: SyncResult<number> = SyncResult.error(new TypeError("abc"));
+                let counter: number = 0;
+                const convertErrorResult: SyncResult<number> = parentResult.convertError(PreConditionError, (error: PreConditionError) =>
+                {
+                    counter++;
+                    throw new Error(`${error} - def`);
+                });
+                assert.strictEqual(counter, 0);
+                for (let i = 0; i < 3; i++)
+                {
+                    assert.throws(() => convertErrorResult.await(),
+                        new TypeError("abc"));
                     assert.strictEqual(counter, 0);
                 }
             });
