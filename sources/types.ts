@@ -2,6 +2,11 @@ import { Iterable } from "./iterable";
 import { JavascriptIterable } from "./javascript";
 
 /**
+ * A {@link Type} type that can be used to pass class types as parameters.
+ */
+export type Type<T> = new (...args: any[]) => T;
+
+/**
  * Get whether the provided value is a {@link boolean}.
  * @param value The value to check.
  */
