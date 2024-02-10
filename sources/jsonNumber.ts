@@ -8,7 +8,7 @@ export class JsonNumber implements JsonSegment, JsonToken
 {
     private readonly value: number;
 
-    private constructor(value: number)
+    public constructor(value: number)
     {
         Pre.condition.assertNotUndefinedAndNotNull(value, "value");
 

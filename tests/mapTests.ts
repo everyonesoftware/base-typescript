@@ -47,7 +47,7 @@ export function mapTests(creator: () => Map<number,string>): void
             {
                 const map: Map<number,string> = creator().set(1, "one");
                 assert.strictEqual(map.getCount(), 1);
-                assert.strictEqual(map.get(1), "one");
+                assert.strictEqual(map.get(1).await(), "one");
                 assert.strictEqual(map.getCount(), 1);
             });
 
@@ -55,9 +55,9 @@ export function mapTests(creator: () => Map<number,string>): void
             {
                 const map: Map<number,string> = creator();
                 assert.strictEqual(map.getCount(), 0);
-                assert.throws(() => map.get(1), new NotFoundError(
-                    "The key 1 was not found in the map.",
-                ));
+                assert.throws(() => map.get(1).await(),
+                    new NotFoundError(
+                        "The key 1 was not found in the map."));
                 assert.strictEqual(map.getCount(), 0);
             });
         });
@@ -70,7 +70,7 @@ export function mapTests(creator: () => Map<number,string>): void
                 {
                     const setResult: Map<number,string> = map.set(key, value);
                     assert.strictEqual(setResult, map);
-                    assert.strictEqual(map.get(key), value);
+                    assert.strictEqual(map.get(key).await(), value);
                 });
             }
 

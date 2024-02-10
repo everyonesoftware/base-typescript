@@ -1,6 +1,7 @@
 import { IterableBase } from "./iterableBase";
 import { Iterator } from "./iterator";
 import { Map } from "./map";
+import { Result } from "./result";
 
 /**
  * An abstract base class for the {@link Map} type.
@@ -21,7 +22,7 @@ export abstract class MapBase<TKey,TValue> extends IterableBase<[TKey,TValue]> i
 
     public abstract containsKey(key: TKey): boolean;
 
-    public abstract get(key: TKey): TValue;
+    public abstract get(key: TKey): Result<TValue>;
 
     public abstract set(key: TKey, value: TValue): this;
     

@@ -2,6 +2,7 @@ import { Iterator } from "./iterator";
 import { JavascriptMap } from "./javascript";
 import { MapBase } from "./mapBase";
 import { NotFoundError } from "./notFoundError";
+import { Result } from "./result";
 
 export class JavascriptMapMap<TKey,TValue> extends MapBase<TKey,TValue>
 {
@@ -29,13 +30,11 @@ export class JavascriptMapMap<TKey,TValue> extends MapBase<TKey,TValue>
         return this.javascriptMap.has(key);
     }
 
-    public override get(key: TKey): TValue
+    public override get(key: TKey): Result<TValue>
     {
-        if (!this.containsKey(key))
-        {
-            throw new NotFoundError(`The key ${JSON.stringify(key)} was not found in the map.`);
-        }
-        return this.javascriptMap.get(key)!;
+        return this.containsKey(key)
+            ? Result.value(this.javascriptMap.get(key)!)
+            : Result.error(new NotFoundError(`The key ${JSON.stringify(key)} was not found in the map.`));
     }
 
     public override set(key: TKey, value: TValue): this

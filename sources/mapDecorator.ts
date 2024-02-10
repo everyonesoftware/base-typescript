@@ -2,6 +2,7 @@ import { Iterator } from "./iterator";
 import { Map } from "./map";
 import { MapBase } from "./mapBase";
 import { Pre } from "./pre";
+import { Result } from "./result";
 
 /**
  * A {@link Map} decorator type that wraps around another {@link Map}.
@@ -29,7 +30,7 @@ export abstract class MapDecorator<TKey,TValue> extends MapBase<TKey,TValue>
         return this.innerMap.containsKey(key);
     }
 
-    public override get(key: TKey): TValue
+    public override get(key: TKey): Result<TValue>
     {
         return this.innerMap.get(key);
     }

@@ -8,7 +8,7 @@ export class JsonBoolean implements JsonSegment, JsonToken
 {
     private readonly value: boolean;
 
-    private constructor(value: boolean)
+    public constructor(value: boolean)
     {
         Pre.condition.assertNotUndefinedAndNotNull(value, "value");
 

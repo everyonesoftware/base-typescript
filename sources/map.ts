@@ -4,6 +4,7 @@ import { JavascriptIterator } from "./javascript";
 import { JavascriptMapMap } from "./javascriptMapMap";
 import { MapIterable } from "./mapIterable";
 import { Pre } from "./pre";
+import { Result } from "./result";
 import { join } from "./strings";
 
 /**
@@ -52,7 +53,7 @@ export abstract class Map<TKey,TValue> implements Iterable<[TKey,TValue]>
      * Get the value associated with the provided key.
      * @param key The key of the value to get.
      */
-    public abstract get(key: TKey): TValue;
+    public abstract get(key: TKey): Result<TValue>;
 
     /**
      * Set the key/value association in this {@link Map}.
