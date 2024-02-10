@@ -5,7 +5,7 @@ import { JsonTokenType } from "./jsonTokenType";
 
 export class JsonNull implements JsonSegment, JsonToken
 {
-    private constructor()
+    public constructor()
     {
     }
 

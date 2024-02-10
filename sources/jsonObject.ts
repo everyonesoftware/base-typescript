@@ -1,15 +1,22 @@
+import { JsonArray } from "./jsonArray";
+import { JsonBoolean } from "./jsonBoolean";
+import { JsonNull } from "./jsonNull";
+import { JsonNumber } from "./jsonNumber";
 import { JsonProperty } from "./jsonProperty";
 import { JsonSegment } from "./jsonSegment";
 import { JsonSegmentType } from "./jsonSegmentType";
+import { JsonString } from "./jsonString";
 import { Map } from "./map";
 import { MapDecorator } from "./mapDecorator";
 import { Pre } from "./pre";
+import { Result } from "./result";
 import { join } from "./strings";
-import { isString } from "./types";
+import { Type, isString } from "./types";
+import { WrongTypeError } from "./wrongTypeError";
 
 export class JsonObject extends MapDecorator<string,JsonSegment> implements JsonSegment
 {
-    private constructor()
+    public constructor()
     {
         super(Map.create());
     }
@@ -51,11 +58,72 @@ export class JsonObject extends MapDecorator<string,JsonSegment> implements Json
             Pre.condition.assertTrue(isString(propertyName), "isString(propertyName)");
             Pre.condition.assertNotUndefinedAndNotNull(propertyName, "propertyName");
             Pre.condition.assertNotEmpty(propertyName, "propertyName");
-            Pre.condition.assertNotUndefinedAndNotNull(propertyValue, "propertyValue");
+            Pre.condition.assertNotUndefined(propertyValue, "propertyValue");
 
             propertyValue = JsonSegment.toJsonSegment(propertyValue);
         }
 
         return super.set(propertyName, propertyValue);
+    }
+
+    protected getAs<T extends JsonSegment>(propertyName: string, propertyValueType: Type<T>): Result<T>
+    {
+        return Result.create(() =>
+        {
+            const value: JsonSegment = this.get(propertyName).await();
+            if (!(value instanceof propertyValueType))
+            {
+                throw new WrongTypeError(`Expected ${propertyValueType.name} but found ${value.constructor.name}.`);
+            }
+            return value as T;
+        });
+    }
+
+    public getNull(propertyName: string): Result<JsonNull>
+    {
+        return this.getAs(propertyName, JsonNull);
+    }
+
+    public getString(propertyName: string): Result<JsonString>
+    {
+        return this.getAs(propertyName, JsonString);
+    }
+
+    public getStringValue(propertyName: string): Result<string>
+    {
+        return this.getString(propertyName)
+            .then((propertyValue: JsonString) => propertyValue.getValue());
+    }
+
+    public getBoolean(propertyName: string): Result<JsonBoolean>
+    {
+        return this.getAs(propertyName, JsonBoolean);
+    }
+
+    public getBooleanValue(propertyName: string): Result<boolean>
+    {
+        return this.getBoolean(propertyName)
+            .then((propertyValue: JsonBoolean) => propertyValue.getValue());
+    }
+
+    public getNumber(propertyName: string): Result<JsonNumber>
+    {
+        return this.getAs(propertyName, JsonNumber);
+    }
+
+    public getNumberValue(propertyName: string): Result<number>
+    {
+        return this.getNumber(propertyName)
+            .then((propertyValue: JsonNumber) => propertyValue.getValue());
+    }
+
+    public getObject(propertyName: string): Result<JsonObject>
+    {
+        return this.getAs(propertyName, JsonObject);
+    }
+
+    public getArray(propertyName: string): Result<JsonArray>
+    {
+        return this.getAs(propertyName, JsonArray);
     }
 }

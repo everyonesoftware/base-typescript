@@ -9,7 +9,7 @@ export class JsonString implements JsonSegment, JsonToken
     private readonly quote: string;
     private readonly value: string;
 
-    private constructor(value: string, quote: string)
+    public constructor(value: string, quote: string)
     {
         Pre.condition.assertNotUndefinedAndNotNull(value, "value");
         Pre.condition.assertNotUndefinedAndNotNull(quote, "quote");
