@@ -3,6 +3,7 @@ import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptItera
 import { JavascriptIterable, JavascriptIterator, JavascriptIteratorResult } from "./javascript";
 import { MapIterator } from "./mapIterator";
 import { Pre } from "./pre";
+import { Result } from "./result";
 import { isJavascriptIterable } from "./types";
 
 export class JavascriptIteratorToIteratorAdapter<T> implements Iterator<T>
@@ -71,5 +72,10 @@ export class JavascriptIteratorToIteratorAdapter<T> implements Iterator<T>
     public [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<T>
     {
         return Iterator[Symbol.iterator](this);
+    }
+
+    public first(): Result<T>
+    {
+        return Iterator.first(this);
     }
 }

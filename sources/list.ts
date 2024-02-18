@@ -4,6 +4,7 @@ import { JavascriptIterable, JavascriptIterator } from "./javascript";
 import { MapIterable } from "./mapIterable";
 import { MutableIndexable } from "./mutableIndexable";
 import { Pre } from "./pre";
+import { Result } from "./result";
 
 export abstract class List<T> implements MutableIndexable<T>
 {
@@ -21,6 +22,8 @@ export abstract class List<T> implements MutableIndexable<T>
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterable<T, TOutput>;
 
     public abstract getCount(): number;
+
+    public abstract first(): Result<T>;
 
     public abstract get(index: number): T;
 

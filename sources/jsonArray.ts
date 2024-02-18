@@ -12,7 +12,6 @@ import { ListDecorator } from "./listDecorator";
 import { Pre } from "./pre";
 import { Result } from "./result";
 import { Type } from "./types";
-import { WrongTypeError } from "./wrongTypeError";
 
 export class JsonArray extends ListDecorator<JsonSegment> implements JsonSegment
 {
@@ -63,16 +62,15 @@ export class JsonArray extends ListDecorator<JsonSegment> implements JsonSegment
         return List.insertAll(this, index, Iterable.create(values).map(JsonSegment.toJsonSegment));
     }
 
-    protected getAs<T extends JsonSegment>(index: number, propertyValueType: Type<T>): Result<T>
+    protected getAs<T extends JsonSegment>(index: number, elementType: Type<T>): Result<T>
     {
+        Pre.condition.assertAccessIndex(index, this.getCount(), "index");
+        Pre.condition.assertNotUndefinedAndNotNull(elementType, "elementType");
+
         return Result.create(() =>
         {
             const value: JsonSegment = this.get(index);
-            if (!(value instanceof propertyValueType))
-            {
-                throw new WrongTypeError(`Expected ${propertyValueType.name} but found ${value.constructor.name}.`);
-            }
-            return value as T;
+            return JsonSegment.as(value, elementType).await();
         });
     }
 

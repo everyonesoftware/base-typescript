@@ -3,6 +3,7 @@ import { Iterator } from "./iterator";
 import { JavascriptIterable, JavascriptIterator } from "./javascript";
 import { MapIterable } from "./mapIterable";
 import { Pre } from "./pre";
+import { Result } from "./result";
 import { ToStringFunctions } from "./toStringFunctions";
 
 /**
@@ -87,5 +88,21 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
         Pre.condition.assertNotUndefinedAndNotNull(mapping, "mapping");
 
         return MapIterable.create(iterable, mapping);
+    }
+
+    /**
+     * Get the first value in this {@link Iterable}.
+     */
+    public abstract first(): Result<T>;
+
+    /**
+     * Get the first value from the provided {@link Iterable}.
+     * @param iterable The {@link Iterable} to get the first value from.
+     */
+    public static first<T>(iterable: Iterable<T>): Result<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
+
+        return iterable.iterate().first();
     }
 }

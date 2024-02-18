@@ -43,6 +43,8 @@ export abstract class Map<TKey,TValue> implements Iterable<[TKey,TValue]>
      */
     public abstract getCount(): number;
 
+    public abstract first(): Result<[TKey, TValue]>;
+
     /**
      * Get whether this {@link Map} contains the provided key.
      * @param key The key to look for.

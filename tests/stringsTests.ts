@@ -1,30 +1,69 @@
 import * as assert from "assert";
+import { PreConditionError, andList, escape, escapeAndQuote, isDigit, isLetter, isLetterOrDigit, isLowercasedLetter, isUppercasedLetter, isWhitespace, join, quote } from "../sources";
 
-import * as english from "../sources/english";
-import * as strings from "../sources/strings";
-import { PreConditionError } from "../sources/index";
-
-suite("strings.ts", () =>
+suite("ts", () =>
 {
     suite("join(string, string[])", () =>
     {
-        function joinTest(separator: string, values: string[], expected: string): void
+        function joinErrorTest(separator: string, values: string[], expected: Error): void
         {
-            test(`with ${english.andList([strings.escapeAndQuote(separator), JSON.stringify(values.map(v => strings.escapeAndQuote(v)))])}`, () =>
+            test(`with ${andList([escapeAndQuote(separator), JSON.stringify(values.map(v => escapeAndQuote(v)))])}`, () =>
             {
-                assert.strictEqual(strings.join(separator, values), expected);
+                assert.throws(() => join(separator, values), expected);
             });
         }
 
-        joinTest(undefined!, [], "");
-        joinTest(undefined!, ["a"], "a");
-        joinTest(undefined!, ["a", "b"], "ab");
-        joinTest(undefined!, ["a", "b", "c"], "abc");
+        joinErrorTest(undefined!, [],
+            new PreConditionError(
+                "Expression: separator",
+                "Expected: not undefined and not null",
+                "Actual: undefined"));
+        joinErrorTest(undefined!, ["a"],
+            new PreConditionError(
+                "Expression: separator",
+                "Expected: not undefined and not null",
+                "Actual: undefined"));
+        joinErrorTest(undefined!, ["a", "b"],
+            new PreConditionError(
+                "Expression: separator",
+                "Expected: not undefined and not null",
+                "Actual: undefined"));
+        joinErrorTest(undefined!, ["a", "b", "c"],
+            new PreConditionError(
+                "Expression: separator",
+                "Expected: not undefined and not null",
+                "Actual: undefined"));
 
-        joinTest(null!, [], "");
-        joinTest(null!, ["a"], "a");
-        joinTest(null!, ["a", "b"], "ab");
-        joinTest(null!, ["a", "b", "c"], "abc");
+        joinErrorTest(null!, [],
+            new PreConditionError(
+                "Expression: separator",
+                "Expected: not undefined and not null",
+                "Actual: null"));
+        joinErrorTest(null!, ["a"],
+            new PreConditionError(
+                "Expression: separator",
+                "Expected: not undefined and not null",
+                "Actual: null"));
+        joinErrorTest(null!, ["a", "b"],
+            new PreConditionError(
+                "Expression: separator",
+                "Expected: not undefined and not null",
+                "Actual: null"));
+        joinErrorTest(null!, ["a", "b", "c"],
+            new PreConditionError(
+                "Expression: separator",
+                "Expected: not undefined and not null",
+                "Actual: null"));
+
+        function joinTest(separator: string, values: string[], expected: string): void
+        {
+            test(`with ${andList([escapeAndQuote(separator), JSON.stringify(values.map(v => escapeAndQuote(v)))])}`, () =>
+            {
+                assert.strictEqual(join(separator, values), expected);
+            });
+        }
+
+        
 
         joinTest("", [], "");
         joinTest("", ["a"], "a");
@@ -46,9 +85,9 @@ suite("strings.ts", () =>
     {
         function escapeTest(value: string | undefined | null, dontEscape: string[] | undefined, expected: string): void
         {
-            test(`with ${english.andList([strings.escapeAndQuote(value), JSON.stringify(dontEscape?.map((value: string) => strings.escapeAndQuote(value)))])}`, () =>
+            test(`with ${andList([escapeAndQuote(value), JSON.stringify(dontEscape?.map((value: string) => escapeAndQuote(value)))])}`, () =>
             {
-                const result: string = strings.escape(value, dontEscape);
+                const result: string = escape(value, dontEscape);
                 assert.strictEqual(result, expected);
             });
         }
@@ -73,11 +112,11 @@ suite("strings.ts", () =>
 
     suite("quote(string|undefined|null)", () =>
     {
-        function quoteTest(value: string | undefined | null, quote: string | undefined, expected: string): void
+        function quoteTest(value: string | undefined | null, quoteString: string | undefined, expected: string): void
         {
-            test(`with ${english.andList([value, quote].map(x => strings.escapeAndQuote(x)))}`, () =>
+            test(`with ${andList([value, quoteString].map(x => escapeAndQuote(x)))}`, () =>
             {
-                const result: string = strings.quote(value, quote);
+                const result: string = quote(value, quoteString);
                 assert.strictEqual(result, expected);
             });
         }
@@ -95,9 +134,9 @@ suite("strings.ts", () =>
     {
         function escapeAndQuoteTest(value: string | undefined | null, quote: string | undefined, dontEscape: string[] | undefined, expected: string): void
         {
-            test(`with ${english.andList([strings.escapeAndQuote(value), strings.escapeAndQuote(quote), JSON.stringify(dontEscape?.map(x => strings.escapeAndQuote(x)))])}`, () =>
+            test(`with ${andList([escapeAndQuote(value), escapeAndQuote(quote), JSON.stringify(dontEscape?.map(x => escapeAndQuote(x)))])}`, () =>
             {
-                const result: string = strings.escapeAndQuote(value, quote, dontEscape);
+                const result: string = escapeAndQuote(value, quote, dontEscape);
                 assert.strictEqual(result, expected);
             });
         }
@@ -124,28 +163,28 @@ suite("strings.ts", () =>
     {
         function isWhitespaceErrorTest(value: string | undefined | null, expectedError: Error): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.throws(() => strings.isWhitespace(value!), expectedError);
+                assert.throws(() => isWhitespace(value!), expectedError);
             });
         }
 
-        isWhitespaceErrorTest(undefined, new PreConditionError(strings.join("\n", [
+        isWhitespaceErrorTest(undefined, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: undefined",
         ])));
-        isWhitespaceErrorTest(null, new PreConditionError(strings.join("\n", [
+        isWhitespaceErrorTest(null, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: null",
         ])));
-        isWhitespaceErrorTest("", new PreConditionError(strings.join("\n", [
+        isWhitespaceErrorTest("", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 0",
         ])));
-        isWhitespaceErrorTest("  ", new PreConditionError(strings.join("\n", [
+        isWhitespaceErrorTest("  ", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 2",
@@ -153,9 +192,9 @@ suite("strings.ts", () =>
 
         function isWhitespaceTest(value: string, expected: boolean): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.strictEqual(strings.isWhitespace(value), expected);
+                assert.strictEqual(isWhitespace(value), expected);
             });
         }
 
@@ -173,28 +212,28 @@ suite("strings.ts", () =>
     {
         function isLetterErrorTest(value: string | undefined | null, expectedError: Error): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.throws(() => strings.isLetter(value!), expectedError);
+                assert.throws(() => isLetter(value!), expectedError);
             });
         }
 
-        isLetterErrorTest(undefined, new PreConditionError(strings.join("\n", [
+        isLetterErrorTest(undefined, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: undefined",
         ])));
-        isLetterErrorTest(null, new PreConditionError(strings.join("\n", [
+        isLetterErrorTest(null, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: null",
         ])));
-        isLetterErrorTest("", new PreConditionError(strings.join("\n", [
+        isLetterErrorTest("", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 0",
         ])));
-        isLetterErrorTest("  ", new PreConditionError(strings.join("\n", [
+        isLetterErrorTest("  ", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 2",
@@ -202,9 +241,9 @@ suite("strings.ts", () =>
 
         function isLetterTest(value: string, expected: boolean): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.strictEqual(strings.isLetter(value), expected);
+                assert.strictEqual(isLetter(value), expected);
             });
         }
 
@@ -228,28 +267,28 @@ suite("strings.ts", () =>
     {
         function isLowercasedLetterErrorTest(value: string | undefined | null, expectedError: Error): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.throws(() => strings.isLowercasedLetter(value!), expectedError);
+                assert.throws(() => isLowercasedLetter(value!), expectedError);
             });
         }
 
-        isLowercasedLetterErrorTest(undefined, new PreConditionError(strings.join("\n", [
+        isLowercasedLetterErrorTest(undefined, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: undefined",
         ])));
-        isLowercasedLetterErrorTest(null, new PreConditionError(strings.join("\n", [
+        isLowercasedLetterErrorTest(null, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: null",
         ])));
-        isLowercasedLetterErrorTest("", new PreConditionError(strings.join("\n", [
+        isLowercasedLetterErrorTest("", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 0",
         ])));
-        isLowercasedLetterErrorTest("  ", new PreConditionError(strings.join("\n", [
+        isLowercasedLetterErrorTest("  ", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 2",
@@ -257,9 +296,9 @@ suite("strings.ts", () =>
 
         function isLowercasedLetterTest(value: string, expected: boolean): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.strictEqual(strings.isLowercasedLetter(value), expected);
+                assert.strictEqual(isLowercasedLetter(value), expected);
             });
         }
 
@@ -283,28 +322,28 @@ suite("strings.ts", () =>
     {
         function isUppercasedLetterErrorTest(value: string | undefined | null, expectedError: Error): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.throws(() => strings.isUppercasedLetter(value!), expectedError);
+                assert.throws(() => isUppercasedLetter(value!), expectedError);
             });
         }
 
-        isUppercasedLetterErrorTest(undefined, new PreConditionError(strings.join("\n", [
+        isUppercasedLetterErrorTest(undefined, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: undefined",
         ])));
-        isUppercasedLetterErrorTest(null, new PreConditionError(strings.join("\n", [
+        isUppercasedLetterErrorTest(null, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: null",
         ])));
-        isUppercasedLetterErrorTest("", new PreConditionError(strings.join("\n", [
+        isUppercasedLetterErrorTest("", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 0",
         ])));
-        isUppercasedLetterErrorTest("  ", new PreConditionError(strings.join("\n", [
+        isUppercasedLetterErrorTest("  ", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 2",
@@ -312,9 +351,9 @@ suite("strings.ts", () =>
 
         function isUppercasedLetterTest(value: string, expected: boolean): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.strictEqual(strings.isUppercasedLetter(value), expected);
+                assert.strictEqual(isUppercasedLetter(value), expected);
             });
         }
         
@@ -338,28 +377,28 @@ suite("strings.ts", () =>
     {
         function isDigitErrorTest(value: string | undefined | null, expectedError: Error): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.throws(() => strings.isDigit(value!), expectedError);
+                assert.throws(() => isDigit(value!), expectedError);
             });
         }
 
-        isDigitErrorTest(undefined, new PreConditionError(strings.join("\n", [
+        isDigitErrorTest(undefined, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: undefined",
         ])));
-        isDigitErrorTest(null, new PreConditionError(strings.join("\n", [
+        isDigitErrorTest(null, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: null",
         ])));
-        isDigitErrorTest("", new PreConditionError(strings.join("\n", [
+        isDigitErrorTest("", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 0",
         ])));
-        isDigitErrorTest("  ", new PreConditionError(strings.join("\n", [
+        isDigitErrorTest("  ", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 2",
@@ -367,9 +406,9 @@ suite("strings.ts", () =>
 
         function isDigitTest(value: string, expected: boolean): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.strictEqual(strings.isDigit(value), expected);
+                assert.strictEqual(isDigit(value), expected);
             });
         }
         
@@ -396,28 +435,28 @@ suite("strings.ts", () =>
     {
         function isLetterOrDigitErrorTest(value: string | undefined | null, expectedError: Error): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.throws(() => strings.isLetterOrDigit(value!), expectedError);
+                assert.throws(() => isLetterOrDigit(value!), expectedError);
             });
         }
 
-        isLetterOrDigitErrorTest(undefined, new PreConditionError(strings.join("\n", [
+        isLetterOrDigitErrorTest(undefined, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: undefined",
         ])));
-        isLetterOrDigitErrorTest(null, new PreConditionError(strings.join("\n", [
+        isLetterOrDigitErrorTest(null, new PreConditionError(join("\n", [
             "Expression: value",
             "Expected: not undefined and not null",
             "Actual: null",
         ])));
-        isLetterOrDigitErrorTest("", new PreConditionError(strings.join("\n", [
+        isLetterOrDigitErrorTest("", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 0",
         ])));
-        isLetterOrDigitErrorTest("ab", new PreConditionError(strings.join("\n", [
+        isLetterOrDigitErrorTest("ab", new PreConditionError(join("\n", [
             "Expression: value.length",
             "Expected: 1",
             "Actual: 2",
@@ -425,9 +464,9 @@ suite("strings.ts", () =>
 
         function isLetterOrDigitTest(value: string, expected: boolean): void
         {
-            test(`with ${strings.escapeAndQuote(value)}`, () =>
+            test(`with ${escapeAndQuote(value)}`, () =>
             {
-                assert.strictEqual(strings.isLetterOrDigit(value), expected);
+                assert.strictEqual(isLetterOrDigit(value), expected);
             });
         }
         

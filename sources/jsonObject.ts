@@ -12,7 +12,6 @@ import { Pre } from "./pre";
 import { Result } from "./result";
 import { join } from "./strings";
 import { Type, isString } from "./types";
-import { WrongTypeError } from "./wrongTypeError";
 
 export class JsonObject extends MapDecorator<string,JsonSegment> implements JsonSegment
 {
@@ -71,11 +70,7 @@ export class JsonObject extends MapDecorator<string,JsonSegment> implements Json
         return Result.create(() =>
         {
             const value: JsonSegment = this.get(propertyName).await();
-            if (!(value instanceof propertyValueType))
-            {
-                throw new WrongTypeError(`Expected ${propertyValueType.name} but found ${value.constructor.name}.`);
-            }
-            return value as T;
+            return JsonSegment.as(value, propertyValueType).await();
         });
     }
 

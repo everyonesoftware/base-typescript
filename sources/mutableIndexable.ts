@@ -3,6 +3,7 @@ import { IndexableIterator } from "./indexableIterator";
 import { JavascriptIterable, JavascriptIterator } from "./javascript";
 import { List } from "./list";
 import { MapIterable } from "./mapIterable";
+import { Result } from "./result";
 
 /**
  * An object that can modify its elements by index.
@@ -25,6 +26,8 @@ export abstract class MutableIndexable<T> implements Indexable<T>
     public abstract [Symbol.iterator](): JavascriptIterator<T>;
 
     public abstract getCount(): number;
+
+    public abstract first(): Result<T>;
 
     public abstract get(index: number): T;
 

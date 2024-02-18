@@ -7,7 +7,7 @@ export function andList(values: JavascriptIterable<string>): string
     return list("and", values);
 }
 
-export function orList(values: string[]): string
+export function orList(values: JavascriptIterable<string>): string
 {
     return list("or", values);
 }

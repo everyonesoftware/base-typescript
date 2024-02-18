@@ -5,7 +5,9 @@ import { JsonObject } from "./jsonObject";
 import { JsonSegmentType } from "./jsonSegmentType";
 import { JsonString } from "./jsonString";
 import { Pre } from "./pre";
-import { isBoolean, isNumber, isString } from "./types";
+import { Result } from "./result";
+import { Type, isBoolean, isNumber, isString } from "./types";
+import { WrongTypeError } from "./wrongTypeError";
 
 export abstract class JsonSegment
 {
@@ -56,6 +58,18 @@ export abstract class JsonSegment
     public static object(): JsonObject
     {
         return JsonObject.create();
+    }
+
+    public static as<T>(jsonSegment: JsonSegment, type: Type<T>): Result<T>
+    {
+        return Result.create(() =>
+        {
+            if (!(jsonSegment instanceof type))
+            {
+                throw new WrongTypeError(`Expected ${type.name} but found ${jsonSegment.constructor.name}.`);
+            }
+            return jsonSegment as T;
+        });
     }
 
     public abstract getSegmentType(): JsonSegmentType;

@@ -1,6 +1,7 @@
 import { Iterator } from "./iterator";
 import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { MapIterator } from "./mapIterator";
+import { Result } from "./result";
 
 export abstract class IteratorBase<T> implements Iterator<T>
 {
@@ -35,5 +36,10 @@ export abstract class IteratorBase<T> implements Iterator<T>
     public [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<T>
     {
         return Iterator[Symbol.iterator](this);
+    }
+
+    public first(): Result<T>
+    {
+        return Iterator.first(this);
     }
 }

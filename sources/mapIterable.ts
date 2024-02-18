@@ -2,6 +2,7 @@ import { Iterable } from "./iterable";
 import { Iterator } from "./iterator";
 import { JavascriptIterator } from "./javascript";
 import { Pre } from "./pre";
+import { Result } from "./result";
 
 /**
  * An {@link Iterable} that converts {@link TInput} values to {@link TOutput} values.
@@ -53,5 +54,10 @@ export class MapIterable<TInput,TOutput> implements Iterable<TOutput>
     public getCount(): number
     {
         return this.innerIterable.getCount();
+    }
+
+    public first(): Result<TOutput>
+    {
+        return Iterable.first(this);
     }
 }

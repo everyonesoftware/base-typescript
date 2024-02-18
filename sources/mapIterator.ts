@@ -1,6 +1,7 @@
 import { Iterator } from "./iterator";
 import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { Pre } from "./pre";
+import { Result } from "./result";
 
 /**
  * An {@link Iterator} that maps {@link TInput} values to {@link TOutput} values.
@@ -66,5 +67,10 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
     public [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<TOutput>
     {
         return Iterator[Symbol.iterator](this);
+    }
+
+    public first(): Result<TOutput>
+    {
+        return Iterator.first(this);
     }
 }

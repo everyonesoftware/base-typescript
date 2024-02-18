@@ -1,6 +1,7 @@
 import { JavascriptIterable } from "./javascript";
 import { Pre } from "./pre";
 import { Post } from "./post";
+import { isString } from "./types";
 
 export function toString(value: undefined | null | { toString(): string }): string
 {
@@ -29,17 +30,42 @@ export function toString(value: undefined | null | { toString(): string }): stri
  * @param values The values to join.
  * @returns The joined {@link string}.
  */
-export function join(separator: string, values: JavascriptIterable<string>): string
+export function join(separator: string, values: JavascriptIterable<string>): string;
+export function join(parameters: { separator: string, values: JavascriptIterable<string> }): string;
+export function join(separatorOrParameters: string | { separator: string, values: JavascriptIterable<string> }, values?: JavascriptIterable<string>): string
 {
-    if (separator === undefined || separator === null)
+    let separator: string;
+    if (isString(separatorOrParameters) || separatorOrParameters === undefined || separatorOrParameters === null)
     {
-        separator = "";
+        separator = separatorOrParameters;
     }
+    else
+    {
+        separator = separatorOrParameters.separator;
+        values = separatorOrParameters.values;
+    }
+
+    Pre.condition.assertNotUndefinedAndNotNull(separator, "separator");
+    Pre.condition.assertNotUndefinedAndNotNull(values, "values");
+
     return Array.from(values).join(separator);
 }
 
-export function escape(value: string | undefined | null, dontEscape?: string[]): string
+export function escape(value: string | undefined | null, dontEscape?: string[]): string;
+export function escape(parameters: { value: string | undefined | null, dontEscape?: string[] }): string;
+export function escape(valueOrParameters: string | undefined | null | { value: string | undefined | null, dontEscape?: string[] }, dontEscape?: string[]): string
 {
+    let value: string | undefined | null;
+    if (isString(valueOrParameters) || valueOrParameters === undefined || valueOrParameters === null)
+    {
+        value = valueOrParameters;
+    }
+    else
+    {
+        value = valueOrParameters.value;
+        dontEscape = valueOrParameters.dontEscape;
+    }
+
     let result: string;
     if (value === undefined)
     {
@@ -102,8 +128,25 @@ export function escape(value: string | undefined | null, dontEscape?: string[]):
  * @param value The value to quote.
  * @param quote The quotes to surround the provided value with.
  */
-export function quote(value: string | undefined | null, quote?: string): string
+export function quote(value: string | undefined | null, quote?: string): string;
+/**
+ * Get a version of the provided value that is quoted with the provided quote.
+ * @param parameters The parameters to use to invoke this function.
+ */
+export function quote(parameters: { value: string | undefined | null, quote?: string }): string;
+export function quote(valueOrParameters: string | undefined | null | { value: string | undefined | null, quote?: string }, quote?: string): string
 {
+    let value: string | undefined | null;
+    if (isString(valueOrParameters) || valueOrParameters === undefined || valueOrParameters === null)
+    {
+        value = valueOrParameters;
+    }
+    else
+    {
+        value = valueOrParameters.value;
+        quote = valueOrParameters.quote;
+    }
+
     let result: string;
     if (value === undefined)
     {
@@ -130,8 +173,22 @@ export function quote(value: string | undefined | null, quote?: string): string
  * @param quoteString The quote to surround the value with.
  * @param dontEscape The characters to not escape.
  */
-export function escapeAndQuote(value: string | undefined | null, quoteString?: string, dontEscape?: string[]): string
+export function escapeAndQuote(value: string | undefined | null, quoteString?: string, dontEscape?: string[]): string;
+export function escapeAndQuote(parameters: { value: string | undefined | null, quoteString?: string, dontEscape?: string[] }): string;
+export function escapeAndQuote(valueOrParameters: string | undefined | null | { value: string | undefined | null, quoteString?: string, dontEscape?: string[] }, quoteString?: string, dontEscape?: string[]): string
 {
+    let value: string | undefined | null;
+    if (isString(valueOrParameters) || valueOrParameters === undefined || valueOrParameters === null)
+    {
+        value = valueOrParameters;
+    }
+    else
+    {
+        value = valueOrParameters.value;
+        quoteString = valueOrParameters.quoteString;
+        dontEscape = valueOrParameters.dontEscape;
+    }
+
     let result: string;
     if (value === undefined)
     {
