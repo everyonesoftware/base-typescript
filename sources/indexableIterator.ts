@@ -2,6 +2,7 @@ import { ArrayIterator } from "./arrayIterator";
 import { Iterator } from "./iterator";
 import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { MapIterator } from "./mapIterator";
+import { Result } from "./result";
 
 /**
  * An {@link Iterator} that maintains the current index of the value being pointed at in the
@@ -36,4 +37,6 @@ export abstract class IndexableIterator<T> implements Iterator<T>
      * Get the current index of the value this {@link IndexableIterator} points to.
      */
     public abstract getCurrentIndex(): number;
+
+    public abstract first(): Result<T>;
 }

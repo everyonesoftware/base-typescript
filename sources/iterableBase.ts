@@ -2,6 +2,7 @@ import { Iterable } from "./iterable";
 import { Iterator } from "./iterator";
 import { JavascriptIterator } from "./javascript";
 import { MapIterable } from "./mapIterable";
+import { Result } from "./result";
 
 export abstract class IterableBase<T> implements Iterable<T>
 {
@@ -28,4 +29,9 @@ export abstract class IterableBase<T> implements Iterable<T>
     }
 
     public abstract getCount(): number;
+
+    public first(): Result<T>
+    {
+        return Iterable.first(this);
+    }
 }

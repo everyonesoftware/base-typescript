@@ -3,6 +3,8 @@ import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptItera
 import { MapIterator } from "./mapIterator";
 import { Pre } from "./pre";
 import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToIteratorAdapter";
+import { Result } from "./result";
+import { EmptyError } from "./emptyError";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -125,5 +127,29 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
         Pre.condition.assertNotUndefinedAndNotNull(mapping, "mapping");
 
         return MapIterator.create(iterator, mapping);
+    }
+
+    /**
+     * Get the first value in this {@link Iterator}.
+     */
+    public abstract first(): Result<T>;
+
+    /**
+     * Get the first value from the provided {@link Iterator}.
+     * @param iterator The {@link Iterator} to get the first value from.
+     */
+    public static first<T>(iterator: Iterator<T>): Result<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
+
+        return Result.create(() =>
+        {
+            iterator.start();
+            if (!iterator.hasCurrent())
+            {
+                throw new EmptyError();
+            }
+            return iterator.getCurrent();
+        });
     }
 }

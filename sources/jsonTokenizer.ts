@@ -1,5 +1,4 @@
 import { IteratorBase } from "./iteratorBase";
-import { expectedButFoundInstead, missing } from "./json";
 import { JsonNumber } from "./jsonNumber";
 import { JsonString } from "./jsonString";
 import { JsonToken } from "./jsonToken";
@@ -266,11 +265,14 @@ export class JsonTokenizer extends IteratorBase<JsonToken>
 
             if (!this.hasCurrentCharacter())
             {
-                throw missing("integer portion of number");
+                throw ParseError.missing("integer portion of number");
             }
             else if (!isDigit(this.getCurrentCharacter()))
             {
-                throw expectedButFoundInstead("integer portion of number", this.getCurrentCharacter(), false);
+                throw ParseError.expectedButFoundInstead({
+                    expected: "integer portion of number",
+                    foundInstead: escapeAndQuote(this.getCurrentCharacter()),
+                });
             }
         }
 
@@ -289,11 +291,14 @@ export class JsonTokenizer extends IteratorBase<JsonToken>
 
             if (!this.hasCurrentCharacter())
             {
-                throw missing("fractional portion of number");
+                throw ParseError.missing("fractional portion of number");
             }
             else if (!isDigit(this.getCurrentCharacter()))
             {
-                throw expectedButFoundInstead("fractional portion of number", this.getCurrentCharacter(), false);
+                throw ParseError.expectedButFoundInstead({
+                    expected: "fractional portion of number",
+                    foundInstead: escapeAndQuote(this.getCurrentCharacter()),
+                });
             }
 
             text += this.takeCurrentCharacter();
@@ -309,7 +314,7 @@ export class JsonTokenizer extends IteratorBase<JsonToken>
 
             if (!this.hasCurrentCharacter())
             {
-                throw missing("exponent portion of number");
+                throw ParseError.missing("exponent portion of number");
             }
             else if (this.getCurrentCharacter() === "-" || this.getCurrentCharacter() === "+")
             {
@@ -318,11 +323,14 @@ export class JsonTokenizer extends IteratorBase<JsonToken>
 
             if (!this.hasCurrentCharacter())
             {
-                throw missing("exponent portion of number");
+                throw ParseError.missing("exponent portion of number");
             }
             else if (!isDigit(this.getCurrentCharacter()))
             {
-                throw expectedButFoundInstead("exponent portion of number", this.getCurrentCharacter(), false);
+                throw ParseError.expectedButFoundInstead({
+                    expected: "exponent portion of number",
+                    foundInstead: escapeAndQuote(this.getCurrentCharacter()),
+                });
             }
             else
             {
