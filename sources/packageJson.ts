@@ -1,5 +1,9 @@
+import { Iterator } from "./iterator";
 import { JsonDocument } from "./jsonDocument";
 import { JsonObject } from "./jsonObject";
+import { JsonSegment } from "./jsonSegment";
+import { JsonString } from "./jsonString";
+import { PackageJsonDependency } from "./packageJsonDependency";
 import { Pre } from "./pre";
 import { Result } from "./result";
 
@@ -53,5 +57,42 @@ export class PackageJson
             const root: JsonObject = this.jsonDocument.getRootObject().await();
             return root.getStringValue("name").await();
         });
+    }
+
+    public getVersion(): Result<string>
+    {
+        return Result.create(() =>
+        {
+            const root: JsonObject = this.jsonDocument.getRootObject().await();
+            return root.getStringValue("version").await();
+        });
+    }
+
+    private innerIteratorDependencies(propertyName: string): Result<Iterator<PackageJsonDependency>>
+    {
+        return Result.create(() =>
+        {
+            const root: JsonObject = this.jsonDocument.getRootObject().await();
+            const devDependencies: JsonObject = root.getObject(propertyName).await();
+            return devDependencies.iterate()
+                .where((entry: [string, JsonSegment]) => entry[1] instanceof JsonString)
+                .map((entry: [string, JsonSegment]) =>
+                {
+                    const dependencyName: string = entry[0];
+                    const dependencyVersionJson: JsonString = entry[1].as(JsonString).await();
+                    const dependencyVersion: string = dependencyVersionJson.getValue();
+                    return PackageJsonDependency.create(dependencyName, dependencyVersion);
+                });
+        });
+    }
+
+    public iterateDependencies(): Result<Iterator<PackageJsonDependency>>
+    {
+        return this.innerIteratorDependencies("dependencies");
+    }
+
+    public iterateDevDependencies(): Result<Iterator<PackageJsonDependency>>
+    {
+        return this.innerIteratorDependencies("devDependencies");
     }
 }

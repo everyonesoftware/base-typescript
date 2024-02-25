@@ -2,6 +2,8 @@ import { JsonSegment } from "./jsonSegment";
 import { JsonSegmentType } from "./jsonSegmentType";
 import { JsonToken } from "./jsonToken";
 import { JsonTokenType } from "./jsonTokenType";
+import { Result } from "./result";
+import { Type } from "./types";
 
 export class JsonNull implements JsonSegment, JsonToken
 {
@@ -32,5 +34,10 @@ export class JsonNull implements JsonSegment, JsonToken
     public toString(): string
     {
         return "null";
+    }
+
+    public as<T extends JsonSegment>(type: Type<T>): Result<T>
+    {
+        return JsonSegment.as(this, type);
     }
 }

@@ -60,7 +60,12 @@ export abstract class JsonSegment
         return JsonObject.create();
     }
 
-    public static as<T>(jsonSegment: JsonSegment, type: Type<T>): Result<T>
+    public as<T extends JsonSegment>(type: Type<T>): Result<T>
+    {
+        return JsonSegment.as(this, type);
+    }
+
+    public static as<T extends JsonSegment>(jsonSegment: JsonSegment, type: Type<T>): Result<T>
     {
         return Result.create(() =>
         {
