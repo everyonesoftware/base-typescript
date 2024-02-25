@@ -39,4 +39,6 @@ export abstract class IndexableIterator<T> implements Iterator<T>
     public abstract getCurrentIndex(): number;
 
     public abstract first(): Result<T>;
+
+    public abstract where(condition: (value: T) => boolean): Iterator<T>;
 }

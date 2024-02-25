@@ -121,4 +121,9 @@ export class JsonObject extends MapDecorator<string,JsonSegment> implements Json
     {
         return this.getAs(propertyName, JsonArray);
     }
+
+    public as<T extends JsonSegment>(type: Type<T>): Result<T>
+    {
+        return JsonSegment.as(this, type);
+    }
 }

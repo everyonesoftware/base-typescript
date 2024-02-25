@@ -50,8 +50,9 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
         return Iterator.start<TOutput,this>(this);
     }
 
-    public takeCurrent(): TOutput {
-        throw new Error("Method not implemented.");
+    public takeCurrent(): TOutput
+    {
+        return Iterator.takeCurrent(this);
     }
 
     public toArray(): TOutput[]
@@ -72,5 +73,10 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
     public first(): Result<TOutput>
     {
         return Iterator.first(this);
+    }
+
+    public where(condition: (value: TOutput) => boolean): Iterator<TOutput>
+    {
+        return Iterator.where(this, condition);
     }
 }

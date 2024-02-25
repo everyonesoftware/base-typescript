@@ -78,4 +78,9 @@ export class JavascriptIteratorToIteratorAdapter<T> implements Iterator<T>
     {
         return Iterator.first(this);
     }
+
+    public where(condition: (value: T) => boolean): Iterator<T>
+    {
+        return Iterator.where(this, condition);
+    }
 }

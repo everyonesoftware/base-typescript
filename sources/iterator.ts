@@ -5,6 +5,7 @@ import { Pre } from "./pre";
 import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToIteratorAdapter";
 import { Result } from "./result";
 import { EmptyError } from "./emptyError";
+import { WhereIterator } from "./whereIterator";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -112,6 +113,20 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
             result.push(value);
         }
         return result;
+    }
+
+    /**
+     * Get an {@link Iterator} that will only return values that match the provided condition.
+     * @param condition The condition to run against each of the values in this {@link Iterator}.
+     */
+    public abstract where(condition: (value: T) => boolean) : Iterator<T>;
+
+    public static where<T>(iterator: Iterator<T>, condition: (value: T) => boolean): Iterator<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
+        Pre.condition.assertNotUndefinedAndNotNull(condition, "condition");
+
+        return WhereIterator.create(iterator, condition);
     }
 
     /**
