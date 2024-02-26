@@ -1,7 +1,6 @@
 import * as assert from "assert";
 
 import { JsonDocument, NotFoundError, PackageJson, WrongTypeError, escapeAndQuote } from "../sources";
-import { PackageJsonDependency } from "../sources/packageJsonDependency";
 
 suite("packageJson.ts", () =>
 {
@@ -79,7 +78,7 @@ suite("packageJson.ts", () =>
             iterateDependenciesErrorTest(`{}`, new NotFoundError(`The key "dependencies" was not found in the map.`));
             iterateDependenciesErrorTest(`{"dependencies":false}`, new WrongTypeError("Expected JsonObject but found JsonBoolean."));
 
-            function iterateDependenciesTest(text: string, expected: PackageJsonDependency[]): void
+            function iterateDependenciesTest(text: string, expected: [string,string][]): void
             {
                 test(`with ${escapeAndQuote(text)}`, () =>
                 {
@@ -92,13 +91,13 @@ suite("packageJson.ts", () =>
             iterateDependenciesTest(
                 `{"dependencies":{"a":"1"}}`,
                 [
-                    PackageJsonDependency.create("a", "1"),
+                    ["a", "1"],
                 ]);
             iterateDependenciesTest(
                 `{"dependencies":{"a":"1","b":"2"}}`,
                 [
-                    PackageJsonDependency.create("a", "1"),
-                    PackageJsonDependency.create("b", "2"),
+                    ["a", "1"],
+                    ["b", "2"],
                 ]);
         });
 
@@ -116,7 +115,7 @@ suite("packageJson.ts", () =>
             iterateDevDependenciesErrorTest(`{}`, new NotFoundError(`The key "devDependencies" was not found in the map.`));
             iterateDevDependenciesErrorTest(`{"devDependencies":false}`, new WrongTypeError("Expected JsonObject but found JsonBoolean."));
 
-            function iterateDevDependenciesTest(text: string, expected: PackageJsonDependency[]): void
+            function iterateDevDependenciesTest(text: string, expected: [string,string][]): void
             {
                 test(`with ${escapeAndQuote(text)}`, () =>
                 {
@@ -129,13 +128,13 @@ suite("packageJson.ts", () =>
             iterateDevDependenciesTest(
                 `{"devDependencies":{"a":"1"}}`,
                 [
-                    PackageJsonDependency.create("a", "1"),
+                    ["a", "1"],
                 ]);
             iterateDevDependenciesTest(
                 `{"devDependencies":{"a":"1","b":"2"}}`,
                 [
-                    PackageJsonDependency.create("a", "1"),
-                    PackageJsonDependency.create("b", "2"),
+                    ["a", "1"],
+                    ["b", "2"],
                 ]);
         });
     });

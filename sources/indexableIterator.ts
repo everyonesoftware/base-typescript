@@ -3,6 +3,7 @@ import { Iterator } from "./iterator";
 import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { MapIterator } from "./mapIterator";
 import { Result } from "./result";
+import { Type } from "./types";
 
 /**
  * An {@link Iterator} that maintains the current index of the value being pointed at in the
@@ -41,4 +42,6 @@ export abstract class IndexableIterator<T> implements Iterator<T>
     public abstract first(): Result<T>;
 
     public abstract where(condition: (value: T) => boolean): Iterator<T>;
+
+    public abstract instanceOf<U extends T>(type: Type<U>): Iterator<U>;
 }

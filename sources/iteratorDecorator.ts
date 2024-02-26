@@ -3,6 +3,7 @@ import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptItera
 import { MapIterator } from "./mapIterator";
 import { Pre } from "./pre";
 import { Result } from "./result";
+import { Type } from "./types";
 
 export abstract class IteratorDecorator<T> implements Iterator<T>
 {
@@ -66,6 +67,11 @@ export abstract class IteratorDecorator<T> implements Iterator<T>
     public where(condition: (value: T) => boolean): Iterator<T>
     {
         return Iterator.where(this, condition);
+    }
+
+    public instanceOf<U extends T>(type: Type<U>): Iterator<U>
+    {
+        return Iterator.instanceOf(this, type);
     }
 
     public map<TOutput>(mapping: (value: T) => TOutput): MapIterator<T, TOutput>
