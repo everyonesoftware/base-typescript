@@ -6,6 +6,7 @@ import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToItera
 import { Result } from "./result";
 import { EmptyError } from "./emptyError";
 import { WhereIterator } from "./whereIterator";
+import { Type } from "./types";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -142,6 +143,21 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
         Pre.condition.assertNotUndefinedAndNotNull(mapping, "mapping");
 
         return MapIterator.create(iterator, mapping);
+    }
+
+    /**
+     * Get an {@link Iterator} that will filter this {@link Iterator} to only the values that are
+     * instances of the provided {@link Type}.
+     * @param type The type of values to return from the new {@link Iterator}.
+     */
+    public abstract instanceOf<U extends T>(type: Type<U>): Iterator<U>;
+
+    public static instanceOf<T,U extends T>(iterator: Iterator<T>, type: Type<U>): Iterator<U>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(type, "type");
+
+        return iterator.where((value: T) => value instanceof type)
+            .map((value: T) => value as U);
     }
 
     /**

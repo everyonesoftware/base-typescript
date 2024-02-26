@@ -2,6 +2,7 @@ import { Iterator } from "./iterator";
 import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { Pre } from "./pre";
 import { Result } from "./result";
+import { Type } from "./types";
 
 /**
  * An {@link Iterator} that maps {@link TInput} values to {@link TOutput} values.
@@ -78,5 +79,10 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
     public where(condition: (value: TOutput) => boolean): Iterator<TOutput>
     {
         return Iterator.where(this, condition);
+    }
+
+    public instanceOf<U extends TOutput>(type: Type<U>): Iterator<U>
+    {
+        return Iterator.instanceOf(this, type);
     }
 }
