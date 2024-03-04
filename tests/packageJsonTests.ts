@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { JsonDocument, NotFoundError, PackageJson, WrongTypeError, escapeAndQuote } from "../sources";
+import { JsonDocument, NotFoundError, PackageJson, ParseError, PreConditionError, WrongTypeError, escapeAndQuote } from "../sources";
 
 suite("packageJson.ts", () =>
 {
@@ -10,6 +10,44 @@ suite("packageJson.ts", () =>
         {
             const packageJson: PackageJson = PackageJson.create();
             assert.deepStrictEqual(packageJson.getDocument(), JsonDocument.create());
+        });
+
+        suite("parse(string)", () =>
+        {
+            function parseErrorTest(text: string, expected: Error): void
+            {
+                test(`with ${escapeAndQuote(text)}`, () =>
+                {
+                    assert.throws(() => PackageJson.parse(text).await(),
+                        expected);
+                });
+            }
+
+            parseErrorTest(
+                undefined!,
+                new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined"));
+            parseErrorTest(
+                null!,
+                new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: null"));
+            parseErrorTest("", new ParseError("Missing JSON value."));
+
+            function parseTest(text: string): void
+            {
+                test(`with ${escapeAndQuote(text)}`, () =>
+                {
+                    const packageJson: PackageJson = PackageJson.parse(text).await();
+                    assert.notStrictEqual(packageJson, undefined);
+                });
+            }
+
+            parseTest(`{}`);
+            parseTest(`{"name": "hello"}`);
         });
 
         suite("getName()", () =>
