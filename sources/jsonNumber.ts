@@ -3,6 +3,8 @@ import { JsonSegmentType } from "./jsonSegmentType";
 import { JsonToken } from "./jsonToken";
 import { JsonTokenType } from "./jsonTokenType";
 import { Pre } from "./pre";
+import { Result } from "./result";
+import { Type } from "./types";
 
 export class JsonNumber implements JsonSegment, JsonToken
 {
@@ -43,5 +45,10 @@ export class JsonNumber implements JsonSegment, JsonToken
     public toString(): string
     {
         return JSON.stringify(this.value);
+    }
+
+    public as<T extends JsonSegment>(type: Type<T>): Result<T>
+    {
+        return JsonSegment.as(this, type);
     }
 }

@@ -1,3 +1,4 @@
+import { Iterator } from "./iterator";
 import { JsonArray } from "./jsonArray";
 import { JsonBoolean } from "./jsonBoolean";
 import { JsonNull } from "./jsonNull";
@@ -65,7 +66,7 @@ export class JsonObject extends MapDecorator<string,JsonSegment> implements Json
         return super.set(propertyName, propertyValue);
     }
 
-    protected getAs<T extends JsonSegment>(propertyName: string, propertyValueType: Type<T>): Result<T>
+    public getAs<T extends JsonSegment>(propertyName: string, propertyValueType: Type<T>): Result<T>
     {
         return Result.create(() =>
         {
@@ -120,5 +121,16 @@ export class JsonObject extends MapDecorator<string,JsonSegment> implements Json
     public getArray(propertyName: string): Result<JsonArray>
     {
         return this.getAs(propertyName, JsonArray);
+    }
+
+    public as<T extends JsonSegment>(type: Type<T>): Result<T>
+    {
+        return JsonSegment.as(this, type);
+    }
+
+    public iterateProperties(): Iterator<JsonProperty>
+    {
+        return this.iterate()
+            .map((entry: [string, JsonSegment]) => JsonProperty.create(entry[0], entry[1]));
     }
 }

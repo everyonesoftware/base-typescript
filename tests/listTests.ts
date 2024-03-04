@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { Iterable, List, PreConditionError, andList, join } from "../sources/";
+import { Iterable, JavascriptIterable, List, PreConditionError, andList, join } from "../sources/";
 
 suite("list.ts", () =>
 {
@@ -186,7 +186,7 @@ suite("list.ts", () =>
 
         suite("addAll(T)", () =>
         {
-            function addAllTest(list: List<number>, values: number[] | Iterable<number>, expected: number[]): void
+            function addAllTest(list: List<number>, values: JavascriptIterable<number>, expected: number[]): void
             {
                 test(`with ${andList([list, values].map(x => x.toString()))}`, () =>
                 {
@@ -295,7 +295,7 @@ suite("list.ts", () =>
                 "Actual: 2"
             ])));
 
-            function insertAllTest(list: List<number>, index: number, values: number[] | Iterable<number>, expected: number[]): void
+            function insertAllTest(list: List<number>, index: number, values: JavascriptIterable<number>, expected: number[]): void
             {
                 test(`with ${andList([list, index, values].map(x => x.toString()))}`, () =>
                 {

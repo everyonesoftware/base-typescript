@@ -121,4 +121,9 @@ export class JsonArray extends ListDecorator<JsonSegment> implements JsonSegment
     {
         return this.getAs(index, JsonArray);
     }
+
+    public as<T extends JsonSegment>(type: Type<T>): Result<T>
+    {
+        return JsonSegment.as(this, type);
+    }
 }

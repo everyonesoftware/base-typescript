@@ -384,7 +384,7 @@ export class JsonDocument
             .convertError(EmptyError, () => new NotFoundError("No root has been added."));
     }
 
-    private getRootAs<T>(type: Type<T>): Result<T>
+    private getRootAs<T extends JsonSegment>(type: Type<T>): Result<T>
     {
         return Result.create(() =>
         {

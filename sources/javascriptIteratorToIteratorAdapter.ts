@@ -4,7 +4,7 @@ import { JavascriptIterable, JavascriptIterator, JavascriptIteratorResult } from
 import { MapIterator } from "./mapIterator";
 import { Pre } from "./pre";
 import { Result } from "./result";
-import { isJavascriptIterable } from "./types";
+import { Type, isJavascriptIterable } from "./types";
 
 export class JavascriptIteratorToIteratorAdapter<T> implements Iterator<T>
 {
@@ -77,5 +77,15 @@ export class JavascriptIteratorToIteratorAdapter<T> implements Iterator<T>
     public first(): Result<T>
     {
         return Iterator.first(this);
+    }
+
+    public where(condition: (value: T) => boolean): Iterator<T>
+    {
+        return Iterator.where(this, condition);
+    }
+
+    public instanceOf<U extends T>(type: Type<U>): Iterator<U>
+    {
+        return Iterator.instanceOf(this, type);
     }
 }
