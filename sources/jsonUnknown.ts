@@ -1,6 +1,8 @@
 import { JsonSegment } from "./jsonSegment";
 import { JsonSegmentType } from "./jsonSegmentType";
 import { Pre } from "./pre";
+import { Result } from "./result";
+import { Type } from "./types";
 
 export class JsonUnknown implements JsonSegment
 {
@@ -26,5 +28,10 @@ export class JsonUnknown implements JsonSegment
     public toString(): string
     {
         return this.text;
+    }
+
+    public as<T extends JsonSegment>(type: Type<T>): Result<T>
+    {
+        return JsonSegment.as(this, type);
     }
 }

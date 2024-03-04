@@ -5,6 +5,8 @@ import { Pre } from "./pre";
 import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToIteratorAdapter";
 import { Result } from "./result";
 import { EmptyError } from "./emptyError";
+import { WhereIterator } from "./whereIterator";
+import { Type } from "./types";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -115,6 +117,20 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
     }
 
     /**
+     * Get an {@link Iterator} that will only return values that match the provided condition.
+     * @param condition The condition to run against each of the values in this {@link Iterator}.
+     */
+    public abstract where(condition: (value: T) => boolean) : Iterator<T>;
+
+    public static where<T>(iterator: Iterator<T>, condition: (value: T) => boolean): Iterator<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
+        Pre.condition.assertNotUndefinedAndNotNull(condition, "condition");
+
+        return WhereIterator.create(iterator, condition);
+    }
+
+    /**
      * Get a {@link MapIterator} that will map all {@link T} values from this {@link Iterator} to
      * {@link TOutput} values.
      * @param mapping The mapping that maps {@link T} values to {@link TOutput} values.
@@ -127,6 +143,21 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
         Pre.condition.assertNotUndefinedAndNotNull(mapping, "mapping");
 
         return MapIterator.create(iterator, mapping);
+    }
+
+    /**
+     * Get an {@link Iterator} that will filter this {@link Iterator} to only the values that are
+     * instances of the provided {@link Type}.
+     * @param type The type of values to return from the new {@link Iterator}.
+     */
+    public abstract instanceOf<U extends T>(type: Type<U>): Iterator<U>;
+
+    public static instanceOf<T,U extends T>(iterator: Iterator<T>, type: Type<U>): Iterator<U>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(type, "type");
+
+        return iterator.where((value: T) => value instanceof type)
+            .map((value: T) => value as U);
     }
 
     /**
