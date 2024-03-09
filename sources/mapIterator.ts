@@ -56,6 +56,16 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
         return Iterator.takeCurrent(this);
     }
 
+    public any(): boolean
+    {
+        return Iterator.any(this);
+    }
+
+    public getCount(): number
+    {
+        return Iterator.getCount(this);
+    }
+
     public toArray(): TOutput[]
     {
         return Iterator.toArray(this);

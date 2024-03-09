@@ -21,6 +21,8 @@ export abstract class Indexable<T> implements Iterable<T>
 
     public abstract toArray(): T[];
 
+    public abstract any(): boolean;
+
     public abstract getCount(): number;
 
     public abstract toString(): string;

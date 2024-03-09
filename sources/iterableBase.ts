@@ -28,6 +28,8 @@ export abstract class IterableBase<T> implements Iterable<T>
         return Iterable[Symbol.iterator](this);
     }
 
+    public abstract any(): boolean;
+
     public abstract getCount(): number;
 
     public first(): Result<T>

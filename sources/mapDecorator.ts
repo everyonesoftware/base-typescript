@@ -20,6 +20,11 @@ export abstract class MapDecorator<TKey,TValue> extends MapBase<TKey,TValue>
         this.innerMap = innerMap;
     }
 
+    public override any(): boolean
+    {
+        return this.innerMap.any();
+    }
+
     public override getCount(): number
     {
         return this.innerMap.getCount();

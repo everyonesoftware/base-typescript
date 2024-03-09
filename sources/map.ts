@@ -25,6 +25,8 @@ export abstract class Map<TKey,TValue> implements Iterable<[TKey,TValue]>
      */
     public abstract iterate(): Iterator<[TKey, TValue]>;
 
+    public abstract any(): boolean;
+
     public abstract toArray(): [TKey, TValue][];
 
     public abstract toString(): string;

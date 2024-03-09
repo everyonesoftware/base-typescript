@@ -29,6 +29,16 @@ export abstract class IteratorBase<T> implements Iterator<T>
         return Iterator.toArray(this);
     }
 
+    public any(): boolean
+    {
+        return Iterator.any(this);
+    }
+
+    public getCount(): number
+    {
+        return Iterator.getCount(this);
+    }
+
     public map<TOutput>(mapping: (value: T) => TOutput): MapIterator<T, TOutput>
     {
         return Iterator.map(this, mapping);

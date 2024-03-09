@@ -10,6 +10,8 @@ export abstract class IndexableBase<T> extends IterableBase<T> implements Indexa
 {
     public abstract override iterate(): IndexableIterator<T>;
 
+    public abstract override any(): boolean;
+
     public abstract override getCount(): number;
 
     public abstract get(index: number): T;

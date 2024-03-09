@@ -28,6 +28,10 @@ export abstract class IndexableIterator<T> implements Iterator<T>
 
     public abstract takeCurrent(): T;
 
+    public abstract any(): boolean;
+
+    public abstract getCount(): number;
+
     public abstract toArray(): T[];
 
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterator<T, TOutput>;

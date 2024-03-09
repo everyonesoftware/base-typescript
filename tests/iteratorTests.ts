@@ -167,6 +167,30 @@ export function iteratorTests<T>(creator: () => Iterator<T>): void
             }
         });
 
+        test("any()", () =>
+        {
+            const iterator: Iterator<T> = creator();
+            assert.strictEqual(iterator.hasStarted(), false);
+            assert.strictEqual(iterator.hasCurrent(), false);
+
+            assert.strictEqual(iterator.any(), false);
+
+            assert.strictEqual(iterator.hasStarted(), true);
+            assert.strictEqual(iterator.hasCurrent(), false);
+        });
+
+        test("getCount()", () =>
+        {
+            const iterator: Iterator<T> = creator();
+            assert.strictEqual(iterator.hasStarted(), false);
+            assert.strictEqual(iterator.hasCurrent(), false);
+
+            assert.strictEqual(iterator.getCount(), 0);
+
+            assert.strictEqual(iterator.hasStarted(), true);
+            assert.strictEqual(iterator.hasCurrent(), false);
+        });
+
         test("toArray()", () =>
         {
             const iterator: Iterator<T> = creator();

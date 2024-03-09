@@ -2,6 +2,7 @@ import { JavascriptIterable, JavascriptIterator } from "./javascript";
 import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
 import { MapIterator } from "./mapIterator";
 import { Pre } from "./pre";
+import { Post } from "./post";
 import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToIteratorAdapter";
 import { Result } from "./result";
 import { EmptyError } from "./emptyError";
@@ -93,6 +94,55 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
         Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
 
         return IteratorToJavascriptIteratorAdapter.create(iterator);
+    }
+
+    /**
+     * Get whether this {@link Iterator} contains any values.
+     * Note: This may advance the {@link Iterator} to the first value if it hasn't been
+     * started yet.
+     */
+    public abstract any(): boolean;
+
+    /**
+     * Get whether this {@link Iterator} contains any values.
+     * Note: This may advance the {@link Iterator} to the first value if it hasn't been
+     * started yet.
+     */
+    public static any<T>(iterator: Iterator<T>): boolean
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
+
+        iterator.start();
+        return iterator.hasCurrent();
+    }
+
+    /**
+     * Get the number of values in this {@link Iterator}.
+     * Note: This will consume all of the values in this {@link Iterator}.
+     */
+    public abstract getCount(): number;
+
+    /**
+     * Get the number of values in the provided {@link Iterator}.
+     * Note: This will consume all of the values in the provided {@link Iterator}.
+     */
+    public static getCount<T>(iterator: Iterator<T>): number
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
+
+        let result: number = 0;
+        if (iterator.hasCurrent())
+        {
+            result++;
+        }
+        while (iterator.next())
+        {
+            result++;
+        }
+
+        Post.condition.assertGreaterThanOrEqualTo(result, 0, "result");
+
+        return result;
     }
 
     /**

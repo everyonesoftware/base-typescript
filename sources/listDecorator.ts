@@ -32,6 +32,11 @@ export abstract class ListDecorator<T> extends ListBase<T>
         return this.innerList.iterate();
     }
 
+    public override any(): boolean
+    {
+        return this.innerList.any();
+    }
+
     public override getCount(): number
     {
         return this.innerList.getCount();

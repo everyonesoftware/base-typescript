@@ -59,6 +59,16 @@ export abstract class IteratorDecorator<T> implements Iterator<T>
         return Iterator.takeCurrent(this);
     }
 
+    public any(): boolean
+    {
+        return Iterator.any(this);
+    }
+
+    public getCount(): number
+    {
+        return Iterator.getCount(this);
+    }
+
     public toArray(): T[]
     {
         return Iterator.toArray(this);

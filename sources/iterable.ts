@@ -46,9 +46,32 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     }
 
     /**
+     * Get whether this {@link Iterable} contains any values.
+     */
+    public abstract any(): boolean;
+
+    /**
+     * Get whether the provided {@link Iterable} contains any values.
+     */
+    public static any<T>(iterable: Iterable<T>): boolean
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
+
+        return iterable.iterate().any();
+    }
+
+    /**
      * Get the number of values in this {@link Iterable}.
      */
     public abstract getCount(): number;
+
+    /**
+     * Get the number of values in the provided {@link Iterable}.
+     */
+    public static getCount<T>(iterable: Iterable<T>): number
+    {
+        return iterable.iterate().getCount();
+    }
 
     /**
      * Get the {@link String} representation of this {@link Iterable}.

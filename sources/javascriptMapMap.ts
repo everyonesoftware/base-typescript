@@ -20,6 +20,11 @@ export class JavascriptMapMap<TKey,TValue> extends MapBase<TKey,TValue>
         return new JavascriptMapMap<TKey,TValue>();
     }
 
+    public override any(): boolean
+    {
+        return this.getCount() > 0;
+    }
+
     public override getCount(): number
     {
         return this.javascriptMap.size;

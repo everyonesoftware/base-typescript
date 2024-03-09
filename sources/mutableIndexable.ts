@@ -25,6 +25,8 @@ export abstract class MutableIndexable<T> implements Indexable<T>
 
     public abstract [Symbol.iterator](): JavascriptIterator<T>;
 
+    public abstract any(): boolean;
+
     public abstract getCount(): number;
 
     public abstract first(): Result<T>;
