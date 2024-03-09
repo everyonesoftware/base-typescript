@@ -21,6 +21,8 @@ export abstract class List<T> implements MutableIndexable<T>
 
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterable<T, TOutput>;
 
+    public abstract any(): boolean;
+
     public abstract getCount(): number;
 
     public abstract first(): Result<T>;

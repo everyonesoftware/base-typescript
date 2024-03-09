@@ -18,6 +18,8 @@ export abstract class MapBase<TKey,TValue> extends IterableBase<[TKey,TValue]> i
         return Map.toString(this);
     }
 
+    public abstract override any(): boolean;
+
     public abstract override getCount(): number;
 
     public abstract containsKey(key: TKey): boolean;

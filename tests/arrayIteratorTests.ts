@@ -200,6 +200,47 @@ suite("arrayIterator.ts", () =>
             forOfTest(["a", "b", "c"]);
         });
 
+        suite("any()", () =>
+        {
+            function anyTest<T>(values: T[], expected: boolean): void
+            {
+                test(`with ${JSON.stringify(values)}`, () =>
+                {
+                    const iterator: ArrayIterator<T> = ArrayIterator.create(values);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        assert.strictEqual(iterator.any(), expected);
+                    }
+                });
+            }
+
+            anyTest([], false);
+            anyTest([1], true);
+            anyTest(["a", "b"], true);
+            anyTest([false, false, true, true], true);
+        });
+
+        suite("getCount()", () =>
+        {
+            function getCountTest<T>(values: T[], expected: number): void
+            {
+                test(`with ${JSON.stringify(values)}`, () =>
+                {
+                    const iterator: ArrayIterator<T> = ArrayIterator.create(values);
+                    assert.strictEqual(iterator.getCount(), expected);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        assert.strictEqual(iterator.getCount(), 0);
+                    }
+                });
+            }
+
+            getCountTest([], 0);
+            getCountTest([1], 1);
+            getCountTest(["a", "b"], 2);
+            getCountTest([false, false, true, true], 4);
+        });
+
         suite("toArray()", () =>
         {
             function toArrayTest<T>(values: T[]): void
