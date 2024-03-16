@@ -59,6 +59,7 @@ suite("fetchHttpClient.ts", () =>
                     assert.strictEqual(response.getStatusCode(), expectedStatusCode);
                     const jsonBody: any = await response.getBodyAsJson();
                     delete jsonBody.headers["X-Amzn-Trace-Id"];
+                    delete jsonBody["origin"];
                     assert.deepStrictEqual(jsonBody, expectedBody);
                 });
             }
@@ -78,7 +79,6 @@ suite("fetchHttpClient.ts", () =>
                         "Sec-Fetch-Mode": "cors",
                         "User-Agent": "node",
                     },
-                    "origin": "50.47.215.102",
                     "url": "https://httpbin.org/get"
                 });
         });
