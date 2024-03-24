@@ -1,8 +1,25 @@
 import * as assert from "assert";
-import { PreConditionError, andList, escape, escapeAndQuote, isDigit, isLetter, isLetterOrDigit, isLowercasedLetter, isUppercasedLetter, isWhitespace, join, quote } from "../sources";
+import { PreConditionError, andList, escape, escapeAndQuote, getLength, isDigit, isLetter, isLetterOrDigit, isLowercasedLetter, isUppercasedLetter, isWhitespace, join, quote } from "../sources";
 
 suite("ts", () =>
 {
+    suite("getLength(string | undefined | null)", () =>
+    {
+        function getLengthTest(value: string | undefined | null, expected: number): void
+        {
+            test(`with ${escapeAndQuote(value)}`, () =>
+            {
+                assert.strictEqual(getLength(value), expected);
+            });
+        }
+
+        getLengthTest(undefined, 0);
+        getLengthTest(null, 0);
+        getLengthTest("", 0);
+        getLengthTest("a", 1);
+        getLengthTest("abc", 3);
+    });
+
     suite("join(string, string[])", () =>
     {
         function joinErrorTest(separator: string, values: string[], expected: Error): void
