@@ -3,6 +3,11 @@ import { Pre } from "./pre";
 import { Post } from "./post";
 import { isString } from "./types";
 
+export function getLength(value: string | undefined | null): number
+{
+    return value !== undefined && value !== null ? value.length : 0;
+}
+
 export function toString(value: undefined | null | { toString(): string }): string
 {
     let result: string;
