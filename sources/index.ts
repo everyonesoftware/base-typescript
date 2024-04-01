@@ -69,4 +69,5 @@ export * from "./textTokenizer";
 export * from "./textTokenType";
 export * from "./toStringFunctions";
 export * from "./types";
+export * from "./versionNumber";
 export * from "./wrongTypeError";

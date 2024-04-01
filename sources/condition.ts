@@ -310,4 +310,17 @@ export class Condition
             });
         }
     }
+
+    public assertInteger(value: number, expression?: string, message?: string): void
+    {
+        if (value % 1 !== 0)
+        {
+            throw this.createError({
+                expected: `integer`,
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
+    }
 }
