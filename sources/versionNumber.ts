@@ -1,18 +1,24 @@
 import { Comparable } from "./comparable";
 import { Comparison } from "./comparison";
+import { NumberComparer } from "./numberComparer";
+import { readUnsignedInteger } from "./numbers";
+import { MissingValueParseError } from "./parseError";
 import { Pre } from "./pre";
-import { getLength } from "./strings";
+import { Result } from "./result";
+import { StringComparer } from "./stringComparer";
+import { StringIterator } from "./stringIterator";
+import { getLength, isDigit, isWhitespace } from "./strings";
 
 export class VersionNumber extends Comparable<VersionNumber>
 {
-    private major?: number;
-    private minor?: number;
-    private patch?: number;
+    private numberSegments: number[];
     private suffix?: string;
 
     private constructor()
     {
         super();
+
+        this.numberSegments = [];
     }
 
     public static create(): VersionNumber
@@ -20,9 +26,70 @@ export class VersionNumber extends Comparable<VersionNumber>
         return new VersionNumber();
     }
 
+    public static parse(text: string): Result<VersionNumber>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
+
+        return Result.create(() =>
+        {
+            const result: VersionNumber = VersionNumber.create();
+
+            const characters: StringIterator = StringIterator.create(text).start();
+
+            while (characters.hasCurrent() && isWhitespace(characters.getCurrent()))
+            {
+                characters.next();
+            }
+
+            if (!characters.hasCurrent())
+            {
+                throw new MissingValueParseError("version number");
+            }
+
+            let suffix: string = "";
+            if (isDigit(characters.getCurrent()))
+            {
+                result.addNumberSegment(readUnsignedInteger(characters).await());
+
+                while (characters.hasCurrent() && characters.getCurrent() === ".")
+                {
+                    characters.next();
+
+                    if (!characters.hasCurrent() || !isDigit(characters.getCurrent()))
+                    {
+                        suffix = ".";
+                        break;
+                    }
+
+                    result.addNumberSegment(readUnsignedInteger(characters).await());
+                }
+            }
+
+            while (characters.hasCurrent() && !isWhitespace(characters.getCurrent()))
+            {
+                suffix += characters.takeCurrent();
+            }
+            if (suffix !== "")
+            {
+                result.setSuffix(suffix);
+            }
+
+            return result;
+        });
+    }
+
+    public addNumberSegment(segment: number): this
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(segment, "segment");
+
+        this.numberSegments.push(segment);
+
+        return this;
+    }
+
     public getMajor(): number | undefined
     {
-        return this.major;
+        return this.numberSegments.length >= 1 ? this.numberSegments[0] : undefined;
     }
 
     public setMajor(major: number): this
@@ -31,14 +98,21 @@ export class VersionNumber extends Comparable<VersionNumber>
         Pre.condition.assertGreaterThanOrEqualTo(major, 0, "major");
         Pre.condition.assertInteger(major, "major");
 
-        this.major = major;
+        if (this.numberSegments.length === 0)
+        {
+            this.addNumberSegment(major);
+        }
+        else
+        {
+            this.numberSegments[0] = major;
+        }
 
         return this;
     }
 
     public getMinor(): number | undefined
     {
-        return this.minor;
+        return this.numberSegments.length >= 2 ? this.numberSegments[1] : undefined;
     }
 
     public setMinor(minor: number): this
@@ -47,18 +121,25 @@ export class VersionNumber extends Comparable<VersionNumber>
         Pre.condition.assertGreaterThanOrEqualTo(minor, 0, "minor");
         Pre.condition.assertInteger(minor, "minor");
 
-        if (this.getMajor() === undefined)
+        if (this.numberSegments.length === 0)
         {
-            this.setMajor(0);
+            this.addNumberSegment(0);
         }
-        this.minor = minor;
+        if (this.numberSegments.length === 1)
+        {
+            this.addNumberSegment(minor);
+        }
+        else
+        {
+            this.numberSegments[1] = minor;
+        }
 
         return this;
     }
 
     public getPatch(): number | undefined
     {
-        return this.patch;
+        return this.numberSegments.length >= 3 ? this.numberSegments[2] : undefined;
     }
 
     public setPatch(patch: number): this
@@ -67,11 +148,19 @@ export class VersionNumber extends Comparable<VersionNumber>
         Pre.condition.assertGreaterThanOrEqualTo(patch, 0, "patch");
         Pre.condition.assertInteger(patch, "patch");
 
-        if (this.getMinor() === undefined)
+        while (this.numberSegments.length < 2)
         {
-            this.setMinor(0);
+            this.addNumberSegment(0);
         }
-        this.patch = patch;
+
+        if (this.numberSegments.length === 2)
+        {
+            this.addNumberSegment(patch);
+        }
+        else
+        {
+            this.numberSegments[2] = patch;
+        }
 
         return this;
     }
@@ -93,10 +182,34 @@ export class VersionNumber extends Comparable<VersionNumber>
 
     public override compareTo(right: VersionNumber): Comparison
     {
-        let result: Comparison = Comparison.GreaterThan;
-        if (right !== undefined && right !== null)
+        let result: Comparison;
+        if (right === undefined || right === null)
         {
+            result = Comparison.GreaterThan;
+        }
+        else
+        {
+            result = Comparison.Equal;
+            const leftNumberCount: number = this.numberSegments.length;
+            const rightNumberCount: number = right.numberSegments.length;
+            const maximumNumberCount: number = leftNumberCount > rightNumberCount ? leftNumberCount : rightNumberCount;
+            for (let index: number = 0; index < maximumNumberCount; index++)
+            {
+                const leftNumber: number = index < leftNumberCount ? this.numberSegments[index] : 0;
+                const rightNumber: number = index < rightNumberCount ? right.numberSegments[index] : 0;
+                result = NumberComparer.compare(leftNumber, rightNumber);
+                if (result !== Comparison.Equal)
+                {
+                    break;
+                }
+            }
 
+            if (result === Comparison.Equal)
+            {
+                const leftSuffix: string = this.suffix || "";
+                const rightSuffix: string = right.suffix || "";
+                result = StringComparer.compare(leftSuffix, rightSuffix);
+            }
         }
         return result;
     }
@@ -104,26 +217,16 @@ export class VersionNumber extends Comparable<VersionNumber>
     public override toString(): string
     {
         let result: string = "";
-        if (this.major !== undefined)
-        {
-            result += this.major;
-        }
-        if (this.minor !== undefined)
+
+        for (const numberSegment of this.numberSegments)
         {
             if (result.length > 0)
             {
                 result += ".";
             }
-            result += this.minor;
+            result += numberSegment;
         }
-        if (this.patch !== undefined)
-        {
-            if (result.length > 0)
-            {
-                result += ".";
-            }
-            result += this.patch;
-        }
+
         if (getLength(this.suffix) > 0)
         {
             result += this.suffix;

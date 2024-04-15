@@ -45,6 +45,43 @@ suite("condition.ts", () =>
             });
         });
 
+        suite("assertUndefined(unknown,string?,string?)", () =>
+        {
+            test("with undefined", () =>
+            {
+                const condition: Condition = Condition.create();
+                condition.assertUndefined(undefined, "fake-expression", "fake-message");
+            });
+
+            function assertUndefinedErrorTest(value: unknown, expected: Error): void
+            {
+                test(`with ${value}`, () =>
+                {
+                    const condition: Condition = Condition.create();
+                    assert.throws(() => condition.assertUndefined(value), expected);
+                });
+            }
+
+            assertUndefinedErrorTest(
+                null,
+                new Error(join("\n", [
+                    "Expected: undefined",
+                    "Actual: null",
+                ])));
+            assertUndefinedErrorTest(
+                "",
+                new Error(join("\n", [
+                    "Expected: undefined",
+                    "Actual: ",
+                ])));
+            assertUndefinedErrorTest(
+                50,
+                new Error(join("\n", [
+                    "Expected: undefined",
+                    "Actual: 50",
+                ])));
+        });
+
         suite("assertNotUndefinedAndNotNull<T>(undefined|null|T,string?,string?)", () =>
         {
             test("with undefined", () =>

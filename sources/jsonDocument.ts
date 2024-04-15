@@ -6,7 +6,7 @@ import { Pre } from "./pre";
 import { Result } from "./result";
 import { Iterator } from "./iterator";
 import { JsonTokenizer } from "./jsonTokenizer";
-import { ParseError } from "./parseError";
+import { MissingValueParseError, ParseError, UnexpectedValueParseError, WrongValueParseError } from "./parseError";
 import { JsonTokenType } from "./jsonTokenType";
 import { JsonString } from "./jsonString";
 import { JsonBoolean } from "./jsonBoolean";
@@ -19,6 +19,7 @@ import { JsonArray } from "./jsonArray";
 import { Type } from "./types";
 import { escapeAndQuote } from "./strings";
 import { Iterable } from "./iterable";
+import { JavascriptIterable } from "./javascript";
 
 /**
  * An object that represents a JSON document.
@@ -27,17 +28,21 @@ export class JsonDocument
 {
     private roots: List<JsonSegment>;
 
-    private constructor()
+    private constructor(roots?: JavascriptIterable<JsonSegment>)
     {
-        this.roots = List.create();
+        if (roots === undefined || roots === null)
+        {
+            roots = [];
+        }
+        this.roots = List.create(roots);
     }
 
     /**
      * Create a new {@link JsonDocument}.
      */
-    public static create(): JsonDocument
+    public static create(...roots: JsonSegment[]): JsonDocument
     {
-        return new JsonDocument();
+        return new JsonDocument(roots);
     }
 
     public static parse(text: string): Result<JsonDocument>
@@ -62,7 +67,7 @@ export class JsonDocument
         
             if (tokenizer.hasCurrent())
             {
-                throw ParseError.unexpectedToken(tokenizer.getCurrent().getText());
+                throw new UnexpectedValueParseError(tokenizer.getCurrent().getText());
             }
         
             return result;
@@ -104,7 +109,7 @@ export class JsonDocument
                     break;
 
                 default:
-                    throw ParseError.unexpectedToken(tokenizer.getCurrent().getText());
+                    throw new UnexpectedValueParseError(tokenizer.getCurrent().getText());
             }
 
             Post.condition.assertNotUndefinedAndNotNull(result, "result");
@@ -156,9 +161,9 @@ export class JsonDocument
                         case JsonTokenType.RightCurlyBrace:
                             if (!expectEndBrace)
                             {
-                                throw ParseError.expectedButFoundInstead({
+                                throw new WrongValueParseError({
                                     expected: "object property",
-                                    foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                    actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                                 });
                             }
                             endBrace = tokenizer.takeCurrent();
@@ -170,9 +175,9 @@ export class JsonDocument
                         case JsonTokenType.Comma:
                             if (!expectComma)
                             {
-                                throw ParseError.expectedButFoundInstead({
+                                throw new WrongValueParseError({
                                     expected: "object property or object closing brace ('}')",
-                                    foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                    actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                                 });
                             }
                             tokenizer.next();
@@ -184,9 +189,9 @@ export class JsonDocument
                         case JsonTokenType.String:
                             if (!expectProperty)
                             {
-                                throw ParseError.expectedButFoundInstead({
+                                throw new WrongValueParseError({
                                     expected: "object property separator (',') or object closing brace ('}')",
-                                    foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                    actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                                 });
                             }
 
@@ -194,13 +199,13 @@ export class JsonDocument
                             JsonDocument.skipWhitespace(tokenizer);
                             if (!tokenizer.hasCurrent())
                             {
-                                throw ParseError.missing("property name/value separator", ":");
+                                throw new MissingValueParseError("property name/value separator (':')");
                             }
                             else if (tokenizer.getCurrent().getTokenType() !== JsonTokenType.Colon)
                             {
-                                throw ParseError.expectedButFoundInstead({
+                                throw new WrongValueParseError({
                                     expected: "property name/value separator (':')",
-                                    foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                    actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                                 });
                             }
                             tokenizer.next();
@@ -208,7 +213,7 @@ export class JsonDocument
 
                             if (!tokenizer.hasCurrent())
                             {
-                                throw ParseError.missing("property value");
+                                throw new MissingValueParseError("property value");
                             }
 
                             switch (tokenizer.getCurrent().getTokenType())
@@ -226,15 +231,15 @@ export class JsonDocument
                                     break;
 
                                 default:
-                                    throw ParseError.expectedButFoundInstead({
+                                    throw new WrongValueParseError({
                                         expected: "property value",
-                                        foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                        actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                                     });
                             }
                             break;
 
                         default:
-                            throw ParseError.expectedButFoundInstead(Iterable.create(["}", `"`]).map(escapeAndQuote), tokenizer.getCurrent().getText());
+                            throw new WrongValueParseError(Iterable.create(["}", `"`]).map(escapeAndQuote), tokenizer.getCurrent().getText());
                     }
                 }
             }
@@ -243,16 +248,16 @@ export class JsonDocument
             {
                 if (expectEndBrace)
                 {
-                    throw ParseError.missing("object property or object closing brace ('}')");
+                    throw new MissingValueParseError("object property or object closing brace ('}')");
                 }
                 else
                 {
-                    throw ParseError.missing("object property");
+                    throw new MissingValueParseError("object property");
                 }
             }
             else if (expectEndBrace)
             {
-                throw ParseError.missing("object closing brace", "}");
+                throw new MissingValueParseError("object closing brace ('}')");
             }
 
             return result;
@@ -286,9 +291,9 @@ export class JsonDocument
                         case JsonTokenType.RightSquareBracket:
                             if (!expectEndBracket)
                             {
-                                throw ParseError.expectedButFoundInstead({
+                                throw new WrongValueParseError({
                                     expected: "array element",
-                                    foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                    actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                                 });
                             }
                             endBracket = tokenizer.takeCurrent();
@@ -300,9 +305,9 @@ export class JsonDocument
                         case JsonTokenType.Comma:
                             if (!expectComma)
                             {
-                                throw ParseError.expectedButFoundInstead({
+                                throw new WrongValueParseError({
                                     expected: "array element or array closing bracket (']')",
-                                    foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                    actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                                 });
                             }
                             tokenizer.next();
@@ -319,9 +324,9 @@ export class JsonDocument
                         case JsonTokenType.Number:
                             if (!expectElement)
                             {
-                                throw ParseError.expectedButFoundInstead({
+                                throw new WrongValueParseError({
                                     expected: "array element separator (',') or array closing bracket (']')",
-                                    foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                    actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                                 });
                             }
                             result.add(JsonDocument.parseJsonSegment(tokenizer).await());
@@ -331,9 +336,9 @@ export class JsonDocument
                             break;
 
                         default:
-                            throw ParseError.expectedButFoundInstead({
+                            throw new WrongValueParseError({
                                 expected: `array element or array closing bracket (']')`,
-                                foundInstead: escapeAndQuote(tokenizer.getCurrent().getText()),
+                                actual: escapeAndQuote(tokenizer.getCurrent().getText()),
                             });
                     }
                 }
@@ -343,16 +348,16 @@ export class JsonDocument
             {
                 if (expectEndBracket)
                 {
-                    throw ParseError.missing("array element or array closing bracket (']')");
+                    throw new MissingValueParseError("array element or array closing bracket (']')");
                 }
                 else
                 {
-                    throw ParseError.missing("array element");
+                    throw new MissingValueParseError("array element");
                 }
             }
             else if (expectEndBracket)
             {
-                throw ParseError.missing("array closing bracket", "]");
+                throw new MissingValueParseError("array closing bracket (']')");
             }
 
             return result;

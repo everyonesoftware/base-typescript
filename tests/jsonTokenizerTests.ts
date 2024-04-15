@@ -154,6 +154,7 @@ suite("jsonTokenizer.ts", () =>
             createTest(`0`, [JsonToken.number(0)]);
             createTest(`-0`, [JsonToken.number(-0)]);
             createTest(`1`, [JsonToken.number(1)]);
+            createTest(`100`, [JsonToken.number(100)]);
             createTest(`123`, [JsonToken.number(123)]);
             createTest(`-1234`, [JsonToken.number(-1234)]);
             createTest(`1.2`, [JsonToken.number(1.2)]);

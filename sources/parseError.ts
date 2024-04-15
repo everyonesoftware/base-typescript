@@ -1,7 +1,7 @@
 import { orList } from "./english";
 import { JavascriptIterable } from "./javascript";
 import { Pre } from "./pre";
-import { escapeAndQuote, join } from "./strings";
+import { join } from "./strings";
 import { isJavascriptIterable, isString } from "./types";
 
 /**
@@ -13,15 +13,57 @@ export class ParseError extends Error
     {
         super(join({ separator: "\n", values: message }));
     }
+}
 
-    public static unexpectedToken(tokenText: string): ParseError
+/**
+ * A {@link ParseError} that is thrown when a value is expected but none are found.
+ */
+export class MissingValueParseError extends ParseError
+{
+    private readonly missingValue: string;
+
+    public constructor(missingValue: string);
+    public constructor(parameters: { missingValue: string });
+    constructor(missingValueOrParameters: string | { missingValue: string })
     {
-        return new ParseError(`Unexpected token: ${tokenText}`);
+        let missingValue: string;
+        if (isString(missingValueOrParameters))
+        {
+            missingValue = missingValueOrParameters;
+        }
+        else
+        {
+            missingValue = missingValueOrParameters.missingValue;
+        }
+
+        Pre.condition.assertNotEmpty(missingValue, "missingValue");
+
+        super(`Missing ${missingValue}.`);
+
+        this.missingValue = missingValue;
     }
 
-    public static expectedButFoundInstead(expected: string | JavascriptIterable<string>, foundInstead: string): ParseError;
-    public static expectedButFoundInstead(parameters: { expected: string | JavascriptIterable<string>, foundInstead: string }): ParseError;
-    static expectedButFoundInstead(expectedOrParameters: string | JavascriptIterable<string> | { expected: string | JavascriptIterable<string>, foundInstead: string }, foundInstead?: string): ParseError
+    /**
+     * Get the value that is missing.
+     */
+    public getMissingValue(): string
+    {
+        return this.missingValue;
+    }
+}
+
+/**
+ * A {@link ParseError} that is thrown when one value is expected but a different value
+ * is found.
+ */
+export class WrongValueParseError extends ParseError
+{
+    private readonly expected: string | JavascriptIterable<string>;
+    private readonly actual: string;
+
+    public constructor(expected: string | JavascriptIterable<string>, actual: string);
+    public constructor(parameters: { expected: string | JavascriptIterable<string>, actual: string });
+    constructor(expectedOrParameters: string | JavascriptIterable<string> | { expected: string | JavascriptIterable<string>, actual: string }, actual?: string)
     {
         let expected: string | JavascriptIterable<string>;
         if (isString(expectedOrParameters) || isJavascriptIterable(expectedOrParameters))
@@ -31,49 +73,73 @@ export class ParseError extends Error
         else
         {
             expected = expectedOrParameters.expected;
-            foundInstead = expectedOrParameters.foundInstead;
+            actual = expectedOrParameters.actual;
         }
 
         Pre.condition.assertNotUndefinedAndNotNull(expected, "expected");
-        Pre.condition.assertNotUndefinedAndNotNull(foundInstead, "foundInstead");
+        Pre.condition.assertNotUndefinedAndNotNull(actual, "actual");
 
         if (isString(expected))
         {
             expected = [expected];
         }
-        return new ParseError(`Expected ${orList(expected)}, but found ${foundInstead} instead.`);
+
+        super(`Expected ${orList(expected)}, but found ${actual} instead.`);
+
+        this.expected = expected;
+        this.actual = actual;
     }
 
-    public static missing(description: string, expected?: string): ParseError;
-    public static missing(parameters: { description: string, expected?: string }): ParseError;
-    static missing(descriptionOrParameters: string | { description: string, expected?: string }, expected?: string): ParseError
+    /**
+     * Get the value or values that were expected.
+     */
+    public getExpected(): string | JavascriptIterable<string>
     {
-        let description: string;
-        if (isString(descriptionOrParameters))
+        return this.expected;
+    }
+
+    /**
+     * Get the value that was actually found.
+     */
+    public getActual(): string
+    {
+        return this.actual;
+    }
+}
+
+/**
+ * A {@link ParseError} that is thrown when a value is read when no value is expected.
+ */
+export class UnexpectedValueParseError extends ParseError
+{
+    private readonly unexpectedValue: string;
+
+    public constructor(unexpectedValue: string);
+    public constructor(parameters: { unexpectedValue: string });
+    constructor(unexpectedValueOrParameters: string | { unexpectedValue: string })
+    {
+        let unexpectedValue: string;
+        if (isString(unexpectedValueOrParameters))
         {
-            description = descriptionOrParameters;
+            unexpectedValue = unexpectedValueOrParameters;
         }
         else
         {
-            description = descriptionOrParameters.description;
-            expected = descriptionOrParameters.expected;
+            unexpectedValue = unexpectedValueOrParameters.unexpectedValue;
         }
 
-        Pre.condition.assertNotEmpty(description, "description");
+        Pre.condition.assertNotEmpty(unexpectedValue, "unexpectedValue");
 
-        let message: string = `Missing ${description}`;
-        if (expected === undefined)
-        {
-            message += ".";
-        }
-        else
-        {
-            message += `: ${escapeAndQuote(expected)}`;
-            if (expected.length === 1)
-            {
-                message += ` (${expected.codePointAt(0)})`;
-            }
-        }
-        return new ParseError(message);
+        super(`Unexpected value: ${unexpectedValue}`);
+
+        this.unexpectedValue = unexpectedValue;
+    }
+
+    /**
+     * Get the unexpected value.
+     */
+    public getUnexpectedValue(): string
+    {
+        return this.unexpectedValue;
     }
 }

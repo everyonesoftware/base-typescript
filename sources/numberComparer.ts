@@ -18,6 +18,11 @@ export class NumberComparer extends Comparer<number>
 
     public override compare(left: number, right: number): Comparison
     {
+        return NumberComparer.compare(left, right);
+    }
+
+    public static compare(left: number, right: number): Comparison
+    {
         let result: Comparison | undefined = Comparer.compareSameUndefinedNull(left, right);
         if (result === undefined)
         {

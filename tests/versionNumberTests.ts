@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { PreConditionError, VersionNumber, andList, escapeAndQuote, toString } from "../sources";
+import { Comparison, MissingValueParseError, PreConditionError, VersionNumber, andList, escapeAndQuote, toString } from "../sources";
 
 suite("versionNumber.ts", () =>
 {
@@ -13,6 +13,63 @@ suite("versionNumber.ts", () =>
             assert.strictEqual(versionNumber.getMinor(), undefined);
             assert.strictEqual(versionNumber.getPatch(), undefined);
             assert.strictEqual(versionNumber.getSuffix(), undefined);
+        });
+
+        suite("parse(string)", () =>
+        {
+            function parseErrorTest(text: string, expected: Error): void
+            {
+                test(`with ${escapeAndQuote(text)}`, () =>
+                {
+                    assert.throws(() => VersionNumber.parse(text).await(), expected);
+                });
+            }
+
+            parseErrorTest(
+                undefined!,
+                new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined"));
+            parseErrorTest(
+                null!,
+                new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: null"));
+            parseErrorTest(
+                "",
+                new MissingValueParseError("version number"),
+            );
+            parseErrorTest(
+                "   ",
+                new MissingValueParseError("version number"),
+            );
+
+            function parseTest(text: string, expected: VersionNumber): void
+            {
+                test(`with ${escapeAndQuote(text)}`, () =>
+                {
+                    const versionNumber: VersionNumber = VersionNumber.parse(text).await();
+                    assert.deepStrictEqual(versionNumber, expected);
+                    assert.strictEqual(versionNumber.equals(expected), true);
+                });
+            }
+
+            parseTest(".", VersionNumber.create().setSuffix("."));
+            parseTest(".5", VersionNumber.create().setSuffix(".5"));
+            parseTest("0", VersionNumber.create().setMajor(0));
+            parseTest("0.", VersionNumber.create().setMajor(0).setSuffix("."));
+            parseTest("1", VersionNumber.create().setMajor(1));
+            parseTest("1.", VersionNumber.create().setMajor(1).setSuffix("."));
+            parseTest("12", VersionNumber.create().setMajor(12));
+            parseTest("12.", VersionNumber.create().setMajor(12).setSuffix("."));
+            parseTest("1.2", VersionNumber.create().setMajor(1).setMinor(2));
+            parseTest("1.2.", VersionNumber.create().setMajor(1).setMinor(2).setSuffix("."));
+            parseTest("1.2.3", VersionNumber.create().setMajor(1).setMinor(2).setPatch(3));
+            parseTest("1.2.3.4", VersionNumber.create().setMajor(1).setMinor(2).setPatch(3).addNumberSegment(4));
+            parseTest("1.2.3.4.5", VersionNumber.create().setMajor(1).setMinor(2).setPatch(3).addNumberSegment(4).addNumberSegment(5));
+            parseTest("alpha", VersionNumber.create().setSuffix("alpha"));
         });
 
         suite("setMajor(number)", () =>
@@ -247,6 +304,65 @@ suite("versionNumber.ts", () =>
             setSuffixTest(VersionNumber.create().setMajor(1), 1, undefined, undefined, "-prerelease");
             setSuffixTest(VersionNumber.create().setMinor(3), 0, 3, undefined, "-beta");
             setSuffixTest(VersionNumber.create().setMajor(1).setMinor(2).setPatch(3).setSuffix("d"), 1, 2, 3, "-marshmallow");
+        });
+
+        suite("compareTo(VersionNumber)", () =>
+        {
+            function compareToTest(left: VersionNumber, right: VersionNumber, expected: Comparison): void
+            {
+                test(`with ${andList([left, right].map(toString))}`, () =>
+                {
+                    assert.strictEqual(left.compareTo(right), expected);
+                });
+            }
+
+            compareToTest(VersionNumber.create(), undefined!, Comparison.GreaterThan);
+            compareToTest(VersionNumber.create(), null!, Comparison.GreaterThan);
+
+            compareToTest(VersionNumber.create(), VersionNumber.create(), Comparison.Equal);
+            compareToTest(VersionNumber.create(), VersionNumber.create().setMajor(1), Comparison.LessThan);
+            
+            compareToTest(VersionNumber.create().setMajor(1), VersionNumber.create().setMajor(2), Comparison.LessThan);
+            compareToTest(VersionNumber.create().setMajor(2), VersionNumber.create().setMajor(2), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(3), VersionNumber.create().setMajor(2), Comparison.GreaterThan);
+
+            compareToTest(VersionNumber.create().setMajor(1), VersionNumber.create().setMajor(1).setMinor(0), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(0), VersionNumber.create().setMajor(1), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(0), VersionNumber.create().setMajor(1).setMinor(0), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(2), VersionNumber.create().setMajor(1).setMinor(3), Comparison.LessThan);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(3), VersionNumber.create().setMajor(1).setMinor(3), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(4), VersionNumber.create().setMajor(1).setMinor(3), Comparison.GreaterThan);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(2), VersionNumber.create().setMajor(1).setMinor(2).setPatch(0), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(2).setPatch(0), VersionNumber.create().setMajor(1).setMinor(2), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(2).setPatch(0), VersionNumber.create().setMajor(1).setMinor(2).setPatch(3), Comparison.LessThan);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(2).setPatch(3), VersionNumber.create().setMajor(1).setMinor(2).setPatch(3), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(1).setMinor(2).setPatch(4), VersionNumber.create().setMajor(1).setMinor(2).setPatch(3), Comparison.GreaterThan);
+            compareToTest(VersionNumber.create().setMajor(1).setSuffix("a"), VersionNumber.create().setMajor(1), Comparison.GreaterThan);
+            compareToTest(VersionNumber.create().setMajor(1), VersionNumber.create().setMajor(1).setSuffix("b"), Comparison.LessThan);
+            compareToTest(VersionNumber.create().setMajor(1).setSuffix("a"), VersionNumber.create().setMajor(1).setSuffix("a"), Comparison.Equal);
+            compareToTest(VersionNumber.create().setMajor(1).setSuffix("a"), VersionNumber.create().setMajor(1).setSuffix("b"), Comparison.LessThan);
+
+
+
+        });
+
+        suite("toString()", () =>
+        {
+            function toStringTest(versionNumber: VersionNumber, expected: string): void
+            {
+                test(`with ${versionNumber.toString()}`, () =>
+                {
+                    assert.strictEqual(versionNumber.toString(), expected);
+                });
+            }
+
+            toStringTest(VersionNumber.create(), "");
+            toStringTest(VersionNumber.create().setMajor(1), "1");
+            toStringTest(VersionNumber.create().setMinor(2), "0.2");
+            toStringTest(VersionNumber.create().setPatch(3), "0.0.3");
+            toStringTest(VersionNumber.create().setMajor(1).setMinor(2).setPatch(3), "1.2.3");
+            toStringTest(VersionNumber.create().setSuffix("alpha"), "alpha");
+            toStringTest(VersionNumber.create().setMajor(1).setMinor(2).setSuffix("-prerelease"), "1.2-prerelease");
         });
     });
 });

@@ -1,5 +1,5 @@
 import { Iterable } from "./iterable";
-import { JavascriptIterable } from "./javascript";
+import { JavascriptIterable, JavascriptIterator } from "./javascript";
 
 /**
  * A {@link Type} type that can be used to pass class types as parameters.
@@ -88,6 +88,15 @@ export function hasProperty<TValue, TPropertyKey extends PropertyKey>(value: TVa
 export function hasFunction<TValue, TPropertyKey extends PropertyKey>(value: TValue, functionName: TPropertyKey): value is TValue & Record<TPropertyKey,Function>
 {
     return value !== undefined && value !== null && isFunction((value as any)[functionName]);
+}
+
+/**
+ * Get whether the provided value is a {@link JavascriptIterator}.
+ * @param value The value to check.
+ */
+export function isJavascriptIterator<T>(value: unknown): value is JavascriptIterator<T>
+{
+    return hasFunction(value, "next");
 }
 
 /**
