@@ -72,6 +72,25 @@ export class Condition
     }
 
     /**
+     * Assert that the provided value is undefined.
+     * @param value The value to check.
+     * @param expression The name of the expression that produced the value.
+     * @param message An additional message that will be included with the error.
+     */
+    public assertUndefined(value: unknown, expression?: string, message?: string): asserts value is undefined
+    {
+        if (value !== undefined)
+        {
+            throw this.createError({
+                expected: "undefined",
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    /**
      * Assert that the provided value is not undefined and not null.
      * @param value The value to check.
      * @param expression The name of the expression that produced the value.
@@ -304,6 +323,19 @@ export class Condition
         {
             throw this.createError({
                 expected: `one of ${possibilities}`,
+                actual: `${value}`,
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    public assertInteger(value: number, expression?: string, message?: string): void
+    {
+        if (value % 1 !== 0)
+        {
+            throw this.createError({
+                expected: `integer`,
                 actual: `${value}`,
                 expression: expression,
                 message: message,

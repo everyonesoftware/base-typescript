@@ -7,7 +7,8 @@ import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToItera
 import { Result } from "./result";
 import { EmptyError } from "./emptyError";
 import { WhereIterator } from "./whereIterator";
-import { Type } from "./types";
+import { Type, isJavascriptIterator } from "./types";
+import { Comparable } from "./comparable";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -231,6 +232,37 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
                 throw new EmptyError();
             }
             return iterator.getCurrent();
+        });
+    }
+
+    /**
+     * Find the maximum value in the provided {@link Iterator}.
+     * @param iterator The values to find the maximum of.
+     */
+    public static findMaximum<T extends Comparable<T>>(iterator: JavascriptIterator<T> | Iterator<T>): Result<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterable");
+
+        return Result.create(() =>
+        {
+            if (isJavascriptIterator(iterator))
+            {
+                iterator = Iterator.create(iterator);
+            }
+
+            let result: T = iterator.first()
+                .convertError(EmptyError, () => new EmptyError("Can't find the maximum of an empty Iterator."))
+                .await();
+            while (iterator.next())
+            {
+                const currentValue: T = iterator.getCurrent();
+                if (result.lessThan(currentValue))
+                {
+                    result = currentValue;
+                }
+            }
+            
+            return result;
         });
     }
 }

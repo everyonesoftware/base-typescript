@@ -1,3 +1,4 @@
+import { Comparable } from "./comparable";
 import { Indexable } from "./indexable";
 import { Iterator } from "./iterator";
 import { JavascriptIterable, JavascriptIterator } from "./javascript";
@@ -127,5 +128,16 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
         Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
 
         return iterable.iterate().first();
+    }
+
+    /**
+     * Find the maximum value in the provided {@link Iterable}.
+     * @param iterable The values to find the maximum of.
+     */
+    public static findMaximum<T extends Comparable<T>>(iterable: JavascriptIterable<T> | Iterable<T>): Result<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
+
+        return Iterator.findMaximum(Iterator.create(iterable));
     }
 }

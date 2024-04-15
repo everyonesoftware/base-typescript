@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { HttpClient, NpmClient, NpmPackageDetails, Pre, PreConditionError, escapeAndQuote } from "../sources";
+import { Iterator, HttpClient, JsonDocument, JsonObject, NotFoundError, NpmClient, NpmPackageDetails, PackageJson, Pre, PreConditionError, escapeAndQuote, DependencyUpdate } from "../sources";
 
 suite("npmClient.ts", () =>
 {
@@ -197,6 +197,78 @@ export function npmClientTests(creator: (() => NpmClient)): void
                         '9.0.0',
                         '9.1.0'
                     ]));
+        });
+
+        suite("findDependencyUpdates(PackageJson)", () =>
+        {
+            function findDependencyUpdatesErrorTest(packageJson: PackageJson, expected: Error): void
+            {
+                test(`with ${packageJson}`, async () =>
+                {
+                    const npmClient: NpmClient = creator();
+                    await assert.rejects(async () => await npmClient.findDependencyUpdates(packageJson),
+                        expected);
+                });
+            }
+
+            findDependencyUpdatesErrorTest(
+                undefined!,
+                new PreConditionError(
+                        "Expression: packageJson",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
+            findDependencyUpdatesErrorTest(
+                null!,
+                new PreConditionError(
+                        "Expression: packageJson",
+                        "Expected: not undefined and not null",
+                        "Actual: null"));
+            findDependencyUpdatesErrorTest(
+                PackageJson.create(
+                    JsonDocument.create(
+                        JsonObject.create()
+                            .set("dependencies", JsonObject.create()
+                                .set("packagethatdoesntexist", "1.2.3")))),
+                new NotFoundError(`The package "packagethatdoesntexist" doesn't exist at https://registry.npmjs.org/packagethatdoesntexist.`));
+            findDependencyUpdatesErrorTest(
+                PackageJson.create(),
+                new NotFoundError(`No root has been added.`));
+            
+            function findDependencyUpdatesTest(packageJson: PackageJson, expected: DependencyUpdate[]): void
+            {
+                test(`with ${packageJson}`, async () =>
+                {
+                    const npmClient: NpmClient = creator();
+                    const dependencyUpdates: Iterator<DependencyUpdate> = await npmClient.findDependencyUpdates(packageJson);
+                    assert.deepStrictEqual(dependencyUpdates.toArray(), expected);
+                });
+            }
+
+            findDependencyUpdatesTest(
+                PackageJson.create(JsonDocument.create(JsonObject.create()
+                    .set("dependencies", JsonObject.create()
+                        .set("@types/assert", "1.5.10")))),
+                []);
+            findDependencyUpdatesTest(
+                PackageJson.create(JsonDocument.create(JsonObject.create()
+                    .set("dependencies", JsonObject.create()
+                        .set("@types/assert", "1.5.9")))),
+                [DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10")]);
+            findDependencyUpdatesTest(
+                PackageJson.create(JsonDocument.create(JsonObject.create()
+                    .set("dependencies", JsonObject.create()
+                        .set("@types/assert", "1.5.9")
+                        .set("assert", "92.1.0")))),
+                [DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10")]);
+            findDependencyUpdatesTest(
+                PackageJson.create(JsonDocument.create(JsonObject.create()
+                    .set("dependencies", JsonObject.create()
+                        .set("@types/assert", "1.5.9")
+                        .set("assert", "1.1.0")))),
+                [
+                    DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10"),
+                    DependencyUpdate.create("assert", "1.1.0", "2.1.0"),
+                ]);
         });
     });
 }

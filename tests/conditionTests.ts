@@ -45,6 +45,43 @@ suite("condition.ts", () =>
             });
         });
 
+        suite("assertUndefined(unknown,string?,string?)", () =>
+        {
+            test("with undefined", () =>
+            {
+                const condition: Condition = Condition.create();
+                condition.assertUndefined(undefined, "fake-expression", "fake-message");
+            });
+
+            function assertUndefinedErrorTest(value: unknown, expected: Error): void
+            {
+                test(`with ${value}`, () =>
+                {
+                    const condition: Condition = Condition.create();
+                    assert.throws(() => condition.assertUndefined(value), expected);
+                });
+            }
+
+            assertUndefinedErrorTest(
+                null,
+                new Error(join("\n", [
+                    "Expected: undefined",
+                    "Actual: null",
+                ])));
+            assertUndefinedErrorTest(
+                "",
+                new Error(join("\n", [
+                    "Expected: undefined",
+                    "Actual: ",
+                ])));
+            assertUndefinedErrorTest(
+                50,
+                new Error(join("\n", [
+                    "Expected: undefined",
+                    "Actual: 50",
+                ])));
+        });
+
         suite("assertNotUndefinedAndNotNull<T>(undefined|null|T,string?,string?)", () =>
         {
             test("with undefined", () =>
@@ -782,6 +819,56 @@ suite("condition.ts", () =>
                 ));
             assertOneOfTest([5], 5);
             assertOneOfTest([1, 3, 5, 7], 5);
+        });
+
+        suite("assertInteger(number,string?,string?)", () =>
+        {
+            function assertIntegerErrorTest(value: number, expected: Error): void
+            {
+                test(`with ${value}`, () =>
+                {
+                    const condition: Condition = Condition.create();
+                    assert.throws(() => condition.assertInteger(value), expected);
+                });
+            }
+
+            assertIntegerErrorTest(
+                1.2,
+                new Error(join("\n", [
+                    "Expected: integer",
+                    "Actual: 1.2",
+                ])));
+            assertIntegerErrorTest(
+                NaN,
+                new Error(join("\n", [
+                    "Expected: integer",
+                    "Actual: NaN",
+                ])));
+            assertIntegerErrorTest(
+                Infinity,
+                new Error(join("\n", [
+                    "Expected: integer",
+                    "Actual: Infinity",
+                ])));
+            assertIntegerErrorTest(
+                -Infinity,
+                new Error(join("\n", [
+                    "Expected: integer",
+                    "Actual: -Infinity",
+                ])));
+
+            function assertIntegerTest(value: number): void
+            {
+                test(`with ${value}`, () =>
+                {
+                    const condition: Condition = Condition.create();
+                    condition.assertInteger(value);
+                });
+            }
+
+            assertIntegerTest(-1);
+            assertIntegerTest(0);
+            assertIntegerTest(1);
         });
     });
 });

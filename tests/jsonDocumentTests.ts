@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import { JsonDocument } from "../sources/jsonDocument";
-import { JavascriptIterable, JsonArray, JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonSegment, JsonString, ParseError, PreConditionError, escapeAndQuote } from "../sources";
+import { JavascriptIterable, JsonArray, JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonSegment, JsonString, MissingValueParseError, ParseError, PreConditionError, WrongValueParseError, escapeAndQuote } from "../sources";
 
 suite("jsonDocument.ts", () =>
 {
@@ -78,34 +78,28 @@ suite("jsonDocument.ts", () =>
                 ));
             parseErrorTest(
                 `{"hello"`,
-                new ParseError(
-                    `Missing property name/value separator: ":" (58)`,
-                ));
+                new MissingValueParseError("property name/value separator (':')"),
+            );
             parseErrorTest(
                 `{  "hello"  `,
-                new ParseError(
-                    `Missing property name/value separator: ":" (58)`,
-                ));
+                new MissingValueParseError("property name/value separator (':')"),
+            );
             parseErrorTest(
                 `{  "hello"  *  `,
-                new ParseError(
-                    `Expected property name/value separator (':'), but found "*" instead.`,
-                ));
+                new WrongValueParseError("property name/value separator (':')", escapeAndQuote("*")),
+            );
             parseErrorTest(
                 `{  "hello"  :  `,
-                new ParseError(
-                    `Missing property value.`,
-                ));
+                new MissingValueParseError("property value"),
+            );
             parseErrorTest(
                 `{  "hello"  :  ,`,
-                new ParseError(
-                    `Expected property value, but found "," instead.`,
-                ));
+                new WrongValueParseError("property value", escapeAndQuote(",")),
+            );
             parseErrorTest(
                 `{  "hello"  : "there" `,
-                new ParseError(
-                    `Missing object closing brace: "}" (125)`,
-                ));
+                new MissingValueParseError("object closing brace ('}')"),
+            );
             parseErrorTest(
                 `{  "hello"  : "there" "a":1 `,
                 new ParseError(
@@ -148,9 +142,8 @@ suite("jsonDocument.ts", () =>
                 ));
             parseErrorTest(
                 `[false`,
-                new ParseError(
-                    `Missing array closing bracket: "]" (93)`,
-                ));
+                new MissingValueParseError("array closing bracket (']')"),
+            );
             parseErrorTest(
                 `[false true`,
                 new ParseError(
@@ -174,12 +167,12 @@ suite("jsonDocument.ts", () =>
             parseErrorTest(
                 `false   true`,
                 new ParseError(
-                    `Unexpected token: true`
+                    `Unexpected value: true`
                 ));
             parseErrorTest(
                 `&`,
                 new ParseError(
-                    `Unexpected token: &`
+                    `Unexpected value: &`
                 ));
 
             function parseTest(text: string, expectedRoots: JavascriptIterable<JsonSegment>): void

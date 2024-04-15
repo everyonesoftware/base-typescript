@@ -8,12 +8,14 @@ import { Pre } from "./pre";
 export class IteratorToJavascriptIteratorAdapter<T> implements JavascriptIterator<T>
 {
     private readonly iterator: Iterator<T>;
+    private hasStarted: boolean;
 
     private constructor(iterator: Iterator<T>)
     {
         Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
 
         this.iterator = iterator;
+        this.hasStarted = false;
     }
 
     public static create<T>(iterator: Iterator<T>): IteratorToJavascriptIteratorAdapter<T>
@@ -23,8 +25,18 @@ export class IteratorToJavascriptIteratorAdapter<T> implements JavascriptIterato
     
     public next(): JavascriptIteratorResult<T>
     {
+        if (!this.hasStarted)
+        {
+            this.hasStarted = true;
+            this.iterator.start();
+        }
+        else
+        {
+            this.iterator.next();
+        }
+
         const result: JavascriptIteratorResult<T> = {
-            done: !this.iterator.next(),
+            done: !this.iterator.hasCurrent(),
             value: undefined!,
         };
         if (!result.done)
