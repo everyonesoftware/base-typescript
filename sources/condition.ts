@@ -1,4 +1,5 @@
 import { AssertMessageParameters } from "./assertMessageParameters";
+import { Bytes } from "./bytes";
 import { JavascriptIterable } from "./javascript";
 
 /**
@@ -328,6 +329,18 @@ export class Condition
                 message: message,
             });
         }
+    }
+
+    /**
+     * Assert that the value is within the bounds of a byte.
+     * @param value The value to check.
+     * @param expression The expression that produced the value.
+     * @param message An optional error message.
+     */
+    public assertByte(value: number, expression?: string, message?: string): void
+    {
+        this.assertBetween(Bytes.minimumValue, value, Bytes.maximumValue, expression, message);
+        this.assertInteger(value, "value");
     }
 
     public assertInteger(value: number, expression?: string, message?: string): void

@@ -95,4 +95,9 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
     {
         return Iterator.instanceOf(this, type);
     }
+
+    public take(maximumToTake: number): Iterator<TOutput>
+    {
+        return Iterator.take(this, maximumToTake);
+    }
 }

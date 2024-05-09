@@ -5,6 +5,7 @@ import { MapIterable } from "./mapIterable";
 import { MutableIndexable } from "./mutableIndexable";
 import { Pre } from "./pre";
 import { Result } from "./result";
+import { Indexable } from "./indexable";
 
 export abstract class List<T> implements MutableIndexable<T>
 {
@@ -25,7 +26,10 @@ export abstract class List<T> implements MutableIndexable<T>
 
     public abstract getCount(): number;
 
-    public abstract first(): Result<T>;
+    public first(): Result<T>
+    {
+        return Indexable.first(this);
+    }
 
     public abstract get(index: number): T;
 
@@ -37,7 +41,10 @@ export abstract class List<T> implements MutableIndexable<T>
      * Add the provided value to the end of this {@link List}.
      * @param value The value to add.
      */
-    public abstract add(value: T): this;
+    public add(value: T): this
+    {
+        return List.add(this, value);
+    }
 
     /**
      * Add the provided value to the provided {@link List}.
@@ -55,7 +62,10 @@ export abstract class List<T> implements MutableIndexable<T>
      * Add the provided values to the end of this {@link List}.
      * @param values The values to add.
      */
-    public abstract addAll(values: JavascriptIterable<T>): this;
+    public addAll(values: JavascriptIterable<T>): this
+    {
+        return List.addAll(this, values);
+    }
 
     /**
      * Add the provided values to the end of the provided {@link List}.

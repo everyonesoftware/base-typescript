@@ -1,4 +1,6 @@
 export * from "./arrayIterator";
+export * from "./byteList";
+export * from "./bytes";
 export * from "./javascriptArrayList";
 export * from "./assertMessageParameters";
 export * from "./basicJsonToken";
@@ -21,6 +23,7 @@ export * from "./indexable";
 export * from "./indexableBase";
 export * from "./indexableIterator";
 export * from "./indexableIteratorBase";
+export * from "./indexableIteratorDecorator";
 export * from "./iterable";
 export * from "./iterableBase";
 export * from "./iterator";

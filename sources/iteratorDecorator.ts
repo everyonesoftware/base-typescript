@@ -98,4 +98,9 @@ export abstract class IteratorDecorator<T> implements Iterator<T>
     {
         return Iterator[Symbol.iterator](this);
     }
+
+    public take(maximumToTake: number): Iterator<T>
+    {
+        return Iterator.take(this, maximumToTake);
+    }
 }

@@ -9,6 +9,7 @@ import { EmptyError } from "./emptyError";
 import { WhereIterator } from "./whereIterator";
 import { Type, isJavascriptIterator } from "./types";
 import { Comparable } from "./comparable";
+import { TakeIterator } from "./takeIterator";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -71,7 +72,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
      * Get the current value from this {@link Iterator} and advance this {@link Iterator} to the
      * next value.
      */
-    public abstract takeCurrent(): T;
+    public takeCurrent(): T
+    {
+        return Iterator.takeCurrent(this);
+    }
 
     public static takeCurrent<T>(iterator: Iterator<T>): T
     {
@@ -84,7 +88,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
         return result;
     }
 
-    public abstract [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<T>;
+    public [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<T>
+    {
+        return Iterator[Symbol.iterator](this);
+    }
 
     /**
      * Convert the provided {@link Iterator} to a {@link IteratorToJavascriptIteratorAdapter}.
@@ -102,7 +109,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
      * Note: This may advance the {@link Iterator} to the first value if it hasn't been
      * started yet.
      */
-    public abstract any(): boolean;
+    public any(): boolean
+    {
+        return Iterator.any(this);
+    }
 
     /**
      * Get whether this {@link Iterator} contains any values.
@@ -121,7 +131,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
      * Get the number of values in this {@link Iterator}.
      * Note: This will consume all of the values in this {@link Iterator}.
      */
-    public abstract getCount(): number;
+    public getCount(): number
+    {
+        return Iterator.getCount(this);
+    }
 
     /**
      * Get the number of values in the provided {@link Iterator}.
@@ -149,7 +162,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
     /**
      * Get all of the remaining values in this {@link Iterator} in a {@link T} {@link Array}.
      */
-    public abstract toArray(): T[];
+    public toArray(): T[]
+    {
+        return Iterator.toArray(this);
+    }
 
     /**
      * Get all of the remaining values in the provided {@link Iterator} in a {@link T}
@@ -171,7 +187,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
      * Get an {@link Iterator} that will only return values that match the provided condition.
      * @param condition The condition to run against each of the values in this {@link Iterator}.
      */
-    public abstract where(condition: (value: T) => boolean) : Iterator<T>;
+    public where(condition: (value: T) => boolean) : Iterator<T>
+    {
+        return Iterator.where(this, condition);
+    }
 
     public static where<T>(iterator: Iterator<T>, condition: (value: T) => boolean): Iterator<T>
     {
@@ -186,7 +205,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
      * {@link TOutput} values.
      * @param mapping The mapping that maps {@link T} values to {@link TOutput} values.
      */
-    public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterator<T,TOutput>;
+    public map<TOutput>(mapping: (value: T) => TOutput): MapIterator<T,TOutput>
+    {
+        return Iterator.map(this, mapping);
+    }
 
     public static map<T,TOutput>(iterator: Iterator<T>, mapping: (value: T) => TOutput): MapIterator<T,TOutput>
     {
@@ -201,7 +223,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
      * instances of the provided {@link Type}.
      * @param type The type of values to return from the new {@link Iterator}.
      */
-    public abstract instanceOf<U extends T>(type: Type<U>): Iterator<U>;
+    public instanceOf<U extends T>(type: Type<U>): Iterator<U>
+    {
+        return Iterator.instanceOf(this, type);
+    }
 
     public static instanceOf<T,U extends T>(iterator: Iterator<T>, type: Type<U>): Iterator<U>
     {
@@ -214,7 +239,10 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
     /**
      * Get the first value in this {@link Iterator}.
      */
-    public abstract first(): Result<T>;
+    public first(): Result<T>
+    {
+        return Iterator.first(this);
+    }
 
     /**
      * Get the first value from the provided {@link Iterator}.
@@ -264,5 +292,21 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
             
             return result;
         });
+    }
+
+    /**
+     * Get a new {@link Iterator} that wraps around this {@link Iterator} and only
+     * returns a maximum number of values from this {@link Iterator}.
+     * @param maximumToTake The maximum number of values to take from this
+     * {@link Iterator}.
+     */
+    public take(maximumToTake: number): Iterator<T>
+    {
+        return Iterator.take(this, maximumToTake);
+    }
+
+    public static take<T>(iterator: Iterator<T>, maximumToTake: number): Iterator<T>
+    {
+        return TakeIterator.create(iterator, maximumToTake);
     }
 }

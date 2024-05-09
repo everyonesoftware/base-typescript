@@ -98,4 +98,9 @@ export class JavascriptIteratorToIteratorAdapter<T> implements Iterator<T>
     {
         return Iterator.instanceOf(this, type);
     }
+
+    public take(maximumToTake: number): Iterator<T>
+    {
+        return Iterator.take(this, maximumToTake);
+    }
 }
