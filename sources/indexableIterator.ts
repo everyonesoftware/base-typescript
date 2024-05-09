@@ -1,6 +1,7 @@
-import { ArrayIterator } from "./arrayIterator";
+import { IndexableIteratorDecorator } from "./indexableIteratorDecorator";
 import { Iterator } from "./iterator";
 import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptIteratorAdapter";
+import { JavascriptIterable, JavascriptIterator } from "./javascript";
 import { MapIterator } from "./mapIterator";
 import { Result } from "./result";
 import { Type } from "./types";
@@ -11,9 +12,13 @@ import { Type } from "./types";
  */
 export abstract class IndexableIterator<T> implements Iterator<T>
 {
-    public static create<T>(values: T[]): IndexableIterator<T>
+    /**
+     * Create a new {@link IndexableIterator} that contains the provided values.
+     * @param values The values that the new {@link IndexableIterator} will iterate over.
+     */
+    public static create<T>(values: JavascriptIterator<T> | JavascriptIterable<T>): IndexableIterator<T>
     {
-        return ArrayIterator.create(values);
+        return IndexableIteratorDecorator.create(Iterator.create(values));
     }
 
     public abstract next(): boolean;
@@ -48,4 +53,6 @@ export abstract class IndexableIterator<T> implements Iterator<T>
     public abstract where(condition: (value: T) => boolean): Iterator<T>;
 
     public abstract instanceOf<U extends T>(type: Type<U>): Iterator<U>;
+
+    public abstract take(maximumToTake: number): Iterator<T>;
 }

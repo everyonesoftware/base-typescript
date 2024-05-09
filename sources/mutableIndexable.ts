@@ -29,7 +29,10 @@ export abstract class MutableIndexable<T> implements Indexable<T>
 
     public abstract getCount(): number;
 
-    public abstract first(): Result<T>;
+    public first(): Result<T>
+    {
+        return Indexable.first(this);
+    }
 
     public abstract get(index: number): T;
 

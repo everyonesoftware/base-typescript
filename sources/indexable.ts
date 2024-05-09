@@ -37,15 +37,21 @@ export abstract class Indexable<T> implements Iterable<T>
      */
     public abstract get(index: number): T;
 
-    public abstract first(): Result<T>;
+    /**
+     * Get the first value in this {@link Indexable}.
+     */
+    public first(): Result<T>
+    {
+        return Indexable.first(this);
+    }
 
     public static first<T>(indexable: Indexable<T>): Result<T>
     {
         Pre.condition.assertNotUndefinedAndNotNull(indexable, "indexable");
 
-        return indexable.getCount() === 0
-            ? Result.error(new EmptyError())
-            : Result.value(indexable.get(0));
+        return indexable.any()
+            ? Result.value(indexable.get(0))
+            : Result.error(new EmptyError());
     }
 }
 
