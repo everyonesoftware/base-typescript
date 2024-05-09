@@ -1,5 +1,6 @@
 export * from "./arrayIterator";
 export * from "./byteList";
+export * from "./byteListByteWriteStream";
 export * from "./bytes";
 export * from "./javascriptArrayList";
 export * from "./assertMessageParameters";
@@ -76,3 +77,4 @@ export * from "./toStringFunctions";
 export * from "./types";
 export * from "./versionNumber";
 export * from "./wrongTypeError";
+export * from "./writeStream";

@@ -210,5 +210,21 @@ suite("byteList.ts", () =>
                 assert.strictEqual(list.getCount(), count);
             });
         });
+
+        suite("toUint8Array()", () =>
+        {
+            function toUint8ArrayTest(list: ByteList, expected: Uint8Array)
+            {
+                test(`with ${list}`, () =>
+                {
+                    assert.deepStrictEqual(list.toUint8Array(), expected);
+                });
+            }
+
+            toUint8ArrayTest(ByteList.create(), Uint8Array.of());
+            toUint8ArrayTest(ByteList.create([0]), Uint8Array.of(0));
+            toUint8ArrayTest(ByteList.create([0, 1]), Uint8Array.of(0, 1));
+            toUint8ArrayTest(ByteList.create([0, 1, 2, 3]), Uint8Array.of(0, 1, 2, 3));
+        });
     });
 });

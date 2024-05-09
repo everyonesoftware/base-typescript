@@ -115,6 +115,14 @@ export class ByteList implements List<number>
         return Iterable.toArray(this);
     }
 
+    /**
+     * Get the values of this {@link ByteList} as a {@link Uint8Array}.
+     */
+    public toUint8Array(): Uint8Array
+    {
+        return this.values.slice(0, this.getCount());
+    }
+
     public toString(): string
     {
         return Iterable.toString(this);
