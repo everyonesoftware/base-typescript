@@ -1,5 +1,7 @@
 import { AssertMessageParameters } from "./assertMessageParameters";
 import { Bytes } from "./bytes";
+import { Comparer } from "./comparer";
+import { Comparison } from "./comparison";
 import { JavascriptIterable } from "./javascript";
 
 /**
@@ -200,6 +202,48 @@ export class Condition
         {
             throw this.createError({
                 expected: `not ${JSON.stringify(expected)}`,
+                actual: JSON.stringify(actual),
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    /**
+     * Assert that the provided actual value is equal to the provided expected value.
+     * @param expected The expected value.
+     * @param actual The actual value.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public assertEqual<T>(expected: T, actual: T, expression?: string, message?: string): void
+    {
+        let comparison: Comparison | undefined = Comparer.compareSameUndefinedNull(expected, actual);
+        if (comparison !== Comparison.Equal)
+        {
+            throw this.createError({
+                expected: JSON.stringify(expected),
+                actual: JSON.stringify(actual),
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    /**
+     * Assert that the provided actual value is not equal to the provided expected value.
+     * @param notExpected The not expected value.
+     * @param actual The actual value.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public assertNotEqual<T>(notExpected: T, actual: T, expression?: string, message?: string): void
+    {
+        let comparison: Comparison | undefined = Comparer.compareSameUndefinedNull(notExpected, actual);
+        if (comparison === Comparison.Equal)
+        {
+            throw this.createError({
+                expected: `not ${JSON.stringify(notExpected)}`,
                 actual: JSON.stringify(actual),
                 expression: expression,
                 message: message,
