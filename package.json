@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/everyonesoftware/base-typescript"
   },
-  "version": "15.0.0",
+  "version": "16.0.0",
   "module": "outputs/package/index.esm.js",
   "main": "outputs/package/index.js",
   "types": "outputs/package/index.d.ts",
@@ -55,10 +55,7 @@
     "temp-directory": "outputs/coverage-temp",
     "report-dir": "outputs/coverage",
     "reporter": [
-      "html",
-      "lcov",
-      "text",
-      "text-summary"
+      "lcov"
     ]
   }
 }

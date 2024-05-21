@@ -1,5 +1,6 @@
 import { ByteList } from "./byteList";
 import { ByteWriteStream } from "./byteWriteStream";
+import { Pre } from "./pre";
 import { Result } from "./result";
 import { WriteStream } from "./writeStream";
 
@@ -24,11 +25,12 @@ export class ByteListByteWriteStream implements ByteWriteStream
 
     public writeBytes(bytes: number[] | Uint8Array, startIndex?: number, length?: number): Result<number>
     {
+        Pre.condition.assertNotUndefinedAndNotNull(bytes, "bytes");
+        startIndex = WriteStream.getStartIndex(startIndex);
+        length = WriteStream.getLength(bytes.length, startIndex, length);
+
         return Result.create(() =>
         {
-            startIndex = WriteStream.getStartIndex(startIndex);
-            length = WriteStream.getLength(bytes.length, startIndex, length);
-
             this.byteList.addAll(bytes.slice(startIndex, startIndex + length));
 
             return length;
