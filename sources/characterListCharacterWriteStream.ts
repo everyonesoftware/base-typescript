@@ -18,6 +18,14 @@ export class CharacterListCharacterWriteStream implements CharacterWriteStream
         return new CharacterListCharacterWriteStream();
     }
 
+    /**
+     * Get the text that has been written to this {@link CharacterListCharacterWriteStream}.
+     */
+    public getText(): string
+    {
+        return this.characterList.toString();
+    }
+
     public writeCharacter(character: string): Result<void>
     {
         return CharacterWriteStream.writeCharacter(this, character);
@@ -39,15 +47,6 @@ export class CharacterListCharacterWriteStream implements CharacterWriteStream
 
     public writeLine(text: string, startIndex?: number | undefined, length?: number | undefined): Result<void>
     {
-        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
-
-        return Result.create(() =>
-        {
-            startIndex = WriteStream.getStartIndex(startIndex);
-            length = WriteStream.getLength(text.length, startIndex, length);
-            text = text.substring(startIndex, startIndex + length);
-
-            this.characterList.addAll(text + "\n");
-        });
+        return CharacterWriteStream.writeLine(this, text, startIndex, length);
     }
 }
