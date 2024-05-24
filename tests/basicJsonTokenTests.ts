@@ -1,71 +1,77 @@
-import * as assert from "assert";
+import { BasicJsonToken, JsonTokenType, PreConditionError, Test, TestRunner, andList, escapeAndQuote, toString } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { BasicJsonToken, JsonTokenType, PreConditionError, andList, escapeAndQuote, toString } from "../sources";
-
-suite("basicJsonToken.ts", () =>
+function test(runner: TestRunner): void
 {
-    suite("BasicJsonToken", () =>
+    runner.testFile("basicJsonToken.ts", () =>
     {
-        suite("create(JsonTokenType,string)", () =>
+        runner.testType(BasicJsonToken, () =>
         {
-            function createErrorTest(tokenType: JsonTokenType, text: string, expected: Error): void
+            runner.testFunction("create(JsonTokenType,string)", () =>
             {
-                test(`with ${andList([toString(tokenType), escapeAndQuote(text)])}`, () =>
+                function createErrorTest(tokenType: JsonTokenType, text: string, expected: Error): void
                 {
-                    assert.throws(() => BasicJsonToken.create(tokenType, text), expected);
-                });
-            }
+                    runner.test(`with ${andList([toString(tokenType), escapeAndQuote(text)])}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => BasicJsonToken.create(tokenType, text), expected);
+                    });
+                }
 
-            createErrorTest(
-                undefined!,
-                "hello",
-                new PreConditionError(
-                    "Expression: tokenType",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-            createErrorTest(
-                null!,
-                "hello",
-                new PreConditionError(
-                    "Expression: tokenType",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-            createErrorTest(
-                JsonTokenType.Boolean,
-                undefined!,
-                new PreConditionError(
-                    "Expression: text",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-            createErrorTest(
-                JsonTokenType.Boolean,
-                null!,
-                new PreConditionError(
-                    "Expression: text",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-            createErrorTest(
-                JsonTokenType.Boolean,
-                "",
-                new PreConditionError(
-                    "Expression: text",
-                    "Expected: not empty",
-                    "Actual: \"\"",
-                ));
+                createErrorTest(
+                    undefined!,
+                    "hello",
+                    new PreConditionError(
+                        "Expression: tokenType",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined",
+                    ));
+                createErrorTest(
+                    null!,
+                    "hello",
+                    new PreConditionError(
+                        "Expression: tokenType",
+                        "Expected: not undefined and not null",
+                        "Actual: null",
+                    ));
+                createErrorTest(
+                    JsonTokenType.Boolean,
+                    undefined!,
+                    new PreConditionError(
+                        "Expression: text",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined",
+                    ));
+                createErrorTest(
+                    JsonTokenType.Boolean,
+                    null!,
+                    new PreConditionError(
+                        "Expression: text",
+                        "Expected: not undefined and not null",
+                        "Actual: null",
+                    ));
+                createErrorTest(
+                    JsonTokenType.Boolean,
+                    "",
+                    new PreConditionError(
+                        "Expression: text",
+                        "Expected: not empty",
+                        "Actual: \"\"",
+                    ));
 
-            function createTest(tokenType: JsonTokenType, text: string): void
-            {
-                const token: BasicJsonToken = BasicJsonToken.create(tokenType, text);
-                assert.strictEqual(token.getTokenType(), tokenType);
-                assert.strictEqual(token.getText(), text);
-            }
+                function createTest(tokenType: JsonTokenType, text: string): void
+                {
+                    runner.test(`with ${andList([toString(tokenType), escapeAndQuote(text)])}`, (test: Test) =>
+                    {
+                        const token: BasicJsonToken = BasicJsonToken.create(tokenType, text);
+                        test.assertSame(token.getTokenType(), tokenType);
+                        test.assertSame(token.getText(), text);
+                    });
+                }
 
-            createTest(JsonTokenType.Boolean, "FALSE");
-            createTest(JsonTokenType.Null, "Null");
+                createTest(JsonTokenType.Boolean, "FALSE");
+                createTest(JsonTokenType.Null, "Null");
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

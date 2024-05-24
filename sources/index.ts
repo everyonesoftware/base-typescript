@@ -75,6 +75,8 @@ export * from "./stringComparer";
 export * from "./stringIterator";
 export * from "./strings";
 export * from "./syncResult";
+export * from "./test";
+export * from "./testRunner";
 export * from "./text";
 export * from "./textToken";
 export * from "./textTokenizer";
