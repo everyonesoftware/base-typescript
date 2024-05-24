@@ -10,7 +10,7 @@ export class BasicJsonToken implements JsonToken
     private readonly tokenType: JsonTokenType;
     private readonly text: string;
     
-    private constructor(tokenType: JsonTokenType, text: string)
+    public constructor(tokenType: JsonTokenType, text: string)
     {
         Pre.condition.assertNotUndefinedAndNotNull(tokenType, "tokenType");
         Pre.condition.assertNotEmpty(text, "text");

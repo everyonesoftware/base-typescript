@@ -113,3 +113,12 @@ export function isIterable<T>(value: unknown): value is Iterable<T>
     return isJavascriptIterable(value) &&
         hasFunction(value, "iterate");
 }
+
+/**
+ * Get the name of the provided {@link Type}.
+ * @param type The {@link Type} to get the name of.
+ */
+export function getName(type: Type<unknown>): string
+{
+    return type.name;
+}
