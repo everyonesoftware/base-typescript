@@ -3,10 +3,6 @@
  */
 export abstract class Bytes
 {
-    private constructor()
-    {
-    }
-
     /**
      * The minimum value that a byte can have.
      */

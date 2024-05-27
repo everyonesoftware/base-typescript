@@ -6,11 +6,74 @@ import { Pre } from "./pre";
 export abstract class Test
 {
     /**
+     * Assert that the provided value is undefined;
+     * @param value The value to check.
+     */
+    public assertUndefined(value: unknown): asserts value is undefined
+    {
+        Test.assertUndefined(this, value);
+    }
+
+    /**
+     * Assert that the provided value is undefined.
+     * @param test The current {@link Test}.
+     * @param value The value to check.
+     */
+    public static assertUndefined(test: Test, value: unknown): asserts value is undefined
+    {
+        test.assertSame(value, undefined);
+    }
+
+    /**
+     * Assert that the provided value is null.
+     * @param value The value to check.
+     */
+    public assertNull(value: unknown): asserts value is null
+    {
+        Test.assertNull(this, value);
+    }
+
+    /**
+     * Assert that the provided value is null.
+     * @param value The value to check.
+     */
+    public static assertNull(test: Test, value: unknown): asserts value is null
+    {
+        test.assertSame(value, null);
+    }
+
+    /**
+     * Assert that the provided value is not undefined and not null.
+     * @param value The value to check.
+     */
+    public assertNotUndefinedAndNotNull<T>(value: T): asserts value is NonNullable<T>
+    {
+        Test.assertNotUndefinedAndNotNull(this, value);
+    }
+
+    /**
+     * Assert that the provided value is not undefined and not null.
+     * @param value The value to check.
+     */
+    public static assertNotUndefinedAndNotNull<T>(test: Test, value: T): asserts value is NonNullable<T>
+    {
+        test.assertNotSame(value, null);
+        test.assertNotSame(value, undefined);
+    }
+
+    /**
      * Assert that the provided values point to the same object.
      * @param left The first value.
      * @param right The second value.
      */
     public abstract assertSame<T>(left: T, right: T): void;
+
+    /**
+     * Assert that the provided values don't point to the same object.
+     * @param left The first value.
+     * @param right The second value.
+     */
+    public abstract assertNotSame<T>(left: T, right: T): void;
 
     /**
      * Assert that the provided values are equal.
@@ -20,10 +83,17 @@ export abstract class Test
     public abstract assertEqual<T>(left: T, right: T): void;
 
     /**
+     * Assert that the provided values are not equal.
+     * @param left The first value.
+     * @param right The second value.
+     */
+    public abstract assertNotEqual<T>(left: T, right: T): void;
+
+    /**
      * Assert that the provided value is false.
      * @param value The value to check.
      */
-    public assertFalse(value: boolean): void
+    public assertFalse(value: boolean): asserts value is false
     {
         Test.assertFalse(this, value);
     }
@@ -32,7 +102,7 @@ export abstract class Test
      * Assert that the provided value is false.
      * @param value The value to check.
      */
-    public static assertFalse(test: Test, value: boolean): void
+    public static assertFalse(test: Test, value: boolean): asserts value is false
     {
         Pre.condition.assertNotUndefinedAndNotNull(test, "test");
 
@@ -43,7 +113,7 @@ export abstract class Test
      * Assert that the provided value is true.
      * @param value The value to check.
      */
-    public assertTrue(value: boolean): void
+    public assertTrue(value: boolean): asserts value is true
     {
         Test.assertTrue(this, value);
     }
@@ -52,7 +122,7 @@ export abstract class Test
      * Assert that the provided value is true.
      * @param value The value to check.
      */
-    public static assertTrue(test: Test, value: boolean): void
+    public static assertTrue(test: Test, value: boolean): asserts value is true
     {
         Pre.condition.assertNotUndefinedAndNotNull(test, "test");
 

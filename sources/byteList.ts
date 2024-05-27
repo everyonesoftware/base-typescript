@@ -17,7 +17,7 @@ export class ByteList implements List<number>
     private values: Uint8Array;
     private count: number;
 
-    private constructor(initialCapacity: number)
+    public constructor(initialCapacity: number)
     {
         Pre.condition.assertGreaterThanOrEqualTo(initialCapacity, 0, "initialCapacity");
 

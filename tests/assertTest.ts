@@ -7,10 +7,6 @@ import { Test } from "../sources";
  */
 export class AssertTest implements Test
 {
-    protected constructor()
-    {
-    }
-
     /**
      * Create a new {@link AssertTest} object.
      */
@@ -19,14 +15,39 @@ export class AssertTest implements Test
         return new AssertTest();
     }
 
+    public assertUndefined(value: unknown): asserts value is undefined
+    {
+        Test.assertUndefined(this, value);
+    }
+
+    public assertNull(value: unknown): asserts value is null
+    {
+        Test.assertNull(this, value);
+    }
+
+    public assertNotUndefinedAndNotNull<T>(value: T): asserts value is NonNullable<T>
+    {
+        Test.assertNotUndefinedAndNotNull(this, value);
+    }
+
     public assertSame<T>(left: T, right: T): void
     {
         assert.strictEqual(left, right);
     }
 
+    public assertNotSame<T>(left: T, right: T): void
+    {
+        assert.notStrictEqual(left, right);
+    }
+
     public assertEqual<T>(left: T, right: T): void
     {
         assert.deepStrictEqual(left, right);
+    }
+
+    public assertNotEqual<T>(left: T, right: T): void
+    {
+        assert.notDeepStrictEqual(left, right);
     }
 
     public assertFalse(value: boolean): void
