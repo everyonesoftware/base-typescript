@@ -4,7 +4,7 @@ import { Result } from "./result";
 
 export class ByteListCharacterToByteWriteStream extends ByteListByteWriteStream implements CharacterToByteWriteStream
 {
-    protected constructor()
+    public constructor()
     {
         super();
     }
