@@ -1,54 +1,60 @@
-import * as assert from "assert";
-import { Iterator, HttpClient, JsonDocument, JsonObject, NotFoundError, NpmClient, NpmPackageDetails, PackageJson, Pre, PreConditionError, escapeAndQuote, DependencyUpdate } from "../sources";
+import { Iterator, HttpClient, JsonDocument, JsonObject, NotFoundError, NpmClient, NpmPackageDetails, PackageJson, Pre, PreConditionError, DependencyUpdate, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-suite("npmClient.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("NpmClient", () =>
+    runner.testFile("npmClient.ts", () =>
     {
-        suite("create(HttpClient)", () =>
+        runner.testType(NpmClient.name, () =>
         {
-            test("with undefined", () =>
+            runner.testFunction("create(HttpClient)", () =>
             {
-                assert.throws(() => NpmClient.create(undefined!),
-                new PreConditionError(
-                    "Expression: httpClient",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined"));
+                runner.test("with undefined", (test: Test) =>
+                {
+                    test.assertThrows(() => NpmClient.create(undefined!),
+                        new PreConditionError(
+                            "Expression: httpClient",
+                            "Expected: not undefined and not null",
+                            "Actual: undefined"));
+                });
+
+                runner.test("with null", (test: Test) =>
+                {
+                    test.assertThrows(() => NpmClient.create(null!),
+                        new PreConditionError(
+                            "Expression: httpClient",
+                            "Expected: not undefined and not null",
+                            "Actual: null"));
+                });
+
+                runner.test("with defined", (test: Test) =>
+                {
+                    const httpClient: HttpClient = HttpClient.create();
+                    const npmClient: NpmClient = NpmClient.create(httpClient);
+                    test.assertNotUndefinedAndNotNull(npmClient);
+                });
             });
 
-            test("with null", () =>
-            {
-                assert.throws(() => NpmClient.create(null!),
-                    new PreConditionError(
-                        "Expression: httpClient",
-                        "Expected: not undefined and not null",
-                        "Actual: null"));
-            });
-
-            test("with defined", () =>
-            {
-                const httpClient: HttpClient = HttpClient.create();
-                const npmClient: NpmClient = NpmClient.create(httpClient);
-                assert.notStrictEqual(npmClient, undefined);
-            });
+            npmClientTests(runner, () => { return NpmClient.create(HttpClient.create()); });
         });
     });
-});
+}
+test(MochaTestRunner.create());
 
-export function npmClientTests(creator: (() => NpmClient)): void
+export function npmClientTests(runner: TestRunner, creator: (() => NpmClient)): void
 {
     Pre.condition.assertNotUndefinedAndNotNull(creator, "creator");
 
-    suite("NpmClient", () =>
+    runner.testType(NpmClient.name, runner.skip(), () =>
     {
-        suite("getPackageDetails(string)", () =>
+        runner.testFunction("getPackageDetails(string)", () =>
         {
             function getPackageDetailsErrorTest(packageName: string, expected: Error): void
             {
-                test(`with ${escapeAndQuote(packageName)}`, async () =>
+                runner.testAsync(`with ${runner.toString(packageName)}`, async (test: Test) =>
                 {
                     const npmClient: NpmClient = creator();
-                    await assert.rejects(() => npmClient.getPackageDetails(packageName),
+                    await test.assertThrowsAsync(() => npmClient.getPackageDetails(packageName),
                         expected);
                 });
             }
@@ -72,13 +78,13 @@ export function npmClientTests(creator: (() => NpmClient)): void
 
             function getPackageDetailsTest(packageName: string, expected: NpmPackageDetails): void
             {
-                test(`with ${escapeAndQuote(packageName)}`, async () =>
+                runner.testAsync(`with ${runner.toString(packageName)}`, async (test: Test) =>
                 {
                     const npmClient: NpmClient = creator();
                     const packageDetails: NpmPackageDetails = await npmClient.getPackageDetails(packageName);
                     for (const propertyName of Object.keys(expected))
                     {
-                        assert.deepStrictEqual((packageDetails as any)[propertyName], (expected as any)[propertyName]);
+                        test.assertEqual((packageDetails as any)[propertyName], (expected as any)[propertyName]);
                     }
                 });
             }
@@ -199,14 +205,14 @@ export function npmClientTests(creator: (() => NpmClient)): void
                     ]));
         });
 
-        suite("findDependencyUpdates(PackageJson)", () =>
+        runner.testFunction("findDependencyUpdates(PackageJson)", () =>
         {
             function findDependencyUpdatesErrorTest(packageJson: PackageJson, expected: Error): void
             {
-                test(`with ${packageJson}`, async () =>
+                runner.testAsync(`with ${runner.toString(packageJson)}`, async (test: Test) =>
                 {
                     const npmClient: NpmClient = creator();
-                    await assert.rejects(async () => await npmClient.findDependencyUpdates(packageJson),
+                    await test.assertThrowsAsync(async () => await npmClient.findDependencyUpdates(packageJson),
                         expected);
                 });
             }
@@ -236,11 +242,11 @@ export function npmClientTests(creator: (() => NpmClient)): void
             
             function findDependencyUpdatesTest(packageJson: PackageJson, expected: DependencyUpdate[]): void
             {
-                test(`with ${packageJson}`, async () =>
+                runner.testAsync(`with ${runner.toString(packageJson)}`, async (test: Test) =>
                 {
                     const npmClient: NpmClient = creator();
                     const dependencyUpdates: Iterator<DependencyUpdate> = await npmClient.findDependencyUpdates(packageJson);
-                    assert.deepStrictEqual(dependencyUpdates.toArray(), expected);
+                    test.assertEqual(dependencyUpdates.toArray(), expected);
                 });
             }
 

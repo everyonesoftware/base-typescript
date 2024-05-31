@@ -1,36 +1,37 @@
-import * as assert from "assert";
+import { Iterable, Test, TestRunner } from "../sources";
 
-import { Iterable } from "../sources";
-
-suite("iterable.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("Iterable<T>", () =>
+    runner.testFile("iterable.ts", () =>
     {
-        suite("create(JavascriptIterable<T>|undefined)", () =>
+        runner.testType("Iterable<T>", () =>
         {
-            test("with no arguments", () =>
+            runner.testFunction("create(JavascriptIterable<T>|undefined)", () =>
             {
-                const iterable: Iterable<number> = Iterable.create();
-                assert.notStrictEqual(iterable, undefined);
-                assert.deepStrictEqual(iterable.toArray(), []);
-                assert.strictEqual(iterable.getCount(), 0);
-            });
+                runner.test("with no arguments", (test: Test) =>
+                {
+                    const iterable: Iterable<number> = Iterable.create();
+                    test.assertNotUndefinedAndNotNull(iterable);
+                    test.assertEqual(iterable.toArray(), []);
+                    test.assertEqual(iterable.getCount(), 0);
+                });
 
-            test("with empty array", () =>
-            {
-                const iterable: Iterable<number> = Iterable.create<number>([]);
-                assert.notStrictEqual(iterable, undefined);
-                assert.deepStrictEqual(iterable.toArray(), []);
-                assert.strictEqual(iterable.getCount(), 0);
-            });
+                runner.test("with empty array", (test: Test) =>
+                {
+                    const iterable: Iterable<number> = Iterable.create<number>([]);
+                    test.assertNotUndefinedAndNotNull(iterable);
+                    test.assertEqual(iterable.toArray(), []);
+                    test.assertEqual(iterable.getCount(), 0);
+                });
 
-            test("with non-empty array", () =>
-            {
-                const iterable: Iterable<number> = Iterable.create([1, 2, 3]);
-                assert.notStrictEqual(iterable, undefined);
-                assert.deepStrictEqual(iterable.toArray(), [1, 2, 3]);
-                assert.strictEqual(iterable.getCount(), 3);
+                runner.test("with non-empty array", (test: Test) =>
+                {
+                    const iterable: Iterable<number> = Iterable.create([1, 2, 3]);
+                    test.assertNotUndefinedAndNotNull(iterable);
+                    test.assertEqual(iterable.toArray(), [1, 2, 3]);
+                    test.assertEqual(iterable.getCount(), 3);
+                });
             });
         });
     });
-});
+}

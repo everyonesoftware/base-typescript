@@ -44,7 +44,7 @@ export function test(runner: TestRunner): void
                 });
             });
 
-            npmClientTests(() => HttpNpmClient.create(HttpClient.create()));
+            npmClientTests(runner, () => HttpNpmClient.create(HttpClient.create()));
         });
     });
 }
