@@ -1,26 +1,29 @@
-import * as assert from "assert";
+import { Indexable, Test, TestRunner } from "../sources/";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { Indexable } from "../sources/";
-
-suite("indexable.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("Indexable<T>", () =>
+    runner.testFile("indexable.ts", () =>
     {
-        suite("create(T[]|Iterable<T>)", () =>
+        runner.testType("Indexable<T>", () =>
         {
-            function createTest<T>(values: T[]): void
+            runner.testFunction("create(T[]|Iterable<T>)", () =>
             {
-                test(`with ${JSON.stringify(values)}`, () =>
+                function createTest<T>(values: T[]): void
                 {
-                    const indexable: Indexable<T> = Indexable.create(values);
-                    assert.deepStrictEqual(indexable.toArray(), values ?? []);
-                });
-            }
+                    runner.test(`with ${runner.toString(values)}`, (test: Test) =>
+                    {
+                        const indexable: Indexable<T> = Indexable.create(values);
+                        test.assertEqual(indexable.toArray(), values ?? []);
+                    });
+                }
 
-            createTest(undefined!);
-            createTest(null!);
-            createTest([]);
-            createTest([1, 2, 3]);
+                createTest(undefined!);
+                createTest(null!);
+                createTest([]);
+                createTest([1, 2, 3]);
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

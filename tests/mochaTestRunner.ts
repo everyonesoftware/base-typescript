@@ -1,4 +1,5 @@
-import { Pre, Test, TestRunner, Type } from "../sources";
+import { Pre, Test, TestRunner, Type, isFunction } from "../sources";
+import { TestSkip } from "../sources/testSkip";
 import { AssertTest } from "./assertTest";
 
 /**
@@ -15,59 +16,121 @@ export class MochaTestRunner implements TestRunner
         return new MochaTestRunner();
     }
 
-    public toString(value: unknown): string
+    public skip(message?: string): TestSkip
     {
-        return TestRunner.toString(this, value);
+        return TestRunner.skip(this, message);
     }
 
-    public testFile(fileName: string, testFileAction: () => void): void
+    public testFile(fileName: string, testAction: () => void): void;
+    public testFile(fileName: string, skip: TestSkip | undefined, testAction: () => void): void;
+    public testFile(fileName: string, skipOrTestAction: TestSkip | (() => void) | undefined, testAction?: (() => void) | undefined): void
     {
-        TestRunner.testFile(this, fileName, testFileAction);
+        TestRunner.testFile(this, fileName, skipOrTestAction, testAction);
     }
 
-    public testType(typeNameOrType: string | Type<unknown>, testTypeAction: () => void): void
+    public testType(typeNameOrType: string | Type<unknown>, testAction: () => void): void;
+    public testType(typeNameOrType: string | Type<unknown>, skip: TestSkip | undefined, testAction: () => void): void;
+    public testType(typeNameOrType: string | Type<unknown>, skipOrTestAction: TestSkip | (() => void) | undefined, testAction?: (() => void) | undefined): void
     {
-        TestRunner.testType(this, typeNameOrType, testTypeAction);
+        TestRunner.testType(this, typeNameOrType, skipOrTestAction, testAction);
     }
 
-    public testFunction(functionSignature: string, testFunctionAction: () => void): void
+    public testFunction(functionSignature: string, testAction: () => void): void;
+    public testFunction(functionSignature: string, skip: TestSkip | undefined, testAction: () => void): void;
+    public testFunction(functionSignature: string, skipOrTestAction: TestSkip | (() => void) | undefined, testAction?: (() => void) | undefined): void
     {
-        TestRunner.testFunction(this, functionSignature, testFunctionAction);
+        TestRunner.testFunction(this, functionSignature, skipOrTestAction, testAction);
     }
 
-    public testGroup(testGroupName: string, testGroupAction: () => void): void
+    public testGroup(testGroupName: string, testAction: () => void): void;
+    public testGroup(testGroupName: string, skip: TestSkip | undefined, testAction: () => void): void;
+    testGroup(testGroupName: string, skipOrTestAction: TestSkip | undefined | (() => void), testAction?: () => void): void
     {
         Pre.condition.assertNotUndefinedAndNotNull(testGroupName, "testGroupName");
         Pre.condition.assertNotEmpty(testGroupName, "testGroupName");
-        Pre.condition.assertNotUndefinedAndNotNull(testGroupAction, "testGroupAction");
-
-        suite(testGroupName, () =>
+        let skip: TestSkip | undefined;
+        if (isFunction(skipOrTestAction))
         {
-            testGroupAction();
-        });
+            Pre.condition.assertUndefined(testAction, "testAction");
+
+            skip = undefined;
+            testAction = skipOrTestAction;
+        }
+        else
+        {
+            skip = skipOrTestAction;
+        }
+        Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
+
+        if (skip === undefined)
+        {
+            suite(testGroupName, () =>
+            {
+                testAction();
+            });
+        }
     }
 
-    public test(testName: string, testAction: (test: Test) => void): void
+    public test(testName: string, testAction: (test: Test) => void): void;
+    public test(testName: string, skip: TestSkip | undefined, testAction: (test: Test) => void): void;
+    test(testName: string, skipOrTestAction: TestSkip | undefined | ((test: Test) => void), testAction?: (test: Test) => void): void
     {
         Pre.condition.assertNotUndefinedAndNotNull(testName, "testName");
         Pre.condition.assertNotEmpty(testName, "testName");
+        let skip: TestSkip | undefined;
+        if (isFunction(skipOrTestAction))
+        {
+            Pre.condition.assertUndefined(testAction, "testAction");
+
+            skip = undefined;
+            testAction = skipOrTestAction;
+        }
+        else
+        {
+            skip = skipOrTestAction;
+        }
         Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
 
-        test(testName, () =>
+        if (skip === undefined)
         {
-            testAction(AssertTest.create());
-        });
+            test(testName, () =>
+            {
+                testAction(AssertTest.create());
+            });
+        }
     }
 
-    public testAsync(testName: string, testAction: (test: Test) => Promise<unknown>): void
+    public testAsync(testName: string, testAction: (test: Test) => Promise<unknown>): void;
+    public testAsync(testName: string, skip: TestSkip | undefined, testAction: (test: Test) => Promise<unknown>): void;
+    testAsync(testName: string, skipOrTestAction: TestSkip | undefined | ((test: Test) => Promise<unknown>), testAction?: (test: Test) => Promise<unknown>): void
     {
         Pre.condition.assertNotUndefinedAndNotNull(testName, "testName");
         Pre.condition.assertNotEmpty(testName, "testName");
+        let skip: TestSkip | undefined;
+        if (isFunction(skipOrTestAction))
+        {
+            Pre.condition.assertUndefined(testAction, "testAction");
+
+            skip = undefined;
+            testAction = skipOrTestAction;
+        }
+        else
+        {
+            skip = skipOrTestAction;
+        }
         Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
 
-        test(testName, async () =>
+        if (skip === undefined)
         {
-            await testAction(AssertTest.create());
-        });
+            test(testName, async () =>
+            {
+                await testAction(AssertTest.create());
+            });
+        }
+    }
+
+    public toString(value: unknown): string
+    {
+        return TestRunner.toString(this, value);
     }
 }

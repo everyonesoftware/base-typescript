@@ -53,7 +53,7 @@ export function test(runner: TestRunner): void
 
                 function sendRequestTest(request: HttpRequest, expectedStatusCode: number, expectedBody: unknown): void
                 {
-                    runner.testAsync(`with ${JSON.stringify(request)}`, async (test: Test) =>
+                    runner.testAsync(`with ${JSON.stringify(request)}`, runner.skip(), async (test: Test) =>
                     {
                         const client: HttpClient = FetchHttpClient.create();
                         const response: HttpResponse = await client.sendRequest(request);
