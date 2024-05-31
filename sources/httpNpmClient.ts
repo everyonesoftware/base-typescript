@@ -14,7 +14,7 @@ import { DependencyUpdate } from "./dependencyUpdate";
  */
 export class HttpNpmClient extends HttpClientDecorator implements NpmClient, HttpClient
 {
-    private constructor(httpClient: HttpClient)
+    public constructor(httpClient: HttpClient)
     {
         Pre.condition.assertNotUndefinedAndNotNull(httpClient, "httpClient");
 

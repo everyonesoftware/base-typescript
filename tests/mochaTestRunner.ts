@@ -15,6 +15,11 @@ export class MochaTestRunner implements TestRunner
         return new MochaTestRunner();
     }
 
+    public toString(value: unknown): string
+    {
+        return TestRunner.toString(this, value);
+    }
+
     public testFile(fileName: string, testFileAction: () => void): void
     {
         TestRunner.testFile(this, fileName, testFileAction);
@@ -51,6 +56,18 @@ export class MochaTestRunner implements TestRunner
         test(testName, () =>
         {
             testAction(AssertTest.create());
+        });
+    }
+
+    public testAsync(testName: string, testAction: (test: Test) => Promise<unknown>): void
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(testName, "testName");
+        Pre.condition.assertNotEmpty(testName, "testName");
+        Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
+
+        test(testName, async () =>
+        {
+            await testAction(AssertTest.create());
         });
     }
 }

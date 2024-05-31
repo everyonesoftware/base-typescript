@@ -8,7 +8,7 @@ export class CharacterListCharacterWriteStream implements CharacterWriteStream
 {
     private readonly characterList: CharacterList;
 
-    protected constructor()
+    public constructor()
     {
         this.characterList = CharacterList.create();
     }

@@ -17,7 +17,7 @@ export class CharacterList implements List<string>
 {
     private characters: string;
 
-    private constructor()
+    public constructor()
     {
         this.characters = "";
     }

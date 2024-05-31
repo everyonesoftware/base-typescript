@@ -1,5 +1,3 @@
-import * as assert from "assert";
-
 import { ByteListByteWriteStream, Test, TestRunner } from "../sources";
 
 import { byteWriteStreamTests } from "./byteWriteStreamTests";
@@ -27,12 +25,12 @@ export function byteListByteWriteStreamTests(runner: TestRunner, creator: () => 
 {
     runner.testType(ByteListByteWriteStream, () =>
     {
-        byteWriteStreamTests(creator);
+        byteWriteStreamTests(runner, creator);
 
-        runner.test("create()", () =>
+        runner.test("create()", (test: Test) =>
         {
             const writeStream: ByteListByteWriteStream = creator();
-            assert.deepStrictEqual(writeStream.getBytes(), Uint8Array.of());
+            test.assertEqual(writeStream.getBytes(), Uint8Array.of());
         });
 
         runner.testFunction("writeByte(number)", () =>

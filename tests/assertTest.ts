@@ -64,4 +64,9 @@ export class AssertTest implements Test
     {
         assert.throws(action, expectedError);
     }
+
+    public async assertThrowsAsync(action: () => Promise<unknown>, expectedError: Error): Promise<void>
+    {
+        await assert.rejects(action, expectedError);
+    }
 }

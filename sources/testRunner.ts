@@ -8,6 +8,24 @@ import { Type, getName, isString } from "./types";
 export abstract class TestRunner
 {
     /**
+     * Get the {@link string} representation of the provided value.
+     * @param value The value to get the {@link string} representation of.
+     */
+    public toString(value: unknown): string
+    {
+        return TestRunner.toString(this, value);
+    }
+
+    /**
+     * Get the {@link string} representation of the provided value.
+     * @param value The value to get the {@link string} representation of.
+     */
+    public static toString(_runner: TestRunner, value: unknown): string
+    {
+        return JSON.stringify(value);
+    }
+
+    /**
      * Create a test group that will test the provided file.
      * @param fileName The name of the file that is being tested.
      * @param testFileAction The action that will run the tests.
@@ -102,4 +120,11 @@ export abstract class TestRunner
      * @param testAction The action that runs the test.
      */
     public abstract test(testName: string, testAction: (test: Test) => void): void;
+
+    /**
+     * Create and run an async test with the provided name.
+     * @param testName The name of the async test to run.
+     * @param testAction The action that runs the test.
+     */
+    public abstract testAsync(testName: string, testAction: (test: Test) => Promise<unknown>): void;
 }

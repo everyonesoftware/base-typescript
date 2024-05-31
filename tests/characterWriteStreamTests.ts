@@ -1,19 +1,17 @@
-import * as assert from "assert";
+import { CharacterWriteStream, PreConditionError, Test, TestRunner } from "../sources";
 
-import { CharacterWriteStream, PreConditionError, escapeAndQuote } from "../sources";
-
-export function characterWriteStreamTests(creator: () => CharacterWriteStream): void
+export function characterWriteStreamTests(runner: TestRunner, creator: () => CharacterWriteStream): void
 {
-    suite("CharacterWriteStream", () =>
+    runner.testType("CharacterWriteStream", () =>
     {
-        suite("writeCharacter(string)", () =>
+        runner.testFunction("writeCharacter(string)", () =>
         {
             function writeCharacterErrorTest(value: string, expected: Error): void
             {
-                test(`with ${escapeAndQuote(value)}`, () =>
+                runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                 {
                     const writeStream: CharacterWriteStream = creator();
-                    assert.throws(() => writeStream.writeCharacter(value).await(), expected);
+                    test.assertThrows(() => writeStream.writeCharacter(value).await(), expected);
                 });
             }
 
@@ -49,14 +47,14 @@ export function characterWriteStreamTests(creator: () => CharacterWriteStream): 
                     "Actual: 3"));
         });
         
-        suite("writeString(string,number?,number?)", () =>
+        runner.testFunction("writeString(string,number?,number?)", () =>
         {
             function writeStringErrorTest(value: string, expected: Error): void
             {
-                test(`with ${escapeAndQuote(value)}`, () =>
+                runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                 {
                     const writeStream: CharacterWriteStream = creator();
-                    assert.throws(() => writeStream.writeString(value).await(), expected);
+                    test.assertThrows(() => writeStream.writeString(value).await(), expected);
                 });
             }
 
@@ -74,14 +72,14 @@ export function characterWriteStreamTests(creator: () => CharacterWriteStream): 
                     "Actual: null"));
         });
         
-        suite("writeLine(string,number?,number?)", () =>
+        runner.testFunction("writeLine(string,number?,number?)", () =>
         {
             function writeLineErrorTest(value: string, expected: Error): void
             {
-                test(`with ${escapeAndQuote(value)}`, () =>
+                runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                 {
                     const writeStream: CharacterWriteStream = creator();
-                    assert.throws(() => writeStream.writeLine(value).await(), expected);
+                    test.assertThrows(() => writeStream.writeLine(value).await(), expected);
                 });
             }
 

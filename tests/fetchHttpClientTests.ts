@@ -1,86 +1,90 @@
-import * as assert from "assert";
-import { FetchHttpClient, HttpClient, HttpMethod, HttpRequest, HttpResponse, PreConditionError } from "../sources";
+import { FetchHttpClient, HttpClient, HttpMethod, HttpRequest, HttpResponse, PreConditionError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-suite("fetchHttpClient.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("FetchHttpClient", () =>
+    runner.testFile("fetchHttpClient.ts", () =>
     {
-        test("create()", () =>
+        runner.testType(FetchHttpClient, () =>
         {
-            const client: FetchHttpClient = FetchHttpClient.create();
-            assert.notStrictEqual(client, undefined);
-        });
-
-        suite("sendRequest(HttpRequest)", () =>
-        {
-            function sendRequestErrorTest(httpRequest: HttpRequest, expected: Error): void
+            runner.test("create()", (test: Test) =>
             {
-                test(`with ${JSON.stringify(httpRequest)}`, async () =>
-                {
-                    const client: HttpClient = FetchHttpClient.create();
-                    await assert.rejects(async () => await client.sendRequest(httpRequest),
-                        expected);
-                });
-            }
+                const client: FetchHttpClient = FetchHttpClient.create();
+                test.assertNotUndefinedAndNotNull(client);
+            });
 
-            sendRequestErrorTest(
-                undefined!,
-                new PreConditionError(
-                    "Expression: request",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined"));
-            sendRequestErrorTest(
-                null!,
-                new PreConditionError(
-                    "Expression: request",
-                    "Expected: not undefined and not null",
-                    "Actual: null"));
-            sendRequestErrorTest(
-                HttpRequest.create(),
-                new PreConditionError(
-                    "Expression: request.getMethod()",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined"));
-            sendRequestErrorTest(
-                HttpRequest.create()
-                    .setMethod(HttpMethod.DELETE),
-                new PreConditionError(
-                    "Expression: request.getUri()",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined"));
-
-            function sendRequestTest(request: HttpRequest, expectedStatusCode: number, expectedBody: unknown): void
+            runner.testFunction("sendRequest(HttpRequest)", () =>
             {
-                test(`with ${JSON.stringify(request)}`, async () =>
+                function sendRequestErrorTest(httpRequest: HttpRequest, expected: Error): void
                 {
-                    const client: HttpClient = FetchHttpClient.create();
-                    const response: HttpResponse = await client.sendRequest(request);
-                    assert.notStrictEqual(response, undefined);
-                    assert.strictEqual(response.getStatusCode(), expectedStatusCode);
-                    const jsonBody: any = await response.getBodyAsJson();
-                    delete jsonBody.headers["X-Amzn-Trace-Id"];
-                    delete jsonBody["origin"];
-                    assert.deepStrictEqual(jsonBody, expectedBody);
-                });
-            }
-            
-            sendRequestTest(
-                HttpRequest.create()
-                    .setMethod(HttpMethod.GET)
-                    .setUri("https://httpbin.org/get"),
-                200,
+                    runner.testAsync(`with ${runner.toString(httpRequest)}`, async (test: Test) =>
+                    {
+                        const client: HttpClient = FetchHttpClient.create();
+                        await test.assertThrowsAsync(() => client.sendRequest(httpRequest),
+                            expected);
+                    });
+                }
+
+                sendRequestErrorTest(
+                    undefined!,
+                    new PreConditionError(
+                        "Expression: request",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
+                sendRequestErrorTest(
+                    null!,
+                    new PreConditionError(
+                        "Expression: request",
+                        "Expected: not undefined and not null",
+                        "Actual: null"));
+                sendRequestErrorTest(
+                    HttpRequest.create(),
+                    new PreConditionError(
+                        "Expression: request.getMethod()",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
+                sendRequestErrorTest(
+                    HttpRequest.create()
+                        .setMethod(HttpMethod.DELETE),
+                    new PreConditionError(
+                        "Expression: request.getUri()",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
+
+                function sendRequestTest(request: HttpRequest, expectedStatusCode: number, expectedBody: unknown): void
                 {
-                    "args": {},
-                    "headers": {
-                        "Accept": "*/*",
-                        "Accept-Encoding": "br, gzip, deflate",
-                        "Accept-Language": "*",
-                        "Host": "httpbin.org",
-                        "Sec-Fetch-Mode": "cors",
-                        "User-Agent": "node",
-                    },
-                    "url": "https://httpbin.org/get"
-                });
+                    runner.testAsync(`with ${JSON.stringify(request)}`, async (test: Test) =>
+                    {
+                        const client: HttpClient = FetchHttpClient.create();
+                        const response: HttpResponse = await client.sendRequest(request);
+                        test.assertNotUndefinedAndNotNull(response);
+                        test.assertEqual(response.getStatusCode(), expectedStatusCode);
+                        const jsonBody: any = await response.getBodyAsJson();
+                        delete jsonBody.headers["X-Amzn-Trace-Id"];
+                        delete jsonBody["origin"];
+                        test.assertEqual(jsonBody, expectedBody);
+                    });
+                }
+                
+                sendRequestTest(
+                    HttpRequest.create()
+                        .setMethod(HttpMethod.GET)
+                        .setUri("https://httpbin.org/get"),
+                    200,
+                    {
+                        "args": {},
+                        "headers": {
+                            "Accept": "*/*",
+                            "Accept-Encoding": "br, gzip, deflate",
+                            "Accept-Language": "*",
+                            "Host": "httpbin.org",
+                            "Sec-Fetch-Mode": "cors",
+                            "User-Agent": "node",
+                        },
+                        "url": "https://httpbin.org/get"
+                    });
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());
