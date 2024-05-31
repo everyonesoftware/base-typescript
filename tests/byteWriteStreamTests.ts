@@ -1,19 +1,17 @@
-import * as assert from "assert";
+import { ByteWriteStream, PreConditionError, Test, TestRunner, andList } from "../sources";
 
-import { ByteWriteStream, PreConditionError, andList, toString } from "../sources";
-
-export function byteWriteStreamTests(creator: () => ByteWriteStream): void
+export function byteWriteStreamTests(runner: TestRunner, creator: () => ByteWriteStream): void
 {
-    suite("ByteWriteStream", () =>
+    runner.testType("ByteWriteStream", () =>
     {
-        suite("writeByte(number)", () =>
+        runner.testFunction("writeByte(number)", () =>
         {
             function writeByteErrorTest(value: number, expected: Error): void
             {
-                test(`with ${value}`, () =>
+                runner.test(`with ${value}`, (test: Test) =>
                 {
                     const writeStream: ByteWriteStream = creator();
-                    assert.throws(() => writeStream.writeByte(value).await(), expected);
+                    test.assertThrows(() => writeStream.writeByte(value).await(), expected);
                 });
             }
 
@@ -36,14 +34,14 @@ export function byteWriteStreamTests(creator: () => ByteWriteStream): void
                 "Actual: 257"));
         });
 
-        suite("writeBytes(number[]|Uint8Array, number?, number?)", () =>
+        runner.testFunction("writeBytes(number[]|Uint8Array, number?, number?)", () =>
         {
             function writeBytesErrorTest(values: number[] | Uint8Array, startIndex: number | undefined, length: number | undefined, expected: Error): void
             {
-                test(`with ${andList([values, startIndex, length].map(toString))}`, () =>
+                runner.test(`with ${andList([values, startIndex, length].map(runner.toString))}`, (test: Test) =>
                 {
                     const writeStream: ByteWriteStream = creator();
-                    assert.throws(() => writeStream.writeBytes(values, startIndex, length).await(), expected);
+                    test.assertThrows(() => writeStream.writeBytes(values, startIndex, length).await(), expected);
                 });
             }
 

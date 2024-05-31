@@ -17,7 +17,7 @@ export function test(runner: TestRunner): void
             });
             
             byteListByteWriteStreamTests(runner, ByteListCharacterToByteWriteStream.create);
-            characterWriteStreamTests(ByteListCharacterToByteWriteStream.create);
+            characterWriteStreamTests(runner, ByteListCharacterToByteWriteStream.create);
 
             runner.test("writeCharacter(string)", (test: Test) =>
             {

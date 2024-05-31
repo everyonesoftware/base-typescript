@@ -1,874 +1,901 @@
-import * as assert from "assert";
+import { andList, join, Condition, PostConditionError, JavascriptIterable, PreConditionError, TestRunner, Test } from "../sources/";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { andList, escapeAndQuote, join, Condition, PostConditionError, JavascriptIterable, PreConditionError } from "../sources/";
-
-suite("condition.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("Condition", () =>
+    runner.testFile("condition.ts", () =>
     {
-        suite("create((string) => Error)", () =>
+        runner.testType(Condition, () =>
         {
-            test("with no arguments", () =>
+            runner.testFunction("create((string) => Error)", () =>
             {
-                const condition: Condition = Condition.create();
-                assert.notStrictEqual(condition, undefined);
-                assert.throws(() => condition.assertFalse(true),
-                    new Error([
-                        "Expected: false",
-                        "Actual: true",
-                    ].join("\n")));
-            });
-
-            test("with undefined", () =>
-            {
-                const condition: Condition = Condition.create(undefined);
-                assert.notStrictEqual(condition, undefined);
-                assert.throws(() => condition.assertFalse(true),
-                    new Error([
-                        "Expected: false",
-                        "Actual: true",
-                    ].join("\n")));
-            });
-
-            test("with defined", () =>
-            {
-                const condition: Condition = Condition.create((message: string) =>
-                {
-                    return new PostConditionError(`aaa ${message} aaa`);
-                });
-                assert.notStrictEqual(condition, undefined);
-                assert.throws(() => condition.assertFalse(true),
-                    new PostConditionError([
-                        "aaa Expected: false",
-                        "Actual: true aaa",
-                    ].join("\n")));
-            });
-        });
-
-        suite("assertUndefined(unknown,string?,string?)", () =>
-        {
-            test("with undefined", () =>
-            {
-                const condition: Condition = Condition.create();
-                condition.assertUndefined(undefined, "fake-expression", "fake-message");
-            });
-
-            function assertUndefinedErrorTest(value: unknown, expected: Error): void
-            {
-                test(`with ${value}`, () =>
+                runner.test("with no arguments", (test: Test) =>
                 {
                     const condition: Condition = Condition.create();
-                    assert.throws(() => condition.assertUndefined(value), expected);
+                    test.assertNotUndefinedAndNotNull(condition);
+                    test.assertThrows(() => condition.assertFalse(true),
+                        new Error([
+                            "Expected: false",
+                            "Actual: true",
+                        ].join("\n")));
                 });
-            }
 
-            assertUndefinedErrorTest(
-                null,
-                new Error(join("\n", [
-                    "Expected: undefined",
-                    "Actual: null",
-                ])));
-            assertUndefinedErrorTest(
-                "",
-                new Error(join("\n", [
-                    "Expected: undefined",
-                    "Actual: ",
-                ])));
-            assertUndefinedErrorTest(
-                50,
-                new Error(join("\n", [
-                    "Expected: undefined",
-                    "Actual: 50",
-                ])));
-        });
-
-        suite("assertNotUndefinedAndNotNull<T>(undefined|null|T,string?,string?)", () =>
-        {
-            test("with undefined", () =>
-            {
-                const condition: Condition = Condition.create();
-                assert.throws(() => condition.assertNotUndefinedAndNotNull(undefined),
-                    new Error([
-                        "Expected: not undefined and not null",
-                        "Actual: undefined",
-                    ].join("\n")));
-            });
-
-            test("with null", () =>
-            {
-                const condition: Condition = Condition.create();
-                assert.throws(() => condition.assertNotUndefinedAndNotNull(null),
-                    new Error([
-                        "Expected: not undefined and not null",
-                        "Actual: null",
-                    ].join("\n")));
-            });
-
-            test("with not undefined and not null", () =>
-            {
-                function valueCreator(): string | undefined
+                runner.test("with undefined", (test: Test) =>
                 {
-                    return "hello";
+                    const condition: Condition = Condition.create(undefined);
+                    test.assertNotUndefinedAndNotNull(condition);
+                    test.assertThrows(() => condition.assertFalse(true),
+                        new Error([
+                            "Expected: false",
+                            "Actual: true",
+                        ].join("\n")));
+                });
+
+                runner.test("with defined", (test: Test) =>
+                {
+                    const condition: Condition = Condition.create((message: string) =>
+                    {
+                        return new PostConditionError(`aaa ${message} aaa`);
+                    });
+                    test.assertNotUndefinedAndNotNull(condition);
+                    test.assertThrows(() => condition.assertFalse(true),
+                        new PostConditionError([
+                            "aaa Expected: false",
+                            "Actual: true aaa",
+                        ].join("\n")));
+                });
+            });
+
+            runner.testFunction("assertUndefined(unknown,string?,string?)", () =>
+            {
+                runner.test("with undefined", () =>
+                {
+                    const condition: Condition = Condition.create();
+                    condition.assertUndefined(undefined, "fake-expression", "fake-message");
+                });
+
+                function assertUndefinedErrorTest(value: unknown, expected: Error): void
+                {
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertUndefined(value), expected);
+                    });
                 }
 
-                const condition: Condition = Condition.create();
-                const value: string | undefined = valueCreator();
-                condition.assertNotUndefinedAndNotNull(value);
-                assert.strictEqual(value.substring(1, 3), "el");
+                assertUndefinedErrorTest(
+                    null,
+                    new Error(join("\n", [
+                        "Expected: undefined",
+                        "Actual: null",
+                    ])));
+                assertUndefinedErrorTest(
+                    "",
+                    new Error(join("\n", [
+                        "Expected: undefined",
+                        "Actual: ",
+                    ])));
+                assertUndefinedErrorTest(
+                    50,
+                    new Error(join("\n", [
+                        "Expected: undefined",
+                        "Actual: 50",
+                    ])));
             });
 
-            test("with undefined and expression", () =>
+            runner.testFunction("assertNotUndefinedAndNotNull<T>(undefined|null|T,string?,string?)", () =>
             {
-                const condition: Condition = Condition.create();
-                assert.throws(() => condition.assertNotUndefinedAndNotNull(undefined, "fake-expression"),
-                    new Error([
-                        "Expression: fake-expression",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined"
-                    ].join("\n")));
+                runner.test("with undefined", (test: Test) =>
+                {
+                    const condition: Condition = Condition.create();
+                    test.assertThrows(() => condition.assertNotUndefinedAndNotNull(undefined),
+                        new Error([
+                            "Expected: not undefined and not null",
+                            "Actual: undefined",
+                        ].join("\n")));
+                });
+
+                runner.test("with null", (test: Test) =>
+                {
+                    const condition: Condition = Condition.create();
+                    test.assertThrows(() => condition.assertNotUndefinedAndNotNull(null),
+                        new Error([
+                            "Expected: not undefined and not null",
+                            "Actual: null",
+                        ].join("\n")));
+                });
+
+                runner.test("with not undefined and not null", (test: Test) =>
+                {
+                    function valueCreator(): string | undefined
+                    {
+                        return "hello";
+                    }
+
+                    const condition: Condition = Condition.create();
+                    const value: string | undefined = valueCreator();
+                    condition.assertNotUndefinedAndNotNull(value);
+                    test.assertEqual(value.substring(1, 3), "el");
+                });
+
+                runner.test("with undefined and expression", (test: Test) =>
+                {
+                    const condition: Condition = Condition.create();
+                    test.assertThrows(() => condition.assertNotUndefinedAndNotNull(undefined, "fake-expression"),
+                        new Error([
+                            "Expression: fake-expression",
+                            "Expected: not undefined and not null",
+                            "Actual: undefined"
+                        ].join("\n")));
+                });
+
+                runner.test("with null, expression, and message", (test: Test) =>
+                {
+                    const condition: Condition = Condition.create();
+                    test.assertThrows(() => condition.assertNotUndefinedAndNotNull(null, "fake-expression", "fake-message"),
+                        new Error([
+                            "Message: fake-message",
+                            "Expression: fake-expression",
+                            "Expected: not undefined and not null",
+                            "Actual: null"
+                        ].join("\n")));
+                });
             });
 
-            test("with null, expression, and message", () =>
+            runner.testFunction("assertTrue(boolean)", () =>
             {
-                const condition: Condition = Condition.create();
-                assert.throws(() => condition.assertNotUndefinedAndNotNull(null, "fake-expression", "fake-message"),
-                    new Error([
+                runner.test("with false", (test: Test) =>
+                {
+                    const condition: Condition = Condition.create();
+                    test.assertThrows(() => condition.assertTrue(false),
+                        new Error([
+                            "Expected: true",
+                            "Actual: false",
+                        ].join("\n")));
+                });
+
+                runner.test("with true", (test: Test) =>
+                {
+                    function valueCreator(): boolean { return true; }
+                    const condition: Condition = Condition.create();
+                    const value: boolean = valueCreator();
+                    condition.assertTrue(value);
+                    test.assertTrue(value);
+                });
+            });
+
+            runner.testFunction("assertFalse(boolean)", () =>
+            {
+                runner.test("with true", (test: Test) =>
+                {
+                    const condition: Condition = Condition.create();
+                    test.assertThrows(() => condition.assertFalse(true),
+                        new Error([
+                            "Expected: false",
+                            "Actual: true",
+                        ].join("\n")));
+                });
+
+                runner.test("with false", (test: Test) =>
+                {
+                    function valueCreator(): boolean { return false; }
+                    const condition: Condition = Condition.create();
+                    const value: boolean = valueCreator();
+                    condition.assertFalse(value);
+                    test.assertFalse(value);
+                });
+            });
+
+            runner.testFunction("assertSame<T>(T,T,string?,string?)", () =>
+            {
+                function assertSameErrorTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined, expectedError: Error): void
+                {
+                    runner.test(`with ${andList([expected, actual, expression, message].map(runner.toString))}`, (test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertSame(expected, actual, expression, message), expectedError);
+                    });
+                }
+                
+                assertSameErrorTest(
+                    undefined,
+                    null,
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
                         "Message: fake-message",
                         "Expression: fake-expression",
-                        "Expected: not undefined and not null",
-                        "Actual: null"
-                    ].join("\n")));
-            });
-        });
+                        "Expected: undefined",
+                        "Actual: null",
+                    ])));
+                assertSameErrorTest(
+                    3,
+                    4,
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: 3",
+                        "Actual: 4",
+                    ])));
+                assertSameErrorTest(
+                    {},
+                    {},
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: {}",
+                        "Actual: {}",
+                    ])));
+                assertSameErrorTest(
+                    { "a": "b" },
+                    { "a": "b" },
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: {\"a\":\"b\"}",
+                        "Actual: {\"a\":\"b\"}",
+                    ])));
+                assertSameErrorTest(
+                    [],
+                    [],
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: []",
+                        "Actual: []",
+                    ])));
 
-        suite("assertTrue(boolean)", () =>
-        {
-            test("with false", () =>
-            {
-                const condition: Condition = Condition.create();
-                assert.throws(() => condition.assertTrue(false),
-                    new Error([
-                        "Expected: true",
-                        "Actual: false",
-                    ].join("\n")));
-            });
-
-            test("with true", () =>
-            {
-                function valueCreator(): boolean { return true; }
-                const condition: Condition = Condition.create();
-                const value: boolean = valueCreator();
-                condition.assertTrue(value);
-                assert.strictEqual(value, true);
-            });
-        });
-
-        suite("assertFalse(boolean)", () =>
-        {
-            test("with true", () =>
-            {
-                const condition: Condition = Condition.create();
-                assert.throws(() => condition.assertFalse(true),
-                    new Error([
-                        "Expected: false",
-                        "Actual: true",
-                    ].join("\n")));
-            });
-
-            test("with false", () =>
-            {
-                function valueCreator(): boolean { return false; }
-                const condition: Condition = Condition.create();
-                const value: boolean = valueCreator();
-                condition.assertFalse(value);
-                assert.strictEqual(value, false);
-            });
-        });
-
-        suite("assertSame<T>(T,T,string?,string?)", () =>
-        {
-            function assertSameTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined, expectedError?: Error): void
-            {
-                test(`with ${andList([expected, actual, expression, message].map(x => JSON.stringify(x)))}`, () =>
+                function assertSameTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError)
+                    runner.test(`with ${andList([expected, actual, expression, message].map(runner.toString))}`, (_test: Test) =>
                     {
-                        assert.throws(() => condition.assertSame(expected, actual, expression, message), expectedError);
-                    }
-                    else
-                    {
+                        const condition: Condition = Condition.create();
                         condition.assertSame(expected, actual, expression, message);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertSameTest(undefined, undefined, "fake-expression", "fake-message");
-            assertSameTest(null, null, "fake-expression", "fake-message");
-            assertSameTest(0, 0, "fake-expression", "fake-message");
-            assertSameTest(10, 10, "fake-expression", "fake-message");
-            assertSameTest(true, true, "fake-expression", "fake-message");
-            assertSameTest("abc", "abc", "fake-expression", "fake-message");
-            
-            const o = {};
-            assertSameTest(o, o, "fake-expression", "fake-message");
+                assertSameTest(undefined, undefined, "fake-expression", "fake-message");
+                assertSameTest(null, null, "fake-expression", "fake-message");
+                assertSameTest(0, 0, "fake-expression", "fake-message");
+                assertSameTest(10, 10, "fake-expression", "fake-message");
+                assertSameTest(true, true, "fake-expression", "fake-message");
+                assertSameTest("abc", "abc", "fake-expression", "fake-message");
+                
+                const o = {};
+                assertSameTest(o, o, "fake-expression", "fake-message");
+            });
 
-            assertSameTest(
-                undefined,
-                null,
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: undefined",
-                    "Actual: null",
-                ])));
-            assertSameTest(
-                3,
-                4,
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: 3",
-                    "Actual: 4",
-                ])));
-            assertSameTest(
-                {},
-                {},
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: {}",
-                    "Actual: {}",
-                ])));
-            assertSameTest(
-                { "a": "b" },
-                { "a": "b" },
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: {\"a\":\"b\"}",
-                    "Actual: {\"a\":\"b\"}",
-                ])));
-            assertSameTest(
-                [],
-                [],
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: []",
-                    "Actual: []",
-                ])));
-        });
-
-        suite("assertNotSame<T>(T,T,string?,string?)", () =>
-        {
-            function assertNotSameTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined, expectedError?: Error): void
+            suite("assertNotSame<T>(T,T,string?,string?)", () =>
             {
-                test(`with ${andList([expected, actual, expression, message].map(x => JSON.stringify(x)))}`, () =>
+                function assertNotSameErrorTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError)
+                    runner.test(`with ${andList([expected, actual, expression, message].map(runner.toString))}`, (test: Test) =>
                     {
-                        assert.throws(() => condition.assertNotSame(expected, actual, expression, message), expectedError);
-                    }
-                    else
-                    {
-                        condition.assertNotSame(expected, actual, expression, message);
-                    }
-                });
-            }
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertNotSame(expected, actual, expression, message), expectedError);
+                    });
+                }
 
-            assertNotSameTest(
-                undefined,
-                undefined,
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
+                assertNotSameErrorTest(
+                    undefined,
+                    undefined,
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: not undefined",
+                        "Actual: undefined",
+                    ])));
+                assertNotSameErrorTest(
+                    null,
+                    null,
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: not null",
+                        "Actual: null",
+                    ])));
+                assertNotSameErrorTest(
+                    0,
+                    0,
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: not 0",
+                        "Actual: 0",
+                    ])));
+                assertNotSameErrorTest(
+                    10,
+                    10,
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: not 10",
+                        "Actual: 10",
+                    ])));
+                assertNotSameErrorTest(
+                    true,
+                    true,
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: not true",
+                        "Actual: true",
+                    ])));
+                assertNotSameErrorTest(
+                    "abc",
+                    "abc",
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: not \"abc\"",
+                        "Actual: \"abc\"",
+                    ])));
+                
+                const o = {};
+                assertNotSameErrorTest(
+                    o,
+                    o,
+                    "fake-expression",
+                    "fake-message",
+                    new Error(join("\n", [
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: not {}",
+                        "Actual: {}",
+                    ])));
+
+                function assertNotSameTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined): void
+                {
+                    runner.test(`with ${andList([expected, actual, expression, message].map(runner.toString))}`, (_test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        condition.assertNotSame(expected, actual, expression, message);
+                    });
+                }
+
+                assertNotSameTest(undefined, null, "fake-expression", "fake-message");
+                assertNotSameTest(false, true, "fake-expression", "fake-message");
+                assertNotSameTest(1, 2, "fake-expression", "fake-message");
+                assertNotSameTest({}, {}, "fake-expression", "fake-message");
+                assertNotSameTest({ "a": "b" }, { "a": "b" }, "fake-expression", "fake-message");
+                assertNotSameTest([], [], "fake-expression", "fake-message");
+            });
+
+            runner.testFunction("assertNotEmpty(string,string?,string?)", () =>
+            {
+                function assertNotEmptyErrorTest(value: string, expression: string | undefined, message: string | undefined, expectedError: Error): void
+                {
+                    runner.test(`with ${andList([value, expression, message].map(runner.toString))}`, (test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertNotEmpty(value, expression, message), expectedError);
+                    });
+                }
+
+                assertNotEmptyErrorTest(undefined!, "fake-expression", "fake-message", new Error(join("\n", [
                     "Message: fake-message",
                     "Expression: fake-expression",
-                    "Expected: not undefined",
+                    "Expected: not undefined and not null",
                     "Actual: undefined",
                 ])));
-            assertNotSameTest(
-                null,
-                null,
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
+                assertNotEmptyErrorTest(null!, "fake-expression", "fake-message", new Error(join("\n", [
                     "Message: fake-message",
                     "Expression: fake-expression",
-                    "Expected: not null",
+                    "Expected: not undefined and not null",
                     "Actual: null",
                 ])));
-            assertNotSameTest(
-                0,
-                0,
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
+                assertNotEmptyErrorTest("", "fake-expression", "fake-message", new Error(join("\n", [
                     "Message: fake-message",
                     "Expression: fake-expression",
-                    "Expected: not 0",
+                    "Expected: not empty",
+                    "Actual: \"\"",
+                ])));
+
+                function assertNotEmptyTest(value: string, expression: string | undefined, message: string | undefined): void
+                {
+                    runner.test(`with ${andList([value, expression, message].map(runner.toString))}`, (_test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        condition.assertNotEmpty(value, expression, message);
+                    });
+                }
+
+                assertNotEmptyTest(" ", "fake-expression", "fake-message");
+                assertNotEmptyTest("a", "fake-expression", "fake-message");
+            });
+
+            runner.testFunction("assertLessThan(number,number,string?,string?)", () =>
+            {
+                function assertLessThanErrorTest(value: number, upperBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
+                {
+                    runner.test(`with ${andList([value, upperBound].map(runner.toString))}`, (test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertLessThan(value, upperBound, expression, message), expectedError);
+                    });
+                }
+
+                assertLessThanErrorTest(-1, -1, undefined, undefined, new Error(join("\n", [
+                    "Expected: less than -1",
+                    "Actual: -1",
+                ])));
+                assertLessThanErrorTest(0, 0, undefined, undefined, new Error(join("\n", [
+                    "Expected: less than 0",
                     "Actual: 0",
                 ])));
-            assertNotSameTest(
-                10,
-                10,
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: not 10",
-                    "Actual: 10",
+                assertLessThanErrorTest(2, 1, undefined, undefined, new Error(join("\n", [
+                    "Expected: less than 1",
+                    "Actual: 2",
                 ])));
-            assertNotSameTest(
-                true,
-                true,
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
+                assertLessThanErrorTest(2, 1, "fake-expression", "fake-message", new Error(join("\n", [
                     "Message: fake-message",
                     "Expression: fake-expression",
-                    "Expected: not true",
-                    "Actual: true",
-                ])));
-            assertNotSameTest(
-                "abc",
-                "abc",
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: not \"abc\"",
-                    "Actual: \"abc\"",
-                ])));
-            
-            const o = {};
-            assertNotSameTest(
-                o,
-                o,
-                "fake-expression",
-                "fake-message",
-                new Error(join("\n", [
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: not {}",
-                    "Actual: {}",
+                    "Expected: less than 1",
+                    "Actual: 2",
                 ])));
 
-            assertNotSameTest(undefined, null, "fake-expression", "fake-message");
-            assertNotSameTest(false, true, "fake-expression", "fake-message");
-            assertNotSameTest(1, 2, "fake-expression", "fake-message");
-            assertNotSameTest({}, {}, "fake-expression", "fake-message");
-            assertNotSameTest({ "a": "b" }, { "a": "b" }, "fake-expression", "fake-message");
-            assertNotSameTest([], [], "fake-expression", "fake-message");
-        });
-
-        suite("assertNotEmpty(string,string?,string?)", () =>
-        {
-            function assertNotEmptyTest(value: string, expression: string | undefined, message: string | undefined, expectedError?: Error): void
-            {
-                test(`with ${andList([value, expression, message].map(x => escapeAndQuote(x)))}`, () =>
+                function assertLessThanTest(value: number, upperBound: number, expression?: string, message?: string): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError)
+                    runner.test(`with ${andList([value, upperBound].map(runner.toString))}`, () =>
                     {
-                        assert.throws(() => condition.assertNotEmpty(value, expression, message), expectedError);
-                    }
-                    else
-                    {
-                        condition.assertNotEmpty(value, expression, message);
-                    }
-                });
-            }
-
-            assertNotEmptyTest(undefined!, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: not undefined and not null",
-                "Actual: undefined",
-            ])));
-            assertNotEmptyTest(null!, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ])));
-            assertNotEmptyTest("", "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: not empty",
-                "Actual: \"\"",
-            ])));
-            assertNotEmptyTest(" ", "fake-expression", "fake-message");
-            assertNotEmptyTest("a", "fake-expression", "fake-message");
-        });
-
-        suite("assertLessThan(number,number,string?,string?)", () =>
-        {
-            function assertLessThanTest(value: number, upperBound: number, expression?: string, message?: string, expectedError?: Error): void
-            {
-                test(`with ${andList([`${value}`, `${upperBound}`])}`, () =>
-                {
-                    const condition: Condition = Condition.create();
-                    if (expectedError === undefined)
-                    {
+                        const condition: Condition = Condition.create();
                         condition.assertLessThan(value, upperBound, expression, message);
-                    }
-                    else
-                    {
-                        assert.throws(() => condition.assertLessThan(value, upperBound, expression, message), expectedError);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertLessThanTest(-10, -9);
-            assertLessThanTest(-1, 0);
-            assertLessThanTest(0, 1);
-            assertLessThanTest(4, 5);
+                assertLessThanTest(-10, -9);
+                assertLessThanTest(-1, 0);
+                assertLessThanTest(0, 1);
+                assertLessThanTest(4, 5);
+            });
 
-            assertLessThanTest(-1, -1, undefined, undefined, new Error(join("\n", [
-                "Expected: less than -1",
-                "Actual: -1",
-            ])));
-            assertLessThanTest(0, 0, undefined, undefined, new Error(join("\n", [
-                "Expected: less than 0",
-                "Actual: 0",
-            ])));
-            assertLessThanTest(2, 1, undefined, undefined, new Error(join("\n", [
-                "Expected: less than 1",
-                "Actual: 2",
-            ])));
-            assertLessThanTest(2, 1, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: less than 1",
-                "Actual: 2",
-            ])));
-        });
-
-        suite("assertLessThanOrEqualTo(number,number,string?,string?)", () =>
-        {
-            function assertLessThanOrEqualToTest(value: number, upperBound: number, expression?: string, message?: string, expectedError?: Error): void
+            runner.testFunction("assertLessThanOrEqualTo(number,number,string?,string?)", () =>
             {
-                test(`with ${andList([`${value}`, `${upperBound}`])}`, () =>
+                function assertLessThanOrEqualToErrorTest(value: number, upperBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError === undefined)
+                    runner.test(`with ${andList([value, upperBound].map(runner.toString))}`, (test: Test) =>
                     {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertLessThanOrEqualTo(value, upperBound, expression, message), expectedError);
+                    });
+                }
+
+                assertLessThanOrEqualToErrorTest(2, 1, undefined, undefined, new Error(join("\n", [
+                    "Expected: less than or equal to 1",
+                    "Actual: 2",
+                ])));
+                assertLessThanOrEqualToErrorTest(2, 1, "fake-expression", "fake-message", new Error(join("\n", [
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: less than or equal to 1",
+                    "Actual: 2",
+                ])));
+
+                function assertLessThanOrEqualToTest(value: number, upperBound: number, expression: string | undefined, message: string | undefined): void
+                {
+                    runner.test(`with ${andList([value, upperBound].map(runner.toString))}`, () =>
+                    {
+                        const condition: Condition = Condition.create();
                         condition.assertLessThanOrEqualTo(value, upperBound, expression, message);
-                    }
-                    else
-                    {
-                        assert.throws(() => condition.assertLessThanOrEqualTo(value, upperBound, expression, message), expectedError);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertLessThanOrEqualToTest(-10, -9);
-            assertLessThanOrEqualToTest(-1, 0);
-            assertLessThanOrEqualToTest(0, 1);
-            assertLessThanOrEqualToTest(4, 5);
-            assertLessThanOrEqualToTest(-1, -1);
-            assertLessThanOrEqualToTest(0, 0);
-            assertLessThanOrEqualToTest(1, 1);
+                assertLessThanOrEqualToTest(-10, -9, undefined, undefined);
+                assertLessThanOrEqualToTest(-1, 0, undefined, undefined);
+                assertLessThanOrEqualToTest(0, 1, undefined, undefined);
+                assertLessThanOrEqualToTest(4, 5, undefined, undefined);
+                assertLessThanOrEqualToTest(-1, -1, undefined, undefined);
+                assertLessThanOrEqualToTest(0, 0, undefined, undefined);
+                assertLessThanOrEqualToTest(1, 1, undefined, undefined);
+            });
 
-            assertLessThanOrEqualToTest(2, 1, undefined, undefined, new Error(join("\n", [
-                "Expected: less than or equal to 1",
-                "Actual: 2",
-            ])));
-            assertLessThanOrEqualToTest(2, 1, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: less than or equal to 1",
-                "Actual: 2",
-            ])));
-        });
-
-        suite("assertGreaterThanOrEqualTo(number,number,string?,string?)", () =>
-        {
-            function assertGreaterThanOrEqualToTest(value: number, lowerBound: number, expression?: string, message?: string, expectedError?: Error): void
+            runner.testFunction("assertGreaterThanOrEqualTo(number,number,string?,string?)", () =>
             {
-                test(`with ${andList([`${value}`, `${lowerBound}`])}`, () =>
+                function assertGreaterThanOrEqualToErrorTest(value: number, lowerBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError === undefined)
+                    runner.test(`with ${andList([value, lowerBound].map(runner.toString))}`, (test: Test) =>
                     {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertGreaterThanOrEqualTo(value, lowerBound, expression, message), expectedError);
+                    });
+                }
+
+                assertGreaterThanOrEqualToErrorTest(1, 2, undefined, undefined, new Error(join("\n", [
+                    "Expected: greater than or equal to 2",
+                    "Actual: 1",
+                ])));
+                assertGreaterThanOrEqualToErrorTest(1, 2, "fake-expression", "fake-message", new Error(join("\n", [
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: greater than or equal to 2",
+                    "Actual: 1",
+                ])));
+
+                function assertGreaterThanOrEqualToTest(value: number, lowerBound: number, expression?: string, message?: string): void
+                {
+                    runner.test(`with ${andList([value, lowerBound].map(runner.toString))}`, (_test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
                         condition.assertGreaterThanOrEqualTo(value, lowerBound, expression, message);
-                    }
-                    else
-                    {
-                        assert.throws(() => condition.assertGreaterThanOrEqualTo(value, lowerBound, expression, message), expectedError);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertGreaterThanOrEqualToTest(-9, -10);
-            assertGreaterThanOrEqualToTest(0, -1);
-            assertGreaterThanOrEqualToTest(1, 0);
-            assertGreaterThanOrEqualToTest(5, 4);
-            assertGreaterThanOrEqualToTest(-1, -1);
-            assertGreaterThanOrEqualToTest(0, 0);
-            assertGreaterThanOrEqualToTest(1, 1);
+                assertGreaterThanOrEqualToTest(-9, -10);
+                assertGreaterThanOrEqualToTest(0, -1);
+                assertGreaterThanOrEqualToTest(1, 0);
+                assertGreaterThanOrEqualToTest(5, 4);
+                assertGreaterThanOrEqualToTest(-1, -1);
+                assertGreaterThanOrEqualToTest(0, 0);
+                assertGreaterThanOrEqualToTest(1, 1);
+            });
 
-            assertGreaterThanOrEqualToTest(1, 2, undefined, undefined, new Error(join("\n", [
-                "Expected: greater than or equal to 2",
-                "Actual: 1",
-            ])));
-            assertGreaterThanOrEqualToTest(1, 2, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: greater than or equal to 2",
-                "Actual: 1",
-            ])));
-        });
-
-        suite("assertGreaterThan(number,number,string?,string?)", () =>
-        {
-            function assertGreaterThanTest(value: number, lowerBound: number, expression?: string, message?: string, expectedError?: Error): void
+            runner.testFunction("assertGreaterThan(number,number,string?,string?)", () =>
             {
-                test(`with ${andList([`${value}`, `${lowerBound}`])}`, () =>
+                function assertGreaterThanErrorTest(value: number, lowerBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError === undefined)
+                    runner.test(`with ${andList([value, lowerBound].map(runner.toString))}`, (test: Test) =>
                     {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertGreaterThan(value, lowerBound, expression, message), expectedError);
+                    });
+                }
+
+                assertGreaterThanErrorTest(-1, -1, undefined, undefined, new Error(join("\n", [
+                    "Expected: greater than -1",
+                    "Actual: -1",
+                ])));
+                assertGreaterThanErrorTest(0, 0, undefined, undefined, new Error(join("\n", [
+                    "Expected: greater than 0",
+                    "Actual: 0",
+                ])));
+                assertGreaterThanErrorTest(1, 2, undefined, undefined, new Error(join("\n", [
+                    "Expected: greater than 2",
+                    "Actual: 1",
+                ])));
+                assertGreaterThanErrorTest(1, 2, "fake-expression", "fake-message", new Error(join("\n", [
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: greater than 2",
+                    "Actual: 1",
+                ])));
+
+                function assertGreaterThanTest(value: number, lowerBound: number, expression?: string, message?: string): void
+                {
+                    runner.test(`with ${andList([value, lowerBound].map(runner.toString))}`, (_test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
                         condition.assertGreaterThan(value, lowerBound, expression, message);
-                    }
-                    else
-                    {
-                        assert.throws(() => condition.assertGreaterThan(value, lowerBound, expression, message), expectedError);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertGreaterThanTest(-9, -10);
-            assertGreaterThanTest(0, -1);
-            assertGreaterThanTest(1, 0);
-            assertGreaterThanTest(5, 4);
+                assertGreaterThanTest(-9, -10);
+                assertGreaterThanTest(0, -1);
+                assertGreaterThanTest(1, 0);
+                assertGreaterThanTest(5, 4);
+            });
 
-            assertGreaterThanTest(-1, -1, undefined, undefined, new Error(join("\n", [
-                "Expected: greater than -1",
-                "Actual: -1",
-            ])));
-            assertGreaterThanTest(0, 0, undefined, undefined, new Error(join("\n", [
-                "Expected: greater than 0",
-                "Actual: 0",
-            ])));
-            assertGreaterThanTest(1, 2, undefined, undefined, new Error(join("\n", [
-                "Expected: greater than 2",
-                "Actual: 1",
-            ])));
-            assertGreaterThanTest(1, 2, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: greater than 2",
-                "Actual: 1",
-            ])));
-        });
-
-        suite("assertBetween(number,number,number,string?,string?)", () =>
-        {
-            function assertBetweenTest(lowerBound: number, value: number, upperBound: number, expression?: string, message?: string, expectedError?: Error): void
+            runner.testFunction("assertBetween(number,number,number,string?,string?)", () =>
             {
-                test(`with ${andList([`${lowerBound}`, `${value}`, `${upperBound}`])}`, () =>
+                function assertBetweenErrorTest(lowerBound: number, value: number, upperBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError === undefined)
+                    runner.test(`with ${andList([lowerBound, value, upperBound].map(runner.toString))}`, (test: Test) =>
                     {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertBetween(lowerBound, value, upperBound, expression, message), expectedError);
+                    });
+                }
+
+                assertBetweenErrorTest(0, 1, 0, undefined, undefined, new Error(join("\n", [
+                    "Expected: 0",
+                    "Actual: 1",
+                ])));
+                assertBetweenErrorTest(0, -1, 0, undefined, undefined, new Error(join("\n", [
+                    "Expected: 0",
+                    "Actual: -1",
+                ])));
+                assertBetweenErrorTest(0, -1, 2, undefined, undefined, new Error(join("\n", [
+                    "Expected: between 0 and 2",
+                    "Actual: -1",
+                ])));
+                assertBetweenErrorTest(0, 3, 2, undefined, undefined, new Error(join("\n", [
+                    "Expected: between 0 and 2",
+                    "Actual: 3",
+                ])));
+                assertBetweenErrorTest(5, 3, 2, "fake-expression", "fake-message", new Error(join("\n", [
+                    "Expression: lowerBound",
+                    "Expected: less than or equal to 2",
+                    "Actual: 5",
+                ])));
+
+                function assertBetweenTest(lowerBound: number, value: number, upperBound: number, expression?: string, message?: string): void
+                {
+                    runner.test(`with ${andList([lowerBound, value, upperBound].map(runner.toString))}`, () =>
+                    {
+                        const condition: Condition = Condition.create();
                         condition.assertBetween(lowerBound, value, upperBound, expression, message);
-                    }
-                    else
-                    {
-                        assert.throws(() => condition.assertBetween(lowerBound, value, upperBound, expression, message), expectedError);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertBetweenTest(-12, -11, -10);
-            assertBetweenTest(-1, 0, 1);
-            assertBetweenTest(0, 1, 2);
-            assertBetweenTest(4, 5, 6);
-            assertBetweenTest(0, 0, 0);
-            assertBetweenTest(1, 1, 1);
+                assertBetweenTest(-12, -11, -10);
+                assertBetweenTest(-1, 0, 1);
+                assertBetweenTest(0, 1, 2);
+                assertBetweenTest(4, 5, 6);
+                assertBetweenTest(0, 0, 0);
+                assertBetweenTest(1, 1, 1);
+            });
 
-            assertBetweenTest(0, 1, 0, undefined, undefined, new Error(join("\n", [
-                "Expected: 0",
-                "Actual: 1",
-            ])));
-            assertBetweenTest(0, -1, 0, undefined, undefined, new Error(join("\n", [
-                "Expected: 0",
-                "Actual: -1",
-            ])));
-            assertBetweenTest(0, -1, 2, undefined, undefined, new Error(join("\n", [
-                "Expected: between 0 and 2",
-                "Actual: -1",
-            ])));
-            assertBetweenTest(0, 3, 2, undefined, undefined, new Error(join("\n", [
-                "Expected: between 0 and 2",
-                "Actual: 3",
-            ])));
-            assertBetweenTest(5, 3, 2, "fake-expression", "fake-message", new Error(join("\n", [
-                "Expression: lowerBound",
-                "Expected: less than or equal to 2",
-                "Actual: 5",
-            ])));
-        });
-
-        suite("assertAccessIndex(number,number,string?,string?)", () =>
-        {
-            function assertAccessIndexTest(index: number, count: number, expression?: string, message?: string, expectedError?: Error): void
+            runner.testFunction("assertAccessIndex(number,number,string?,string?)", () =>
             {
-                test(`with ${andList([`${index}`, `${count}`])}`, () =>
+                function assertAccessIndexTest(index: number, count: number, expression?: string, message?: string): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError === undefined)
+                    runner.test(`with ${andList([index, count].map(runner.toString))}`, (_test: Test) =>
                     {
+                        const condition: Condition = Condition.create();
                         condition.assertAccessIndex(index, count, expression, message);
-                    }
-                    else
-                    {
-                        assert.throws(() => condition.assertAccessIndex(index, count, expression, message), expectedError);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertAccessIndexTest(0, 1);
-            assertAccessIndexTest(0, 2);
-            assertAccessIndexTest(1, 2);
+                assertAccessIndexTest(0, 1);
+                assertAccessIndexTest(0, 2);
+                assertAccessIndexTest(1, 2);
 
-            assertAccessIndexTest(-1, 0, undefined, undefined, new Error(join("\n", [
-                "Expression: count",
-                "Expected: greater than or equal to 1",
-                "Actual: 0",
-            ])));
-            assertAccessIndexTest(0, 0, undefined, undefined, new Error(join("\n", [
-                "Expression: count",
-                "Expected: greater than or equal to 1",
-                "Actual: 0",
-            ])));
-            assertAccessIndexTest(1, 0, undefined, undefined, new Error(join("\n", [
-                "Expression: count",
-                "Expected: greater than or equal to 1",
-                "Actual: 0",
-            ])));
-            assertAccessIndexTest(-1, 1, undefined, undefined, new Error(join("\n", [
-                "Expected: 0",
-                "Actual: -1",
-            ])));
-            assertAccessIndexTest(1, 1, undefined, undefined, new Error(join("\n", [
-                "Expected: 0",
-                "Actual: 1",
-            ])));
-            assertAccessIndexTest(-1, 2, undefined, undefined, new Error(join("\n", [
-                "Expected: between 0 and 1",
-                "Actual: -1",
-            ])));
-            assertAccessIndexTest(1, 1, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: 0",
-                "Actual: 1",
-            ])));
-            assertAccessIndexTest(3, 2, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: between 0 and 1",
-                "Actual: 3",
-            ])));
-        });
-
-        suite("assertInsertIndex(number,number,string?,string?)", () =>
-        {
-            function assertInsertIndexTest(index: number, count: number, expression?: string, message?: string, expectedError?: Error): void
-            {
-                test(`with ${andList([`${index}`, `${count}`])}`, () =>
+                function assertAccessIndexErrorTest(index: number, count: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError === undefined)
+                    runner.test(`with ${andList([index, count].map(runner.toString))}`, (test: Test) =>
                     {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertAccessIndex(index, count, expression, message), expectedError);
+                    });
+                }
+
+                assertAccessIndexErrorTest(-1, 0, undefined, undefined, new Error(join("\n", [
+                    "Expression: count",
+                    "Expected: greater than or equal to 1",
+                    "Actual: 0",
+                ])));
+                assertAccessIndexErrorTest(0, 0, undefined, undefined, new Error(join("\n", [
+                    "Expression: count",
+                    "Expected: greater than or equal to 1",
+                    "Actual: 0",
+                ])));
+                assertAccessIndexErrorTest(1, 0, undefined, undefined, new Error(join("\n", [
+                    "Expression: count",
+                    "Expected: greater than or equal to 1",
+                    "Actual: 0",
+                ])));
+                assertAccessIndexErrorTest(-1, 1, undefined, undefined, new Error(join("\n", [
+                    "Expected: 0",
+                    "Actual: -1",
+                ])));
+                assertAccessIndexErrorTest(1, 1, undefined, undefined, new Error(join("\n", [
+                    "Expected: 0",
+                    "Actual: 1",
+                ])));
+                assertAccessIndexErrorTest(-1, 2, undefined, undefined, new Error(join("\n", [
+                    "Expected: between 0 and 1",
+                    "Actual: -1",
+                ])));
+                assertAccessIndexErrorTest(1, 1, "fake-expression", "fake-message", new Error(join("\n", [
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: 0",
+                    "Actual: 1",
+                ])));
+                assertAccessIndexErrorTest(3, 2, "fake-expression", "fake-message", new Error(join("\n", [
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: between 0 and 1",
+                    "Actual: 3",
+                ])));
+            });
+
+            runner.testFunction("assertInsertIndex(number,number,string?,string?)", () =>
+            {
+                function assertInsertIndexErrorTest(index: number, count: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
+                {
+                    runner.test(`with ${andList([index, count].map(runner.toString))}`, (test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertInsertIndex(index, count, expression, message), expectedError);
+                    });
+                }
+
+                assertInsertIndexErrorTest(-1, 0, undefined, undefined, new Error(join("\n", [
+                    "Expected: 0",
+                    "Actual: -1",
+                ])));
+                assertInsertIndexErrorTest(1, 0, undefined, undefined, new Error(join("\n", [
+                    "Expected: 0",
+                    "Actual: 1",
+                ])));
+                assertInsertIndexErrorTest(-1, 1, undefined, undefined, new Error(join("\n", [
+                    "Expected: between 0 and 1",
+                    "Actual: -1",
+                ])));
+                assertInsertIndexErrorTest(2, 1, undefined, undefined, new Error(join("\n", [
+                    "Expected: between 0 and 1",
+                    "Actual: 2",
+                ])));
+                assertInsertIndexErrorTest(-1, 2, undefined, undefined, new Error(join("\n", [
+                    "Expected: between 0 and 2",
+                    "Actual: -1",
+                ])));
+                assertInsertIndexErrorTest(2, 1, "fake-expression", "fake-message", new Error(join("\n", [
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: between 0 and 1",
+                    "Actual: 2",
+                ])));
+                assertInsertIndexErrorTest(3, 2, "fake-expression", "fake-message", new Error(join("\n", [
+                    "Message: fake-message",
+                    "Expression: fake-expression",
+                    "Expected: between 0 and 2",
+                    "Actual: 3",
+                ])));
+
+                function assertInsertIndexTest(index: number, count: number, expression?: string, message?: string): void
+                {
+                    runner.test(`with ${andList([index, count].map(runner.toString))}`, (_test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
                         condition.assertInsertIndex(index, count, expression, message);
-                    }
-                    else
-                    {
-                        assert.throws(() => condition.assertInsertIndex(index, count, expression, message), expectedError);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertInsertIndexTest(0, 0);
-            assertInsertIndexTest(0, 1);
-            assertInsertIndexTest(1, 1);
-            assertInsertIndexTest(0, 2);
-            assertInsertIndexTest(1, 2);
-            assertInsertIndexTest(2, 2);
+                assertInsertIndexTest(0, 0);
+                assertInsertIndexTest(0, 1);
+                assertInsertIndexTest(1, 1);
+                assertInsertIndexTest(0, 2);
+                assertInsertIndexTest(1, 2);
+                assertInsertIndexTest(2, 2);
+            });
 
-            assertInsertIndexTest(-1, 0, undefined, undefined, new Error(join("\n", [
-                "Expected: 0",
-                "Actual: -1",
-            ])));
-            assertInsertIndexTest(1, 0, undefined, undefined, new Error(join("\n", [
-                "Expected: 0",
-                "Actual: 1",
-            ])));
-            assertInsertIndexTest(-1, 1, undefined, undefined, new Error(join("\n", [
-                "Expected: between 0 and 1",
-                "Actual: -1",
-            ])));
-            assertInsertIndexTest(2, 1, undefined, undefined, new Error(join("\n", [
-                "Expected: between 0 and 1",
-                "Actual: 2",
-            ])));
-            assertInsertIndexTest(-1, 2, undefined, undefined, new Error(join("\n", [
-                "Expected: between 0 and 2",
-                "Actual: -1",
-            ])));
-            assertInsertIndexTest(2, 1, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: between 0 and 1",
-                "Actual: 2",
-            ])));
-            assertInsertIndexTest(3, 2, "fake-expression", "fake-message", new Error(join("\n", [
-                "Message: fake-message",
-                "Expression: fake-expression",
-                "Expected: between 0 and 2",
-                "Actual: 3",
-            ])));
-        });
-
-        suite("assertOneOf<T>(JavascriptIterable<T>,T,string?,string?)", () =>
-        {
-            function assertOneOfTest<T>(possibilities: JavascriptIterable<T>, value: T, expression?: string, message?: string, expectedError?: Error): void
+            runner.testFunction("assertOneOf<T>(JavascriptIterable<T>,T,string?,string?)", () =>
             {
-                test(`with ${andList([possibilities, value, expression, message].map(x => JSON.stringify(x)))}`, () =>
+                function assertOneOfErrorTest<T>(possibilities: JavascriptIterable<T>, value: T, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    const condition: Condition = Condition.create();
-                    if (expectedError)
+                    runner.test(`with ${andList([possibilities, value, expression, message].map(runner.toString))}`, (test: Test) =>
                     {
-                        assert.throws(() => condition.assertOneOf(possibilities, value, expression, message), expectedError);
-                    }
-                    else
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertOneOf(possibilities, value, expression, message), expectedError);
+                    });
+                }
+
+                assertOneOfErrorTest(
+                    undefined!,
+                    5,
+                    undefined,
+                    undefined,
+                    new PreConditionError(
+                        "Expression: possibilities",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined",
+                    ));
+                assertOneOfErrorTest(
+                    null!,
+                    5,
+                    undefined,
+                    undefined,
+                    new PreConditionError(
+                        "Expression: possibilities",
+                        "Expected: not undefined and not null",
+                        "Actual: null",
+                    ));
+                assertOneOfErrorTest(
+                    [],
+                    5,
+                    undefined,
+                    undefined,
+                    new PreConditionError(
+                        "Expected: one of ",
+                        "Actual: 5",
+                    ));
+                assertOneOfErrorTest(
+                    [],
+                    5,
+                    "fake-expression",
+                    "fake-message",
+                    new PreConditionError(
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: one of ",
+                        "Actual: 5",
+                    ));
+                assertOneOfErrorTest(
+                    [1, 2, 3],
+                    5,
+                    "fake-expression",
+                    "fake-message",
+                    new PreConditionError(
+                        "Message: fake-message",
+                        "Expression: fake-expression",
+                        "Expected: one of 1,2,3",
+                        "Actual: 5",
+                    ));
+
+                function assertOneOfTest<T>(possibilities: JavascriptIterable<T>, value: T, expression?: string, message?: string): void
+                {
+                    runner.test(`with ${andList([possibilities, value, expression, message].map(runner.toString))}`, (_test: Test) =>
                     {
+                        const condition: Condition = Condition.create();
                         condition.assertOneOf(possibilities, value, expression, message);
-                    }
-                });
-            }
+                    });
+                }
 
-            assertOneOfTest(
-                undefined!,
-                5,
-                undefined,
-                undefined,
-                new PreConditionError(
-                    "Expression: possibilities",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-            assertOneOfTest(
-                null!,
-                5,
-                undefined,
-                undefined,
-                new PreConditionError(
-                    "Expression: possibilities",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-            assertOneOfTest(
-                [],
-                5,
-                undefined,
-                undefined,
-                new PreConditionError(
-                    "Expected: one of ",
-                    "Actual: 5",
-                ));
-            assertOneOfTest(
-                [],
-                5,
-                "fake-expression",
-                "fake-message",
-                new PreConditionError(
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: one of ",
-                    "Actual: 5",
-                ));
-            assertOneOfTest(
-                [1, 2, 3],
-                5,
-                "fake-expression",
-                "fake-message",
-                new PreConditionError(
-                    "Message: fake-message",
-                    "Expression: fake-expression",
-                    "Expected: one of 1,2,3",
-                    "Actual: 5",
-                ));
-            assertOneOfTest([5], 5);
-            assertOneOfTest([1, 3, 5, 7], 5);
-        });
+                assertOneOfTest([5], 5);
+                assertOneOfTest([1, 3, 5, 7], 5);
+            });
 
-        suite("assertInteger(number,string?,string?)", () =>
-        {
-            function assertIntegerErrorTest(value: number, expected: Error): void
+            runner.testFunction("assertInteger(number,string?,string?)", () =>
             {
-                test(`with ${value}`, () =>
+                function assertIntegerErrorTest(value: number, expected: Error): void
                 {
-                    const condition: Condition = Condition.create();
-                    assert.throws(() => condition.assertInteger(value), expected);
-                });
-            }
+                    runner.test(`with ${value}`, (test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        test.assertThrows(() => condition.assertInteger(value), expected);
+                    });
+                }
 
-            assertIntegerErrorTest(
-                1.2,
-                new Error(join("\n", [
-                    "Expected: integer",
-                    "Actual: 1.2",
-                ])));
-            assertIntegerErrorTest(
-                NaN,
-                new Error(join("\n", [
-                    "Expected: integer",
-                    "Actual: NaN",
-                ])));
-            assertIntegerErrorTest(
-                Infinity,
-                new Error(join("\n", [
-                    "Expected: integer",
-                    "Actual: Infinity",
-                ])));
-            assertIntegerErrorTest(
-                -Infinity,
-                new Error(join("\n", [
-                    "Expected: integer",
-                    "Actual: -Infinity",
-                ])));
+                assertIntegerErrorTest(
+                    1.2,
+                    new Error(join("\n", [
+                        "Expected: integer",
+                        "Actual: 1.2",
+                    ])));
+                assertIntegerErrorTest(
+                    NaN,
+                    new Error(join("\n", [
+                        "Expected: integer",
+                        "Actual: NaN",
+                    ])));
+                assertIntegerErrorTest(
+                    Infinity,
+                    new Error(join("\n", [
+                        "Expected: integer",
+                        "Actual: Infinity",
+                    ])));
+                assertIntegerErrorTest(
+                    -Infinity,
+                    new Error(join("\n", [
+                        "Expected: integer",
+                        "Actual: -Infinity",
+                    ])));
 
-            function assertIntegerTest(value: number): void
-            {
-                test(`with ${value}`, () =>
+                function assertIntegerTest(value: number): void
                 {
-                    const condition: Condition = Condition.create();
-                    condition.assertInteger(value);
-                });
-            }
+                    runner.test(`with ${value}`, (_test: Test) =>
+                    {
+                        const condition: Condition = Condition.create();
+                        condition.assertInteger(value);
+                    });
+                }
 
-            assertIntegerTest(-1);
-            assertIntegerTest(0);
-            assertIntegerTest(1);
+                assertIntegerTest(-1);
+                assertIntegerTest(0);
+                assertIntegerTest(1);
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

@@ -135,4 +135,11 @@ export abstract class Test
      * @param expectedError The expected {@link Error}.
      */
     public abstract assertThrows(action: () => void, expectedError: Error): void;
+
+    /**
+     * Assert that the provided action throws the provided {@link Error} when it is run.
+     * @param action The action to run.
+     * @param expectedError The expected {@link Error}.
+     */
+    public abstract assertThrowsAsync(action: () => Promise<unknown>, expectedError: Error): Promise<void>;
 }

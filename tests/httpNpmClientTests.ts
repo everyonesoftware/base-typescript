@@ -1,47 +1,51 @@
-import * as assert from "assert";
-import { HttpClient, HttpNpmClient, Pre, PreConditionError } from "../sources";
+import { HttpClient, HttpNpmClient, Pre, PreConditionError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 import { npmClientTests } from "./npmClientTests";
 
-suite("httpNpmClient.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("HttpNpmClient", () =>
+    runner.testFile("httpNpmClient.ts", () =>
     {
-        suite("create(HttpClient)", () =>
+        runner.testType(HttpNpmClient, () =>
         {
-            function createErrorTest(testName: string, httpClient: HttpClient, expected: Error): void
+            runner.testFunction("create(HttpClient)", () =>
             {
-                Pre.condition.assertNotEmpty(testName, "testName");
-
-                test(testName, () =>
+                function createErrorTest(testName: string, httpClient: HttpClient, expected: Error): void
                 {
-                    assert.throws(() => HttpNpmClient.create(httpClient),
-                        expected);
+                    Pre.condition.assertNotEmpty(testName, "testName");
+
+                    runner.test(testName, (test: Test) =>
+                    {
+                        test.assertThrows(() => HttpNpmClient.create(httpClient),
+                            expected);
+                    });
+                }
+
+                createErrorTest(
+                    "with undefined",
+                    undefined!,
+                    new PreConditionError(
+                        "Expression: httpClient",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined"));
+                createErrorTest(
+                    "with null",
+                    null!,
+                    new PreConditionError(
+                        "Expression: httpClient",
+                        "Expected: not undefined and not null",
+                        "Actual: null"));
+
+                runner.test("with defined", (test: Test) =>
+                {
+                    const httpClient: HttpClient = HttpClient.create();
+                    const npmClient: HttpNpmClient = HttpNpmClient.create(httpClient);
+                    test.assertNotUndefinedAndNotNull(npmClient);
                 });
-            }
-
-            createErrorTest(
-                "with undefined",
-                undefined!,
-                new PreConditionError(
-                    "Expression: httpClient",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined"));
-            createErrorTest(
-                "with null",
-                null!,
-                new PreConditionError(
-                    "Expression: httpClient",
-                    "Expected: not undefined and not null",
-                    "Actual: null"));
-
-            test("with defined", () =>
-            {
-                const httpClient: HttpClient = HttpClient.create();
-                const npmClient: HttpNpmClient = HttpNpmClient.create(httpClient);
-                assert.notStrictEqual(npmClient, undefined);
             });
-        });
 
-        npmClientTests(() => HttpNpmClient.create(HttpClient.create()));
+            npmClientTests(() => HttpNpmClient.create(HttpClient.create()));
+        });
     });
-});
+}
+test(MochaTestRunner.create());
