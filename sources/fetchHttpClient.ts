@@ -10,6 +10,10 @@ import { Pre } from "./pre";
  */
 export class FetchHttpClient implements HttpClient
 {
+    private constructor()
+    {
+    }
+
     public static create(): FetchHttpClient
     {
         return new FetchHttpClient();

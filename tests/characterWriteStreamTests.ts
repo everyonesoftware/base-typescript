@@ -2,7 +2,7 @@ import { CharacterWriteStream, PreConditionError, Test, TestRunner } from "../so
 
 export function characterWriteStreamTests(runner: TestRunner, creator: () => CharacterWriteStream): void
 {
-    runner.testType("CharacterWriteStream", () =>
+    runner.testType(CharacterWriteStream.name, () =>
     {
         runner.testFunction("writeCharacter(string)", () =>
         {

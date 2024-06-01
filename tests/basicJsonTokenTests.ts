@@ -5,7 +5,7 @@ function test(runner: TestRunner): void
 {
     runner.testFile("basicJsonToken.ts", () =>
     {
-        runner.testType(BasicJsonToken, () =>
+        runner.testType(BasicJsonToken.name, () =>
         {
             runner.testFunction("create(JsonTokenType,string)", () =>
             {

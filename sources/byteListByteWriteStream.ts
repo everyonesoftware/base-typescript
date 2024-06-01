@@ -8,7 +8,7 @@ export class ByteListByteWriteStream implements ByteWriteStream
 {
     private readonly byteList: ByteList;
 
-    public constructor()
+    protected constructor()
     {
         this.byteList = ByteList.create();
     }

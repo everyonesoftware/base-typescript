@@ -2,7 +2,7 @@ import { ByteWriteStream, PreConditionError, Test, TestRunner, andList } from ".
 
 export function byteWriteStreamTests(runner: TestRunner, creator: () => ByteWriteStream): void
 {
-    runner.testType("ByteWriteStream", () =>
+    runner.testType(ByteWriteStream.name, () =>
     {
         runner.testFunction("writeByte(number)", () =>
         {

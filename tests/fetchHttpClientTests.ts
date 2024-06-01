@@ -5,9 +5,9 @@ export function test(runner: TestRunner): void
 {
     runner.testFile("fetchHttpClient.ts", () =>
     {
-        runner.testType(FetchHttpClient, () =>
+        runner.testType(FetchHttpClient.name, () =>
         {
-            runner.test("create()", (test: Test) =>
+            runner.testFunction("create()", (test: Test) =>
             {
                 const client: FetchHttpClient = FetchHttpClient.create();
                 test.assertNotUndefinedAndNotNull(client);
@@ -53,7 +53,7 @@ export function test(runner: TestRunner): void
 
                 function sendRequestTest(request: HttpRequest, expectedStatusCode: number, expectedBody: unknown): void
                 {
-                    runner.testAsync(`with ${JSON.stringify(request)}`, runner.skip(), async (test: Test) =>
+                    runner.testAsync(`with ${runner.toString(request)}`, runner.skip(false), async (test: Test) =>
                     {
                         const client: HttpClient = FetchHttpClient.create();
                         const response: HttpResponse = await client.sendRequest(request);

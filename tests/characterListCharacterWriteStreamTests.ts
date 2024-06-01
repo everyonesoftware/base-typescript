@@ -6,9 +6,9 @@ export function test(runner: TestRunner): void
 {
     runner.testFile("characterListCharacterWriteStream.ts", () =>
     {
-        runner.testType(CharacterListCharacterWriteStream, () =>
+        runner.testType(CharacterListCharacterWriteStream.name, () =>
         {
-            runner.test("create()", (test: Test) =>
+            runner.testFunction("create()", (test: Test) =>
             {
                 const writeStream: CharacterListCharacterWriteStream = CharacterListCharacterWriteStream.create();
                 test.assertEqual(writeStream.getText(), "");
@@ -16,7 +16,7 @@ export function test(runner: TestRunner): void
 
             characterWriteStreamTests(runner, CharacterListCharacterWriteStream.create);
 
-            runner.test("writeCharacter(string)", (test: Test) =>
+            runner.testFunction("writeCharacter(string)", (test: Test) =>
             {
                 const writeStream: CharacterListCharacterWriteStream = CharacterListCharacterWriteStream.create();
 
@@ -30,7 +30,7 @@ export function test(runner: TestRunner): void
                 test.assertEqual(writeStream.getText(), "a A");
             });
 
-            runner.test("writeString(string,number?,number?)", (test: Test) =>
+            runner.testFunction("writeString(string,number?,number?)", (test: Test) =>
             {
                 const writeStream: CharacterListCharacterWriteStream = CharacterListCharacterWriteStream.create();
 
@@ -50,7 +50,7 @@ export function test(runner: TestRunner): void
                 test.assertEqual(writeStream.getText(), "a A z Z");
             });
 
-            runner.test("writeLine(string,number?,number?)", (test: Test) =>
+            runner.testFunction("writeLine(string,number?,number?)", (test: Test) =>
             {
                 const writeStream: CharacterListCharacterWriteStream = CharacterListCharacterWriteStream.create();
 

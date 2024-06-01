@@ -1,258 +1,260 @@
-import * as assert from "assert";
+import { Iterator, JavascriptIterator, JavascriptIteratorResult, MapIterator, PreConditionError, Test, TestRunner } from "../sources";
 
-import { Iterator, JavascriptIterator, JavascriptIteratorResult, MapIterator, PreConditionError } from "../sources/index";
-
-suite("iterator.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("Iterator<T>", () =>
+    runner.testFile("iterator.ts", () =>
     {
-        suite("create(T[])", () =>
+        runner.testType("Iterator<T>", () =>
         {
-            function createErrorTest<T>(values: T[], expected: Error): void
+            runner.testFunction("create(T[])", () =>
             {
-                test(`with ${JSON.stringify(values)}`, () =>
+                function createErrorTest<T>(values: T[], expected: Error): void
                 {
-                    assert.throws(() => Iterator.create(values), expected);
-                });
-            }
+                    runner.test(`with ${runner.toString(values)}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => Iterator.create(values), expected);
+                    });
+                }
 
-            createErrorTest(undefined!, new PreConditionError(
-                "Expression: values",
-                "Expected: not undefined and not null",
-                "Actual: undefined",
-            ));
-            createErrorTest(null!, new PreConditionError(
-                "Expression: values",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ));
+                createErrorTest(undefined!, new PreConditionError(
+                    "Expression: values",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                createErrorTest(null!, new PreConditionError(
+                    "Expression: values",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
 
-            function createTest<T>(values: T[]): void
-            {
-                test(`with ${JSON.stringify(values)}`, () =>
+                function createTest<T>(values: T[]): void
                 {
-                    const iterator: Iterator<T> = Iterator.create(values);
-                    assert.deepStrictEqual(iterator.toArray(), values);
-                });
-            }
+                    runner.test(`with ${runner.toString(values)}`, (test: Test) =>
+                    {
+                        const iterator: Iterator<T> = Iterator.create(values);
+                        test.assertEqual(iterator.toArray(), values);
+                    });
+                }
 
-            createTest([]);
-            createTest([1, 2, 3]);
-            createTest([false, true]);
+                createTest([]);
+                createTest([1, 2, 3]);
+                createTest([false, true]);
+            });
         });
     });
-});
+}
 
-export function iteratorTests<T>(creator: () => Iterator<T>): void
+
+export function iteratorTests<T>(runner: TestRunner, creator: () => Iterator<T>): void
 {
-    suite(Iterator.name, () =>
+    runner.testType(Iterator.name, () =>
     {
-        test("create()", () =>
+        runner.testFunction("create()", (test: Test) =>
         {
             const iterator: Iterator<T> = creator();
-            assert.notStrictEqual(iterator, undefined);
-            assert.strictEqual(iterator.hasStarted(), false);
-            assert.strictEqual(iterator.hasCurrent(), false);
-            assert.throws(() => iterator.getCurrent(), new PreConditionError(
+            test.assertNotUndefinedAndNotNull(iterator);
+            test.assertFalse(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
+            test.assertThrows(() => iterator.getCurrent(), new PreConditionError(
                 "Expression: this.hasCurrent()",
                 "Expected: true",
                 "Actual: false",
             ));
         });
 
-        test("start()", () =>
+        runner.testFunction("start()", (test: Test) =>
         {
             const iterator: Iterator<T> = creator();
-            assert.strictEqual(iterator.hasStarted(), false);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertFalse(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
 
             for (let i: number = 0; i < 2; i++)
             {
                 const startResult: Iterator<T> = iterator.start();
-                assert.strictEqual(startResult, iterator);
-                assert.strictEqual(iterator.hasStarted(), true);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertSame(startResult, iterator);
+                test.assertTrue(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
             }
         });
 
-        suite("takeCurrent()", () =>
+        runner.testFunction("takeCurrent()", () =>
         {
-            test("with not started", () =>
+            runner.test("with not started", (test: Test) =>
             {
                 const iterator: Iterator<T> = creator();
-                assert.strictEqual(iterator.hasStarted(), false);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertFalse(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
 
                 for (let i = 0; i < 2; i++)
                 {
-                    assert.throws(() => iterator.takeCurrent(),
+                    test.assertThrows(() => iterator.takeCurrent(),
                         new PreConditionError(
                             "Expression: iterator.hasCurrent()",
                             "Expected: true",
                             "Actual: false",
                         ));
-                    assert.strictEqual(iterator.hasStarted(), false);
-                    assert.strictEqual(iterator.hasCurrent(), false);
+                    test.assertFalse(iterator.hasStarted());
+                    test.assertFalse(iterator.hasCurrent());
                 }
             });
 
-            test("when the Iterator doesn't have a current value", () =>
+            runner.test("when the Iterator doesn't have a current value", (test: Test) =>
             {
                 const iterator: Iterator<T> = creator().start();
-                assert.strictEqual(iterator.hasStarted(), true);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertTrue(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
 
                 for (let i = 0; i < 2; i++)
                 {
-                    assert.throws(() => iterator.takeCurrent(),
+                    test.assertThrows(() => iterator.takeCurrent(),
                         new PreConditionError(
                             "Expression: iterator.hasCurrent()",
                             "Expected: true",
                             "Actual: false",
                         ));
-                    assert.strictEqual(iterator.hasStarted(), true);
-                    assert.strictEqual(iterator.hasCurrent(), false);
+                    test.assertTrue(iterator.hasStarted());
+                    test.assertFalse(iterator.hasCurrent());
                 }
             });
         });
 
-        suite("next()", () =>
+        runner.testFunction("next()", () =>
         {
-            test("with not started", () =>
+            runner.test("with not started", (test: Test) =>
             {
                 const iterator: Iterator<T> = creator();
-                assert.strictEqual(iterator.hasStarted(), false);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertFalse(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
 
                 for (let i = 0; i < 2; i++)
                 {
-                    assert.strictEqual(iterator.next(), false);
-                    assert.strictEqual(iterator.hasStarted(), true);
-                    assert.strictEqual(iterator.hasCurrent(), false);
+                    test.assertFalse(iterator.next());
+                    test.assertTrue(iterator.hasStarted());
+                    test.assertFalse(iterator.hasCurrent());
                 }
             });
 
-            test("with started", () =>
+            runner.test("with started", (test: Test) =>
             {
                 const iterator: Iterator<T> = creator().start();
-                assert.strictEqual(iterator.hasStarted(), true);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertTrue(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
 
                 for (let i = 0; i < 2; i++)
                 {
-                    assert.strictEqual(iterator.next(), false);
-                    assert.strictEqual(iterator.hasStarted(), true);
-                    assert.strictEqual(iterator.hasCurrent(), false);
+                    test.assertFalse(iterator.next());
+                    test.assertTrue(iterator.hasStarted());
+                    test.assertFalse(iterator.hasCurrent());
                 }
             });
         });
 
-        test("[Symbol.iterator]()", () =>
+        runner.testFunction("[Symbol.iterator]()", (test: Test) =>
         {
             const iterator: Iterator<T> = creator();
-            assert.strictEqual(iterator.hasStarted(), false);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertFalse(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
 
             const jsIterator: JavascriptIterator<T> = iterator[Symbol.iterator]();
-            assert.strictEqual(iterator.hasStarted(), false);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertFalse(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
 
             for (let i = 0; i < 2; i++)
             {
                 const result: JavascriptIteratorResult<T> = jsIterator.next();
-                assert.strictEqual(result.done, true);
-                assert.strictEqual(result.value, undefined);
-                assert.strictEqual(iterator.hasStarted(), true);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertEqual(result.done, true);
+                test.assertUndefined(result.value);
+                test.assertTrue(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
             }
         });
 
-        test("any()", () =>
+        runner.testFunction("any()", (test: Test) =>
         {
             const iterator: Iterator<T> = creator();
-            assert.strictEqual(iterator.hasStarted(), false);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertFalse(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
 
-            assert.strictEqual(iterator.any(), false);
+            test.assertFalse(iterator.any());
 
-            assert.strictEqual(iterator.hasStarted(), true);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertTrue(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
         });
 
-        test("getCount()", () =>
+        runner.testFunction("getCount()", (test: Test) =>
         {
             const iterator: Iterator<T> = creator();
-            assert.strictEqual(iterator.hasStarted(), false);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertFalse(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
 
-            assert.strictEqual(iterator.getCount(), 0);
+            test.assertEqual(iterator.getCount(), 0);
 
-            assert.strictEqual(iterator.hasStarted(), true);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertTrue(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
         });
 
-        test("toArray()", () =>
+        runner.testFunction("toArray()", (test: Test) =>
         {
             const iterator: Iterator<T> = creator();
-            assert.strictEqual(iterator.hasStarted(), false);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertFalse(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
 
             const array: T[] = iterator.toArray();
-            assert.deepStrictEqual(array, []);
-            assert.strictEqual(iterator.hasStarted(), true);
-            assert.strictEqual(iterator.hasCurrent(), false);
+            test.assertEqual(array, []);
+            test.assertTrue(iterator.hasStarted());
+            test.assertFalse(iterator.hasCurrent());
         });
 
-        suite("map((TInput)=>TOutput)", () =>
+        runner.testFunction("map((TInput)=>TOutput)", () =>
         {
-            test("with undefined", () =>
+            runner.test("with undefined", (test: Test) =>
             {
                 const iterator: Iterator<T> = creator();
-                assert.throws(() => iterator.map(undefined!), new PreConditionError(
+                test.assertThrows(() => iterator.map(undefined!), new PreConditionError(
                     "Expression: mapping",
                     "Expected: not undefined and not null",
                     "Actual: undefined",
                 ));
-                assert.strictEqual(iterator.hasStarted(), false);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertFalse(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
             });
 
-            test("with null", () =>
+            runner.test("with null", (test: Test) =>
             {
                 const iterator: Iterator<T> = creator();
-                assert.throws(() => iterator.map(null!), new PreConditionError(
+                test.assertThrows(() => iterator.map(null!), new PreConditionError(
                     "Expression: mapping",
                     "Expected: not undefined and not null",
                     "Actual: null",
                 ));
-                assert.strictEqual(iterator.hasStarted(), false);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertFalse(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
             });
 
-            test("with not started", () =>
+            runner.test("with not started", (test: Test) =>
             {
                 const iterator: Iterator<T> = creator();
-                assert.strictEqual(iterator.hasStarted(), false);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertFalse(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
 
                 const mapIterator: MapIterator<T,number> = iterator.map(_ => 5);
-                assert.strictEqual(mapIterator.hasStarted(), false);
-                assert.strictEqual(mapIterator.hasCurrent(), false);
-                assert.strictEqual(iterator.hasStarted(), false);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertFalse(mapIterator.hasStarted());
+                test.assertFalse(mapIterator.hasCurrent());
+                test.assertFalse(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
             });
 
-            test("with started", () =>
+            runner.test("with started", (test: Test) =>
             {
                 const iterator: Iterator<T> = creator().start();
-                assert.strictEqual(iterator.hasStarted(), true);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertTrue(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
 
                 const mapIterator: MapIterator<T,number> = iterator.map(_ => 5);
-                assert.strictEqual(mapIterator.hasStarted(), true);
-                assert.strictEqual(mapIterator.hasCurrent(), false);
-                assert.strictEqual(iterator.hasStarted(), true);
-                assert.strictEqual(iterator.hasCurrent(), false);
+                test.assertTrue(mapIterator.hasStarted());
+                test.assertFalse(mapIterator.hasCurrent());
+                test.assertTrue(iterator.hasStarted());
+                test.assertFalse(iterator.hasCurrent());
             });
         });
     });

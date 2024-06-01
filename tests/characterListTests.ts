@@ -5,7 +5,7 @@ export function test(runner: TestRunner): void
 {
     runner.testFile("characterList.ts", () =>
     {
-        runner.testType(CharacterList, () =>
+        runner.testType(CharacterList.name, () =>
         {
             runner.testFunction("create(JavascriptIterable<number> | undefined)", () =>
             {
