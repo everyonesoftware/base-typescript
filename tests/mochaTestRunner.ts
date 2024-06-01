@@ -42,9 +42,9 @@ export class MochaTestRunner implements TestRunner
         TestRunner.testFunction(this, functionSignature, skipOrTestAction, testAction);
     }
 
-    public testGroup(testGroupName: string, testAction: (() => void) | ((test: Test) => void)): void;
-    public testGroup(testGroupName: string, skip: TestSkip | undefined, testAction: (() => void) | ((test: Test) => void)): void;
-    testGroup(testGroupName: string, skipOrTestAction: TestSkip | undefined | (() => void) | ((test: Test) => void), testAction?: (() => void) | ((test: Test) => void)): void
+    public testGroup(testGroupName: string, testAction: () => void): void;
+    public testGroup(testGroupName: string, skip: TestSkip | undefined, testAction: () => void): void;
+    testGroup(testGroupName: string, skipOrTestAction: TestSkip | undefined | (() => void), testAction?: () => void): void
     {
         Pre.condition.assertNotUndefinedAndNotNull(testGroupName, "testGroupName");
         Pre.condition.assertNotEmpty(testGroupName, "testGroupName");
@@ -66,7 +66,7 @@ export class MochaTestRunner implements TestRunner
         {
             suite(testGroupName, () =>
             {
-                testAction(AssertTest.create());
+                testAction();
             });
         }
     }

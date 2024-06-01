@@ -1,76 +1,85 @@
-import * as assert from "assert";
+import { Iterator, JavascriptIterable, Map, NotFoundError, Test, TestRunner, andList } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { Iterator, JavascriptIterable, Map, NotFoundError, andList } from "../sources";
-
-suite("map.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite(Map.name, () =>
+    runner.testFile("map.ts", () =>
     {
-        test("create()", () =>
+        runner.testType(Map.name, () =>
         {
-            const map: Map<number,string> = Map.create();
-            assert.strictEqual(map.getCount(), 0);
-        });
+            runner.testFunction("create()", (test: Test) =>
+            {
+                const map: Map<number,string> = Map.create();
+                test.assertSame(map.getCount(), 0);
+            });
 
-        mapTests(Map.create);
+            mapTests(runner, Map.create);
+        });
     });
-});
+}
+test(MochaTestRunner.create());
 
-export function mapTests(creator: () => Map<number,string>): void
+
+export function mapTests(runner: TestRunner, creator: () => Map<number,string>): void
 {
-    suite(Map.name, () =>
+    runner.testType(Map.name, () =>
     {
-        suite("containsKey(TKey)", () =>
+        runner.testFunction("creator()", (test: Test) =>
         {
-            test("when it doesn't contain the key", () =>
+            test.assertNotUndefinedAndNotNull(creator);
+            
+            const map: Map<number,string> = creator();
+            test.assertNotUndefinedAndNotNull(map);
+            test.assertEqual(map.getCount(), 0);
+        });
+
+        runner.testFunction("containsKey(TKey)", () =>
+        {
+            runner.test("when it doesn't contain the key", (test: Test) =>
             {
                 const map: Map<number,string> = creator();
-                assert.strictEqual(map.getCount(), 0);
 
-                assert.strictEqual(map.containsKey(50), false);
+                test.assertFalse(map.containsKey(50));
             });
 
-            test("when it contains the key", () =>
+            runner.test("when it contains the key", (test: Test) =>
             {
-                const map: Map<number,string> = creator();
-                assert.strictEqual(map.getCount(), 0);
+                const map: Map<number,string> = creator().set(50, "fifty");
 
-                map.set(50, "fifty");
-
-                assert.strictEqual(map.containsKey(50), true);
+                test.assertTrue(map.containsKey(50));
             });
         });
 
-        suite("get(TKey)", () =>
+        runner.testFunction("get(TKey)", () =>
         {
-            test("when it contains the key", () =>
+            runner.test("when it contains the key", (test: Test) =>
             {
                 const map: Map<number,string> = creator().set(1, "one");
-                assert.strictEqual(map.getCount(), 1);
-                assert.strictEqual(map.get(1).await(), "one");
-                assert.strictEqual(map.getCount(), 1);
+                test.assertEqual(map.getCount(), 1);
+                test.assertEqual(map.get(1).await(), "one");
+                test.assertEqual(map.getCount(), 1);
             });
 
-            test("when it doesn't contain the key", () =>
+            runner.test("when it doesn't contain the key", (test: Test) =>
             {
                 const map: Map<number,string> = creator();
-                assert.strictEqual(map.getCount(), 0);
-                assert.throws(() => map.get(1).await(),
+
+                test.assertThrows(() => map.get(1).await(),
                     new NotFoundError(
                         "The key 1 was not found in the map."));
-                assert.strictEqual(map.getCount(), 0);
+                test.assertEqual(map.getCount(), 0);
             });
         });
 
-        suite("set(TKey,TValue)", () =>
+        runner.testFunction("set(TKey,TValue)", () =>
         {
             function setTest(map: Map<number,string>, key: number, value: string): void
             {
-                test(`with ${andList([map, key, value].map(x => JSON.stringify(x)))}`, () =>
+                runner.test(`with ${andList([map, key, value].map(runner.toString))}`, (test: Test) =>
                 {
                     const setResult: Map<number,string> = map.set(key, value);
-                    assert.strictEqual(setResult, map);
-                    assert.strictEqual(map.get(key).await(), value);
+                    test.assertSame(setResult, map);
+                    test.assertSame(map.get(key).await(), value);
                 });
             }
 
@@ -86,13 +95,13 @@ export function mapTests(creator: () => Map<number,string>): void
             setTest(creator().set(1, "1"), 1, "one");
         });
 
-        suite("toString()", () =>
+        runner.testFunction("toString()", () =>
         {
             function toStringTest(map: Map<number,string>, expected: string): void
             {
-                test(`with ${map}`, () =>
+                runner.test(`with ${runner.toString(map)}`, (test: Test) =>
                 {
-                    assert.strictEqual(map.toString(), expected);
+                    test.assertEqual(map.toString(), expected);
                 });
             }
 
@@ -101,14 +110,14 @@ export function mapTests(creator: () => Map<number,string>): void
             toStringTest(creator().set(2, "2").set(1, "one"), "{2:2,1:one}");
         });
 
-        suite("iterateKeys()", () =>
+        runner.testFunction("iterateKeys()", () =>
         {
             function iterateKeysTests(map: Map<number,string>, expected: JavascriptIterable<number>): void
             {
-                test(`with ${map.toString()}`, () =>
+                runner.test(`with ${runner.toString(map)}`, (test: Test) =>
                 {
                     const keyIterator: Iterator<number> = map.iterateKeys();
-                    assert.deepStrictEqual(keyIterator.toArray(), [...expected]);
+                    test.assertEqual(keyIterator.toArray(), [...expected]);
                 });
             }
 
@@ -118,14 +127,14 @@ export function mapTests(creator: () => Map<number,string>): void
             iterateKeysTests(creator().set(5, "5").set(6, "6").set(7, "7"), [5, 6, 7]);
         });
 
-        suite("iterateValues()", () =>
+        runner.testFunction("iterateValues()", () =>
         {
             function iterateValuesTests(map: Map<number,string>, expected: JavascriptIterable<string>): void
             {
-                test(`with ${map.toString()}`, () =>
+                runner.test(`with ${runner.toString(map)}`, (test: Test) =>
                 {
                     const valueIterator: Iterator<string> = map.iterateValues();
-                    assert.deepStrictEqual(valueIterator.toArray(), [...expected]);
+                    test.assertEqual(valueIterator.toArray(), [...expected]);
                 });
             }
 

@@ -1,50 +1,53 @@
-import * as assert from "assert";
+import { Iterator, MapIterator, PreConditionError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { Iterator, MapIterator, PreConditionError } from "../sources";
-
-suite("mapIterator.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite(MapIterator.name, () =>
+    runner.testFile("mapIterator.ts", () =>
     {
-        suite("create(Iterator<TInput>,(TInput)=>TOutput)", () =>
+        runner.testType(MapIterator.name, () =>
         {
-            function createErrorTest<TInput,TOutput>(testName: string, innerIterator: Iterator<TInput>, mapping: (value: TInput) => TOutput, expected: Error): void
+            runner.testFunction("create(Iterator<TInput>,(TInput)=>TOutput)", () =>
             {
-                test(testName, () =>
+                function createErrorTest<TInput,TOutput>(testName: string, innerIterator: Iterator<TInput>, mapping: (value: TInput) => TOutput, expected: Error): void
                 {
-                    assert.throws(() => MapIterator.create(innerIterator, mapping), expected);
+                    runner.test(testName, (test: Test) =>
+                    {
+                        test.assertThrows(() => MapIterator.create(innerIterator, mapping), expected);
+                    });
+                }
+        
+                createErrorTest(
+                    "with undefined inputIterator",
+                    undefined!,
+                    (value: number) => value.toString(),
+                    new PreConditionError(
+                        "Expression: inputIterator",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined",
+                    ));
+                createErrorTest(
+                    "with null inputIterator",
+                    null!,
+                    (value: number) => value.toString(),
+                    new PreConditionError(
+                        "Expression: inputIterator",
+                        "Expected: not undefined and not null",
+                        "Actual: null",
+                    ));
+        
+                runner.test("with valid values", (test: Test) =>
+                {
+                    const inputIterator: Iterator<number> = Iterator.create([1, 2, 3]);
+                    test.assertFalse(inputIterator.hasStarted());
+                    test.assertFalse(inputIterator.hasCurrent());
+        
+                    const iterator: MapIterator<number,string> = MapIterator.create(inputIterator, (value: number) => value.toString());
+                    test.assertFalse(iterator.hasStarted());
+                    test.assertFalse(iterator.hasCurrent());
                 });
-            }
-    
-            createErrorTest(
-                "with undefined inputIterator",
-                undefined!,
-                (value: number) => value.toString(),
-                new PreConditionError(
-                    "Expression: inputIterator",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-            createErrorTest(
-                "with null inputIterator",
-                null!,
-                (value: number) => value.toString(),
-                new PreConditionError(
-                    "Expression: inputIterator",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-    
-            test("with valid values", () =>
-            {
-                const inputIterator: Iterator<number> = Iterator.create([1, 2, 3]);
-                assert.strictEqual(inputIterator.hasStarted(), false);
-                assert.strictEqual(inputIterator.hasCurrent(), false);
-    
-                const iterator: MapIterator<number,string> = MapIterator.create(inputIterator, (value: number) => value.toString());
-                assert.strictEqual(iterator.hasStarted(), false);
-                assert.strictEqual(iterator.hasCurrent(), false);
             });
         });
     });
-});
+}
+test(MochaTestRunner.create());

@@ -1,65 +1,68 @@
-import * as assert from "assert";
+import { JsonNumber, JsonSegmentType, PreConditionError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { JsonNumber, JsonSegmentType, PreConditionError } from "../sources";
-
-suite("jsonNumber.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("JsonNumber", () =>
+    runner.testFile("jsonNumber.ts", () =>
     {
-        suite("create(number)", () =>
+        runner.testType(JsonNumber, () =>
         {
-            function createErrorTest(value: number, expected: Error): void
+            runner.testFunction("create(number)", () =>
             {
-                test(`with ${value}`, () =>
+                function createErrorTest(value: number, expected: Error): void
                 {
-                    assert.throws(() => JsonNumber.create(value), expected);
-                });
-            }
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => JsonNumber.create(value), expected);
+                    });
+                }
 
-            createErrorTest(undefined!, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: undefined",
-            ));
-            createErrorTest(null!, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ));
+                createErrorTest(undefined!, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                createErrorTest(null!, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
 
-            function createTest(value: number): void
+                function createTest(value: number): void
+                {
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        const json: JsonNumber = JsonNumber.create(value);
+                        test.assertEqual(json.getValue(), value);
+                        test.assertEqual(json.getSegmentType(), JsonSegmentType.Number);
+                    });
+                }
+
+                createTest(0);
+                createTest(-1);
+                createTest(1);
+                createTest(-0.1);
+                createTest(0.1);
+            });
+
+            runner.testFunction("toString()", () =>
             {
-                test(`with ${value}`, () =>
+                function toStringTest(value: number, expected: string): void
                 {
-                    const json: JsonNumber = JsonNumber.create(value);
-                    assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Number);
-                });
-            }
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        const json: JsonNumber = JsonNumber.create(value);
+                        test.assertEqual(json.toString(), expected);
+                    });
+                }
 
-            createTest(0);
-            createTest(-1);
-            createTest(1);
-            createTest(-0.1);
-            createTest(0.1);
-        });
-
-        suite("toString()", () =>
-        {
-            function toStringTest(value: number, expected: string): void
-            {
-                test(`with ${value}`, () =>
-                {
-                    const json: JsonNumber = JsonNumber.create(value);
-                    assert.strictEqual(json.toString(), expected);
-                });
-            }
-
-            toStringTest(0, "0");
-            toStringTest(1, "1");
-            toStringTest(-1, "-1");
-            toStringTest(-0.1, "-0.1");
-            toStringTest(0.1, "0.1");
+                toStringTest(0, "0");
+                toStringTest(1, "1");
+                toStringTest(-1, "-1");
+                toStringTest(-0.1, "-0.1");
+                toStringTest(0.1, "0.1");
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

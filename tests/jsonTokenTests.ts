@@ -1,37 +1,40 @@
-import * as assert from "assert";
+import { JsonToken, JsonTokenType, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { JsonToken, JsonTokenType } from "../sources";
-
-suite("jsonToken.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("JsonToken", () =>
+    runner.testFile("jsonToken.ts", () =>
     {
-        test("leftCurlyBrace()", () =>
+        runner.testType(JsonToken.name, () =>
         {
-            const token: JsonToken = JsonToken.leftCurlyBrace();
-            assert.strictEqual(token.getText(), "{");
-            assert.strictEqual(token.getTokenType(), JsonTokenType.LeftCurlyBrace);
-        });
+            runner.testFunction("leftCurlyBrace()", (test: Test) =>
+            {
+                const token: JsonToken = JsonToken.leftCurlyBrace();
+                test.assertSame(token.getText(), "{");
+                test.assertSame(token.getTokenType(), JsonTokenType.LeftCurlyBrace);
+            });
 
-        test("rightCurlyBrace()", () =>
-        {
-            const token: JsonToken = JsonToken.rightCurlyBrace();
-            assert.strictEqual(token.getText(), "}");
-            assert.strictEqual(token.getTokenType(), JsonTokenType.RightCurlyBrace);
-        });
+            runner.testFunction("rightCurlyBrace()", (test: Test) =>
+            {
+                const token: JsonToken = JsonToken.rightCurlyBrace();
+                test.assertSame(token.getText(), "}");
+                test.assertSame(token.getTokenType(), JsonTokenType.RightCurlyBrace);
+            });
 
-        test("leftSquareBracket()", () =>
-        {
-            const token: JsonToken = JsonToken.leftSquareBracket();
-            assert.strictEqual(token.getText(), "[");
-            assert.strictEqual(token.getTokenType(), JsonTokenType.LeftSquareBracket);
-        });
+            runner.testFunction("leftSquareBracket()", (test: Test) =>
+            {
+                const token: JsonToken = JsonToken.leftSquareBracket();
+                test.assertSame(token.getText(), "[");
+                test.assertSame(token.getTokenType(), JsonTokenType.LeftSquareBracket);
+            });
 
-        test("rightSquareBracket()", () =>
-        {
-            const token: JsonToken = JsonToken.rightSquareBracket();
-            assert.strictEqual(token.getText(), "]");
-            assert.strictEqual(token.getTokenType(), JsonTokenType.RightSquareBracket);
+            runner.testFunction("rightSquareBracket()", (test: Test) =>
+            {
+                const token: JsonToken = JsonToken.rightSquareBracket();
+                test.assertSame(token.getText(), "]");
+                test.assertSame(token.getTokenType(), JsonTokenType.RightSquareBracket);
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

@@ -43,6 +43,15 @@ export function isFunction(value: unknown): value is Function
 }
 
 /**
+ * Get the number of parameters that the provided {@link Function} takes.
+ * @param value The {@link Function} to get the parameter count for.
+ */
+export function getParameterCount(value: Function): number
+{
+    return value.length;
+}
+
+/**
  * Get whether the provided value is an {@link Array}.
  * @param value The value to check.
  */

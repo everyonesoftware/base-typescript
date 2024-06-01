@@ -1,23 +1,24 @@
-import * as assert from "assert";
+import { NotFoundError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { NotFoundError } from "../sources";
-
-suite("notFoundError.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite(NotFoundError.name, () =>
+    runner.testFile("notFoundError.ts", () =>
     {
-        suite("constructor(...string[])", () =>
+        runner.testType(NotFoundError.name, () =>
         {
-            test("with no arguments", () =>
+            runner.testFunction("constructor(...string[])", () =>
             {
-                const error: NotFoundError = new NotFoundError();
-                assert.notStrictEqual(error, undefined);
-                assert.notStrictEqual(error, null);
-                assert.strictEqual(error.name, "Error");
-                assert.strictEqual(error.message, "");
-                assert.notStrictEqual(error.stack, undefined);
-                assert.notStrictEqual(error.stack, null);
+                runner.test("with no arguments", (test: Test) =>
+                {
+                    const error: NotFoundError = new NotFoundError();
+                    test.assertNotUndefinedAndNotNull(error);
+                    test.assertEqual(error.name, "Error");
+                    test.assertEqual(error.message, "");
+                    test.assertNotUndefinedAndNotNull(error.stack);
+                });
             });
         });
     });
-});
+}
+test(MochaTestRunner.create());

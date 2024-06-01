@@ -1,18 +1,21 @@
-import * as assert from "assert";
-
-import { JavascriptMapMap } from "../sources";
+import { JavascriptMapMap, Test, TestRunner } from "../sources";
 import { mapTests } from "./mapTests";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-suite("javascriptMapMap.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite(JavascriptMapMap.name, () =>
+    runner.testFile("javascriptMapMap.ts", () =>
     {
-        test("create()", () =>
+        runner.testType("JavascriptMapMap<TKey,TValue>", () =>
         {
-            const map: JavascriptMapMap<number,string> = JavascriptMapMap.create();
-            assert.strictEqual(map.getCount(), 0);
-        });
+            runner.testFunction("create()", (test: Test) =>
+            {
+                const map: JavascriptMapMap<number,string> = JavascriptMapMap.create();
+                test.assertEqual(map.getCount(), 0);
+            });
 
-        mapTests(JavascriptMapMap.create);
+            mapTests(runner, JavascriptMapMap.create);
+        });
     });
-});
+}
+test(MochaTestRunner.create());
