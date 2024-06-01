@@ -1,7 +1,8 @@
 import { Pre } from "./pre";
+import { escapeAndQuote } from "./strings";
 import { Test } from "./test";
 import { TestSkip } from "./testSkip";
-import { Type, getName, isFunction, isString } from "./types";
+import { Type, getName, getParameterCount, isFunction, isString } from "./types";
 
 /**
  * A type that can be used to run tests.
@@ -23,7 +24,16 @@ export abstract class TestRunner
      */
     public static toString(_runner: TestRunner, value: unknown): string
     {
-        return JSON.stringify(value);
+        let result: string;
+        if (isString(value))
+        {
+            result = escapeAndQuote(value);
+        }
+        else
+        {
+            result = JSON.stringify(value);
+        }
+        return result;
     }
 
     /**
@@ -64,6 +74,18 @@ export abstract class TestRunner
     public static shouldRun(skip: TestSkip | undefined): boolean
     {
         return !TestRunner.shouldSkip(skip);
+    }
+
+    public static runTestAction(runner: TestRunner, name: string, skip: TestSkip | undefined, testAction: (() => void) | ((test: Test) => void)): void
+    {
+        if (getParameterCount(testAction) === 0)
+        {
+            runner.testGroup(name, skip, <() => void>testAction);
+        }
+        else
+        {
+            runner.test(name, skip, <(test: Test) => void>testAction);
+        }
     }
 
     /**
@@ -109,7 +131,7 @@ export abstract class TestRunner
         }
         Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
 
-        runner.testGroup(fileName, skip, testAction);
+        TestRunner.runTestAction(runner, fileName, skip, testAction);
     }
 
     /**
@@ -140,11 +162,16 @@ export abstract class TestRunner
     {
         Pre.condition.assertNotUndefinedAndNotNull(runner, "runner");
         Pre.condition.assertNotUndefinedAndNotNull(typeNameOrType, "typeNameOrType");
-        if (!isString(typeNameOrType))
+        let typeName: string;
+        if (isString(typeNameOrType))
         {
-            typeNameOrType = getName(typeNameOrType);
+            typeName = typeNameOrType;
         }
-        Pre.condition.assertNotEmpty(typeNameOrType);
+        else
+        {
+            typeName = getName(typeNameOrType);
+        }
+        Pre.condition.assertNotEmpty(typeName, "typeName");
         let skip: TestSkip | undefined;
         if (isFunction(skipOrTestAction))
         {
@@ -159,7 +186,7 @@ export abstract class TestRunner
         }
         Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
 
-        runner.testGroup(typeNameOrType, skip, testAction);
+        TestRunner.runTestAction(runner, typeName, skip, testAction);
     }
 
     /**
@@ -199,7 +226,7 @@ export abstract class TestRunner
         }
         Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
 
-        runner.testGroup(functionSignature, skip, testAction);
+        TestRunner.runTestAction(runner, functionSignature, skip, testAction);
     }
 
     /**
@@ -207,13 +234,13 @@ export abstract class TestRunner
      * @param testGroupName The name of the test group to run.
      * @param testAction The action that runs the test group.
      */
-    public abstract testGroup(testGroupName: string, testAction: (() => void) | ((test: Test) => void)): void;
+    public abstract testGroup(testGroupName: string, testAction: () => void): void;
     /**
      * Create and run a test group with the provided name.
      * @param testGroupName The name of the test group to run.
      * @param testAction The action that runs the test group.
      */
-    public abstract testGroup(testGroupName: string, skip: TestSkip | undefined, testAction: (() => void) | ((test: Test) => void)): void;
+    public abstract testGroup(testGroupName: string, skip: TestSkip | undefined, testAction: () => void): void;
 
     /**
      * Create and run a test with the provided name.

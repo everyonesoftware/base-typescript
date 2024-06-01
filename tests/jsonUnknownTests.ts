@@ -1,50 +1,53 @@
-import * as assert from "assert";
+import { JsonSegmentType, JsonUnknown, PreConditionError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { JsonSegmentType, JsonUnknown, PreConditionError, escapeAndQuote } from "../sources";
-
-suite("jsonUnknown.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite(JsonUnknown.name, () =>
+    runner.testFile("jsonUnknown.ts", () =>
     {
-        suite("create(string)", () =>
+        runner.testType(JsonUnknown.name, () =>
         {
-            function createErrorTest(value: string, expected: Error): void
+            runner.testFunction("create(string)", () =>
             {
-                test(`with ${escapeAndQuote(value)}`, () =>
+                function createErrorTest(value: string, expected: Error): void
                 {
-                    assert.throws(() => JsonUnknown.create(value), expected);
-                });
-            }
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => JsonUnknown.create(value), expected);
+                    });
+                }
 
-            createErrorTest(undefined!, new PreConditionError(
-                "Expression: text",
-                "Expected: not undefined and not null",
-                "Actual: undefined",
-            ));
-            createErrorTest(null!, new PreConditionError(
-                "Expression: text",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ));
-            createErrorTest("", new PreConditionError(
-                "Expression: text",
-                "Expected: not empty",
-                "Actual: \"\"",
-            ));
+                createErrorTest(undefined!, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                createErrorTest(null!, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
+                createErrorTest("", new PreConditionError(
+                    "Expression: text",
+                    "Expected: not empty",
+                    "Actual: \"\"",
+                ));
 
-            function createTest(value: string): void
-            {
-                test(`with ${value}`, () =>
+                function createTest(value: string): void
                 {
-                    const json: JsonUnknown = JsonUnknown.create(value);
-                    assert.strictEqual(json.toString(), value);
-                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Unknown);
-                });
-            }
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        const json: JsonUnknown = JsonUnknown.create(value);
+                        test.assertSame(json.toString(), value);
+                        test.assertSame(json.getSegmentType(), JsonSegmentType.Unknown);
+                    });
+                }
 
-            createTest("_");
-            createTest("$");
-            createTest("*");
+                createTest("_");
+                createTest("$");
+                createTest("*");
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

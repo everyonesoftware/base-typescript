@@ -1,149 +1,153 @@
-import * as assert from "assert";
-import { JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonSegment, JsonSegmentType, JsonString, PreConditionError, andList, escapeAndQuote } from "../sources/";
+import { JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonSegment, JsonSegmentType, JsonString, PreConditionError, Test, TestRunner, andList } from "../sources/";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-suite("jsonSegment.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("JsonSegment", () =>
+    runner.testFile("jsonSegment.ts", () =>
     {
-        suite("boolean(boolean)", () =>
+        runner.testType(JsonSegment.name, () =>
         {
-            function booleanErrorTest(value: boolean, expected: Error): void
+            runner.testFunction("boolean(boolean)", () =>
             {
-                test(`with ${value}`, () =>
+                function booleanErrorTest(value: boolean, expected: Error): void
                 {
-                    assert.throws(() => JsonSegment.boolean(value), expected);
-                });
-            }
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => JsonSegment.boolean(value), expected);
+                    });
+                }
 
-            booleanErrorTest(undefined!, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: undefined",
-            ));
-            booleanErrorTest(null!, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ));
+                booleanErrorTest(undefined!, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                booleanErrorTest(null!, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
 
-            function booleanTest(value: boolean): void
+                function booleanTest(value: boolean): void
+                {
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        const json: JsonBoolean = JsonSegment.boolean(value);
+                        test.assertSame(json.getValue(), value);
+                        test.assertEqual(json.getSegmentType(), JsonSegmentType.Boolean);
+                    });
+                }
+
+                booleanTest(false);
+                booleanTest(true);
+            });
+
+            runner.testFunction("number(number)", () =>
             {
-                test(`with ${value}`, () =>
+                function numberErrorTest(value: number, expected: Error): void
                 {
-                    const json: JsonBoolean = JsonSegment.boolean(value);
-                    assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Boolean);
-                });
-            }
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => JsonSegment.number(value), expected);
+                    });
+                }
 
-            booleanTest(false);
-            booleanTest(true);
-        });
+                numberErrorTest(undefined!, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                numberErrorTest(null!, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
 
-        suite("number(number)", () =>
-        {
-            function numberErrorTest(value: number, expected: Error): void
+                function numberTest(value: number): void
+                {
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        const json: JsonNumber = JsonSegment.number(value);
+                        test.assertSame(json.getValue(), value);
+                        test.assertSame(json.getSegmentType(), JsonSegmentType.Number);
+                    });
+                }
+
+                numberTest(0);
+                numberTest(-1);
+                numberTest(1);
+                numberTest(-0.1);
+                numberTest(0.1);
+            });
+
+            runner.testFunction("string(string,string,boolean)", () =>
             {
-                test(`with ${value}`, () =>
+                function stringErrorTest(value: string, quote: string, expected: Error): void
                 {
-                    assert.throws(() => JsonSegment.number(value), expected);
-                });
-            }
+                    runner.test(`with ${andList([value, quote].map(runner.toString))}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => JsonSegment.string(value, quote), expected);
+                    });
+                }
 
-            numberErrorTest(undefined!, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: undefined",
-            ));
-            numberErrorTest(null!, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ));
+                stringErrorTest(undefined!, `"`, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                stringErrorTest(null!, `"`, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
+                stringErrorTest("", null!, new PreConditionError(
+                    "Expression: quote",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
+                stringErrorTest("", "", new PreConditionError(
+                    "Expression: quote.length",
+                    "Expected: 1",
+                    "Actual: 0",
+                ));
+                stringErrorTest("", "ab", new PreConditionError(
+                    "Expression: quote.length",
+                    "Expected: 1",
+                    "Actual: 2",
+                ));
 
-            function numberTest(value: number): void
+                function stringTest(value: string, quote: string, expectedQuote: string = quote): void
+                {
+                    runner.test(`with ${andList([value, quote].map(runner.toString))}`, (test: Test) =>
+                    {
+                        const json: JsonString = JsonSegment.string(value, quote);
+                        test.assertSame(json.getValue(), value);
+                        test.assertSame(json.getQuote(), expectedQuote);
+                        test.assertSame(json.getSegmentType(), JsonSegmentType.String);
+                    });
+                }
+
+                stringTest("", undefined!, `"`);
+                stringTest("", `'`);
+                stringTest("abc", `'`);
+                stringTest("", `'`);
+                stringTest("abc", `'`);
+            });
+
+            runner.testFunction("null()", (test: Test) =>
             {
-                test(`with ${value}`, () =>
-                {
-                    const json: JsonNumber = JsonSegment.number(value);
-                    assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Number);
-                });
-            }
+                const json: JsonNull = JsonSegment.null();
+                test.assertSame(json.getSegmentType(), JsonSegmentType.Null);
+                test.assertSame(json.toString(), "null");
+            });
 
-            numberTest(0);
-            numberTest(-1);
-            numberTest(1);
-            numberTest(-0.1);
-            numberTest(0.1);
-        });
-
-        suite("string(string,string,boolean)", () =>
-        {
-            function stringErrorTest(value: string, quote: string, expected: Error): void
+            runner.test("object()", (test: Test) =>
             {
-                test(`with ${andList([value, quote].map(x => escapeAndQuote(x)))}`, () =>
-                {
-                    assert.throws(() => JsonSegment.string(value, quote), expected);
-                });
-            }
-
-            stringErrorTest(undefined!, `"`, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: undefined",
-            ));
-            stringErrorTest(null!, `"`, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ));
-            stringErrorTest("", null!, new PreConditionError(
-                "Expression: quote",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ));
-            stringErrorTest("", "", new PreConditionError(
-                "Expression: quote.length",
-                "Expected: 1",
-                "Actual: 0",
-            ));
-            stringErrorTest("", "ab", new PreConditionError(
-                "Expression: quote.length",
-                "Expected: 1",
-                "Actual: 2",
-            ));
-
-            function stringTest(value: string, quote: string, expectedQuote: string = quote): void
-            {
-                test(`with ${andList([value, quote].map(x => escapeAndQuote(x)))}`, () =>
-                {
-                    const json: JsonString = JsonSegment.string(value, quote);
-                    assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getQuote(), expectedQuote);
-                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.String);
-                });
-            }
-
-            stringTest("", undefined!, `"`);
-            stringTest("", `'`);
-            stringTest("abc", `'`);
-            stringTest("", `'`);
-            stringTest("abc", `'`);
-        });
-
-        test("null()", () =>
-        {
-            const json: JsonNull = JsonSegment.null();
-            assert.strictEqual(json.getSegmentType(), JsonSegmentType.Null);
-            assert.strictEqual(json.toString(), "null");
-        });
-
-        test("object()", () =>
-        {
-            const json: JsonObject = JsonSegment.object();
-            assert.strictEqual(json.getSegmentType(), JsonSegmentType.Object);
-            assert.deepStrictEqual(json.toArray(), []);
+                const json: JsonObject = JsonSegment.object();
+                test.assertSame(json.getSegmentType(), JsonSegmentType.Object);
+                test.assertEqual(json.toArray(), []);
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

@@ -1,58 +1,62 @@
-import * as assert from "assert";
-import { JsonBoolean, JsonSegmentType, PreConditionError } from "../sources";
+import { JsonBoolean, JsonSegmentType, PreConditionError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-suite("jsonBoolean.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("JsonBoolean", () =>
+    runner.testFile("jsonBoolean.ts", () =>
     {
-        suite("create(boolean)", () =>
+        runner.testType(JsonBoolean, () =>
         {
-            function createErrorTest(value: boolean, expected: Error): void
+            runner.testFunction("create(boolean)", () =>
             {
-                test(`with ${value}`, () =>
+                function createErrorTest(value: boolean, expected: Error): void
                 {
-                    assert.throws(() => JsonBoolean.create(value), expected);
-                });
-            }
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => JsonBoolean.create(value), expected);
+                    });
+                }
 
-            createErrorTest(undefined!, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: undefined",
-            ));
-            createErrorTest(null!, new PreConditionError(
-                "Expression: value",
-                "Expected: not undefined and not null",
-                "Actual: null",
-            ));
+                createErrorTest(undefined!, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                createErrorTest(null!, new PreConditionError(
+                    "Expression: value",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
 
-            function createTest(value: boolean): void
+                function createTest(value: boolean): void
+                {
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        const json: JsonBoolean = JsonBoolean.create(value);
+                        test.assertEqual(json.getValue(), value);
+                        test.assertEqual(json.getSegmentType(), JsonSegmentType.Boolean);
+                    });
+                }
+
+                createTest(false);
+                createTest(true);
+            });
+
+            runner.testFunction("toString()", () =>
             {
-                test(`with ${value}`, () =>
+                function toStringTest(value: boolean, expected: string): void
                 {
-                    const json: JsonBoolean = JsonBoolean.create(value);
-                    assert.strictEqual(json.getValue(), value);
-                    assert.strictEqual(json.getSegmentType(), JsonSegmentType.Boolean);
-                });
-            }
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                    {
+                        const json: JsonBoolean = JsonBoolean.create(value);
+                        test.assertEqual(json.toString(), expected);
+                    });
+                }
 
-            createTest(false);
-            createTest(true);
-        });
-
-        suite("toString()", () =>
-        {
-            function toStringTest(value: boolean, expected: string): void
-            {
-                test(`with ${value}`, () =>
-                {
-                    const json: JsonBoolean = JsonBoolean.create(value);
-                    assert.strictEqual(json.toString(), expected);
-                });
-            }
-
-            toStringTest(false, "false");
-            toStringTest(true, "true");
+                toStringTest(false, "false");
+                toStringTest(true, "true");
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

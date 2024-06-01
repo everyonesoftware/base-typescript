@@ -1,199 +1,207 @@
-import * as assert from "assert";
+import { JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonProperty, JsonSegment, JsonSegmentType, JsonString, NotFoundError, PreConditionError, Test, TestRunner, WrongTypeError, andList } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonProperty, JsonSegment, JsonSegmentType, JsonString, NotFoundError, PreConditionError, WrongTypeError, andList, escapeAndQuote, toString } from "../sources";
-
-suite("jsonObject.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("JsonObject", () =>
+    runner.testFile("jsonObject.ts", () =>
     {
-        test("create()", () =>
+        runner.testType(JsonObject, () =>
         {
-            const json: JsonObject = JsonObject.create();
-            assert.strictEqual(json.getCount(), 0);
-            assert.strictEqual(json.getSegmentType(), JsonSegmentType.Object);
-            assert.strictEqual(json.toString(), "{}");
-        });
-
-        suite("set(string,JsonSegment)", () =>
-        {
-            function setErrorTest(propertyName: string, propertyValue: JsonSegment, expected: Error): void
+            runner.testFunction("create()", (test: Test) =>
             {
-                test(`with ${andList([escapeAndQuote(propertyName), toString(propertyValue)])}`, () =>
-                {
-                    const json: JsonObject = JsonObject.create();
-                    assert.throws(() => json.set(propertyName, propertyValue), expected);
-                    assert.strictEqual(json.getCount(), 0);
-                });
-            }
+                const json: JsonObject = JsonObject.create();
+                test.assertEqual(json.getCount(), 0);
+                test.assertEqual(json.getSegmentType(), JsonSegmentType.Object);
+                test.assertEqual(json.toString(), "{}");
+            });
 
-            setErrorTest(
-                undefined!,
-                JsonSegment.null(),
-                new PreConditionError(
-                    "Expression: isString(propertyName)",
-                    "Expected: true",
-                    "Actual: false",
-                ));
-            setErrorTest(
-                null!,
-                JsonSegment.null(),
-                new PreConditionError(
-                    "Expression: isString(propertyName)",
-                    "Expected: true",
-                    "Actual: false",
-                ));
-            setErrorTest(
-                "abc",
-                undefined!,
-                new PreConditionError(
-                    "Expression: property instanceof JsonProperty",
-                    "Expected: true",
-                    "Actual: false",
-                ));
-
-            function setTest(propertyName: string, propertyValue: JsonSegment|number|boolean|string|null, expectedPropertyValue?: JsonSegment): void
+            runner.testFunction("set(string,JsonSegment)", () =>
             {
-                test(`with ${escapeAndQuote(propertyName)} and ${propertyValue}`, () =>
+                function setErrorTest(propertyName: string, propertyValue: JsonSegment, expected: Error): void
                 {
-                    if (expectedPropertyValue === undefined)
+                    runner.test(`with ${andList([propertyName, propertyValue].map(runner.toString))}`, (test: Test) =>
                     {
-                        expectedPropertyValue = propertyValue as JsonSegment;
-                    }
+                        const json: JsonObject = JsonObject.create();
+                        test.assertThrows(() => json.set(propertyName, propertyValue), expected);
+                        test.assertEqual(json.getCount(), 0);
+                    });
+                }
 
-                    const json: JsonObject = JsonObject.create();
-                    const setResult: JsonObject = json.set(propertyName, propertyValue);
-                    assert.strictEqual(setResult, json);
-                    assert.strictEqual(json.getCount(), 1);
-                    assert.deepStrictEqual(json.get(propertyName).await(), expectedPropertyValue);
-                });
-            }
+                setErrorTest(
+                    undefined!,
+                    JsonSegment.null(),
+                    new PreConditionError(
+                        "Expression: isString(propertyName)",
+                        "Expected: true",
+                        "Actual: false",
+                    ));
+                setErrorTest(
+                    null!,
+                    JsonSegment.null(),
+                    new PreConditionError(
+                        "Expression: isString(propertyName)",
+                        "Expected: true",
+                        "Actual: false",
+                    ));
+                setErrorTest(
+                    "abc",
+                    undefined!,
+                    new PreConditionError(
+                        "Expression: property instanceof JsonProperty",
+                        "Expected: true",
+                        "Actual: false",
+                    ));
 
-            setTest("abc", JsonSegment.null());
-            setTest("abc", JsonBoolean.create(true));
-            setTest("one", 1, JsonNumber.create(1));
-            setTest("two", "2", JsonString.create("2"));
-            setTest("def", null, JsonNull.create());
-        });
-
-        suite("set(JsonProperty)", () =>
-        {
-            function setErrorTest(property: JsonProperty, expected: Error): void
-            {
-                test(`with ${toString(property)}`, () =>
+                function setTest(propertyName: string, propertyValue: JsonSegment|number|boolean|string|null, expectedPropertyValue?: JsonSegment): void
                 {
-                    const json: JsonObject = JsonObject.create();
-                    assert.throws(() => json.set(property), expected);
-                    assert.strictEqual(json.getCount(), 0);
-                });
-            }
+                    runner.test(`with ${andList([propertyName, propertyValue].map(runner.toString))}`, (test: Test) =>
+                    {
+                        if (expectedPropertyValue === undefined)
+                        {
+                            expectedPropertyValue = propertyValue as JsonSegment;
+                        }
 
-            setErrorTest(
-                undefined!,
-                new PreConditionError(
-                    "Expression: property",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-            setErrorTest(
-                null!,
-                new PreConditionError(
-                    "Expression: property",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
+                        const json: JsonObject = JsonObject.create();
+                        const setResult: JsonObject = json.set(propertyName, propertyValue);
+                        test.assertSame(setResult, json);
+                        test.assertEqual(json.getCount(), 1);
+                        test.assertEqual(json.get(propertyName).await(), expectedPropertyValue);
+                    });
+                }
 
-            function setTest(property: JsonProperty): void
+                setTest("abc", JsonSegment.null());
+                setTest("abc", JsonBoolean.create(true));
+                setTest("one", 1, JsonNumber.create(1));
+                setTest("two", "2", JsonString.create("2"));
+                setTest("def", null, JsonNull.create());
+            });
+
+            runner.testFunction("set(JsonProperty)", () =>
             {
-                test(`with ${property}`, () =>
+                function setErrorTest(property: JsonProperty, expected: Error): void
                 {
-                    const json: JsonObject = JsonObject.create();
-                    const setResult: JsonObject = json.set(property);
-                    assert.strictEqual(setResult, json);
-                    assert.strictEqual(json.getCount(), 1);
-                    assert.strictEqual(json.get(property.getName()).await(), property.getValue());
-                });
-            }
+                    runner.test(`with ${runner.toString(property)}`, (test: Test) =>
+                    {
+                        const json: JsonObject = JsonObject.create();
+                        test.assertThrows(() => json.set(property), expected);
+                        test.assertEqual(json.getCount(), 0);
+                    });
+                }
 
-            setTest(JsonProperty.create("abc", JsonSegment.null()));
-            setTest(JsonProperty.create("abc", JsonSegment.boolean(false)));
-        });
+                setErrorTest(
+                    undefined!,
+                    new PreConditionError(
+                        "Expression: property",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined",
+                    ));
+                setErrorTest(
+                    null!,
+                    new PreConditionError(
+                        "Expression: property",
+                        "Expected: not undefined and not null",
+                        "Actual: null",
+                    ));
 
-        suite("getNull(string)", () =>
-        {
-            function getNullErrorTest(json: JsonObject, propertyName: string, expected: Error): void
-            {
-                assert.throws(() => json.getNull(propertyName).await(),
-                    expected);
-            }
-
-            getNullErrorTest(JsonObject.create(), undefined!, new NotFoundError("The key undefined was not found in the map."));
-            getNullErrorTest(JsonObject.create(), null!, new NotFoundError("The key null was not found in the map."));
-            getNullErrorTest(JsonObject.create(), "", new NotFoundError("The key \"\" was not found in the map."));
-            getNullErrorTest(JsonObject.create(), "abc", new NotFoundError("The key \"abc\" was not found in the map."));
-            getNullErrorTest(JsonObject.create().set("abc", "def"), "abc", new WrongTypeError("Expected JsonNull but found JsonString."));
-
-            function getNullTest(json: JsonObject, propertyName: string): void
-            {
-                assert.deepStrictEqual(json.getNull(propertyName).await(), JsonNull.create());
-            }
-
-            getNullTest(JsonObject.create().set("def", null), "def");
-        });
-
-        suite("getString(string)", () =>
-        {
-            function getStringErrorTest(json: JsonObject, propertyName: string, expected: Error): void
-            {
-                test(`with ${json} and ${escapeAndQuote(propertyName)}`, () =>
+                function setTest(property: JsonProperty): void
                 {
-                    assert.throws(() => json.getString(propertyName).await(),
-                        expected);
-                });
-            }
+                    runner.test(`with ${runner.toString(property)}`, (test: Test) =>
+                    {
+                        const json: JsonObject = JsonObject.create();
+                        const setResult: JsonObject = json.set(property);
+                        test.assertSame(setResult, json);
+                        test.assertEqual(json.getCount(), 1);
+                        test.assertSame(json.get(property.getName()).await(), property.getValue());
+                    });
+                }
 
-            getStringErrorTest(JsonObject.create(), undefined!, new NotFoundError("The key undefined was not found in the map."));
-            getStringErrorTest(JsonObject.create(), null!, new NotFoundError("The key null was not found in the map."));
-            getStringErrorTest(JsonObject.create(), "", new NotFoundError("The key \"\" was not found in the map."));
-            getStringErrorTest(JsonObject.create(), "abc", new NotFoundError("The key \"abc\" was not found in the map."));
-            getStringErrorTest(JsonObject.create().set("abc", 5), "abc", new WrongTypeError("Expected JsonString but found JsonNumber."));
+                setTest(JsonProperty.create("abc", JsonSegment.null()));
+                setTest(JsonProperty.create("abc", JsonSegment.boolean(false)));
+            });
 
-            function getStringTest(json: JsonObject, propertyName: string, expected: JsonString): void
+            runner.testFunction("getNull(string)", () =>
             {
-                test(`with ${json} and ${escapeAndQuote(propertyName)}`, () =>
+                function getNullErrorTest(json: JsonObject, propertyName: string, expected: Error): void
                 {
-                    assert.deepStrictEqual(json.getString(propertyName).await(), expected);
-                });
-            }
+                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => json.getNull(propertyName).await(), expected);
+                    });
+                }
 
-            getStringTest(JsonObject.create().set("def", "ghi"), "def", JsonString.create("ghi"));
-        });
+                getNullErrorTest(JsonObject.create(), undefined!, new NotFoundError("The key undefined was not found in the map."));
+                getNullErrorTest(JsonObject.create(), null!, new NotFoundError("The key null was not found in the map."));
+                getNullErrorTest(JsonObject.create(), "", new NotFoundError("The key \"\" was not found in the map."));
+                getNullErrorTest(JsonObject.create(), "abc", new NotFoundError("The key \"abc\" was not found in the map."));
+                getNullErrorTest(JsonObject.create().set("abc", "def"), "abc", new WrongTypeError("Expected JsonNull but found JsonString."));
 
-        suite("getStringValue(string)", () =>
-        {
-            function getStringValueErrorTest(json: JsonObject, propertyName: string, expected: Error): void
+                function getNullTest(json: JsonObject, propertyName: string): void
+                {
+                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    {
+                        test.assertEqual(json.getNull(propertyName).await(), JsonNull.create());
+                    });
+                }
+
+                getNullTest(JsonObject.create().set("def", null), "def");
+            });
+
+            runner.testFunction("getString(string)", () =>
             {
-                test(`with ${json} and ${escapeAndQuote(propertyName)}`, () =>
+                function getStringErrorTest(json: JsonObject, propertyName: string, expected: Error): void
                 {
-                    assert.throws(() => json.getStringValue(propertyName).await(),
-                        expected);
-                });
-            }
+                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => json.getString(propertyName).await(),
+                            expected);
+                    });
+                }
 
-            getStringValueErrorTest(JsonObject.create(), undefined!, new NotFoundError("The key undefined was not found in the map."));
-            getStringValueErrorTest(JsonObject.create(), null!, new NotFoundError("The key null was not found in the map."));
-            getStringValueErrorTest(JsonObject.create(), "", new NotFoundError("The key \"\" was not found in the map."));
-            getStringValueErrorTest(JsonObject.create(), "abc", new NotFoundError("The key \"abc\" was not found in the map."));
-            getStringValueErrorTest(JsonObject.create().set("abc", 5), "abc", new WrongTypeError("Expected JsonString but found JsonNumber."));
+                getStringErrorTest(JsonObject.create(), undefined!, new NotFoundError("The key undefined was not found in the map."));
+                getStringErrorTest(JsonObject.create(), null!, new NotFoundError("The key null was not found in the map."));
+                getStringErrorTest(JsonObject.create(), "", new NotFoundError("The key \"\" was not found in the map."));
+                getStringErrorTest(JsonObject.create(), "abc", new NotFoundError("The key \"abc\" was not found in the map."));
+                getStringErrorTest(JsonObject.create().set("abc", 5), "abc", new WrongTypeError("Expected JsonString but found JsonNumber."));
 
-            function getStringValueTest(json: JsonObject, propertyName: string, expected: string): void
+                function getStringTest(json: JsonObject, propertyName: string, expected: JsonString): void
+                {
+                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    {
+                        test.assertEqual(json.getString(propertyName).await(), expected);
+                    });
+                }
+
+                getStringTest(JsonObject.create().set("def", "ghi"), "def", JsonString.create("ghi"));
+            });
+
+            runner.testFunction("getStringValue(string)", () =>
             {
-                test(`with ${json} and ${escapeAndQuote(propertyName)}`, () =>
+                function getStringValueErrorTest(json: JsonObject, propertyName: string, expected: Error): void
                 {
-                    assert.deepStrictEqual(json.getStringValue(propertyName).await(), expected);
-                });
-            }
+                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => json.getStringValue(propertyName).await(),
+                            expected);
+                    });
+                }
 
-            getStringValueTest(JsonObject.create().set("def", "ghi"), "def", "ghi");
+                getStringValueErrorTest(JsonObject.create(), undefined!, new NotFoundError("The key undefined was not found in the map."));
+                getStringValueErrorTest(JsonObject.create(), null!, new NotFoundError("The key null was not found in the map."));
+                getStringValueErrorTest(JsonObject.create(), "", new NotFoundError("The key \"\" was not found in the map."));
+                getStringValueErrorTest(JsonObject.create(), "abc", new NotFoundError("The key \"abc\" was not found in the map."));
+                getStringValueErrorTest(JsonObject.create().set("abc", 5), "abc", new WrongTypeError("Expected JsonString but found JsonNumber."));
+
+                function getStringValueTest(json: JsonObject, propertyName: string, expected: string): void
+                {
+                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    {
+                        test.assertEqual(json.getStringValue(propertyName).await(), expected);
+                    });
+                }
+
+                getStringValueTest(JsonObject.create().set("def", "ghi"), "def", "ghi");
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

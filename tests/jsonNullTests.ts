@@ -1,16 +1,19 @@
-import * as assert from "assert";
+import { JsonNull, JsonSegmentType, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { JsonNull, JsonSegmentType } from "../sources";
-
-suite("jsonNull.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("JsonNull", () =>
+    runner.testFile("jsonNull.ts", () =>
     {
-        test("create()", () =>
+        runner.testType(JsonNull, () =>
         {
-            const json: JsonNull = JsonNull.create();
-            assert.strictEqual(json.getSegmentType(), JsonSegmentType.Null);
-            assert.strictEqual(json.toString(), "null");
+            runner.testFunction("create()", (test: Test) =>
+            {
+                const json: JsonNull = JsonNull.create();
+                test.assertEqual(json.getSegmentType(), JsonSegmentType.Null);
+                test.assertEqual(json.toString(), "null");
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());
