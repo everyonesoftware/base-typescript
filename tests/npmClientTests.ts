@@ -45,7 +45,7 @@ export function npmClientTests(runner: TestRunner, creator: (() => NpmClient)): 
 {
     Pre.condition.assertNotUndefinedAndNotNull(creator, "creator");
 
-    runner.testType(NpmClient.name, runner.skip(), () =>
+    runner.testType(NpmClient.name, runner.skip(false), () =>
     {
         runner.testFunction("getPackageDetails(string)", () =>
         {

@@ -34,7 +34,7 @@ export function test(runner: TestRunner): void
 
             function andListTest(values: string[], expected: string): void
             {
-                runner.test(`with ${JSON.stringify(values)}`, (test: Test) =>
+                runner.test(`with ${runner.toString(values)}`, (test: Test) =>
                 {
                     test.assertEqual(andList(values), expected);
                 });

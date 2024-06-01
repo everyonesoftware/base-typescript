@@ -11,7 +11,7 @@ export class Condition
 {
     private readonly createErrorFunction: (message: string) => Error;
 
-    public constructor(createErrorFunction: (message: string) => Error)
+    protected constructor(createErrorFunction: (message: string) => Error)
     {
         this.createErrorFunction = createErrorFunction;
     }

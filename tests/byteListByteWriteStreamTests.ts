@@ -7,7 +7,7 @@ function test(runner: TestRunner): void
 {
     runner.testFile("byteListByteWriteStream.ts", () =>
     {
-        runner.testType(ByteListByteWriteStream, () =>
+        runner.testType(ByteListByteWriteStream.name, () =>
         {
             runner.test("create()", (test: Test) =>
             {
@@ -23,11 +23,11 @@ test(MochaTestRunner.create());
 
 export function byteListByteWriteStreamTests(runner: TestRunner, creator: () => ByteListByteWriteStream): void
 {
-    runner.testType(ByteListByteWriteStream, () =>
+    runner.testType(ByteListByteWriteStream.name, () =>
     {
         byteWriteStreamTests(runner, creator);
 
-        runner.test("create()", (test: Test) =>
+        runner.testFunction("create()", (test: Test) =>
         {
             const writeStream: ByteListByteWriteStream = creator();
             test.assertEqual(writeStream.getBytes(), Uint8Array.of());

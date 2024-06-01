@@ -6,6 +6,10 @@ import { Result } from "./result";
  */
 export abstract class CharacterWriteStream
 {
+    protected constructor()
+    {
+    }
+
     public writeCharacter(character: string): Result<void>
     {
         return CharacterWriteStream.writeCharacter(this, character);

@@ -9,7 +9,7 @@ export function test(runner: TestRunner): void
     {
         runner.testType(ByteListCharacterToByteWriteStream, () =>
         {
-            runner.test("create()", (test: Test) =>
+            runner.testFunction("create()", (test: Test) =>
             {
                 const writeStream: ByteListCharacterToByteWriteStream = ByteListCharacterToByteWriteStream.create();
                 test.assertEqual(writeStream.getBytes(), new Uint8Array());
@@ -19,7 +19,7 @@ export function test(runner: TestRunner): void
             byteListByteWriteStreamTests(runner, ByteListCharacterToByteWriteStream.create);
             characterWriteStreamTests(runner, ByteListCharacterToByteWriteStream.create);
 
-            runner.test("writeCharacter(string)", (test: Test) =>
+            runner.testFunction("writeCharacter(string)", (test: Test) =>
             {
                 const writeStream: ByteListCharacterToByteWriteStream = ByteListCharacterToByteWriteStream.create();
 
@@ -33,7 +33,7 @@ export function test(runner: TestRunner): void
                 test.assertEqual(writeStream.getText(), "a A");
             });
 
-            runner.test("writeString(string,number?,number?)", (test: Test) =>
+            runner.testFunction("writeString(string,number?,number?)", (test: Test) =>
             {
                 const writeStream: ByteListCharacterToByteWriteStream = ByteListCharacterToByteWriteStream.create();
 
@@ -53,7 +53,7 @@ export function test(runner: TestRunner): void
                 test.assertEqual(writeStream.getText(), "a A z Z");
             });
 
-            runner.test("writeLine(string,number?,number?)", (test: Test) =>
+            runner.testFunction("writeLine(string,number?,number?)", (test: Test) =>
             {
                 const writeStream: ByteListCharacterToByteWriteStream = ByteListCharacterToByteWriteStream.create();
 

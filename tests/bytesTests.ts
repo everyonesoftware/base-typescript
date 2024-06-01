@@ -5,7 +5,7 @@ export function test(runner: TestRunner): void
 {
     runner.testFile("bytes.ts", () =>
     {
-        runner.testType("Bytes", () =>
+        runner.testType(Bytes.name, () =>
         {
             runner.test("minimumValue", (test: Test) =>
             {

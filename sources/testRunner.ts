@@ -28,20 +28,42 @@ export abstract class TestRunner
 
     /**
      * Create a {@link TestSkip} object that will prevent tests from being run.
+     * @param shouldSkip Whether these tests should be skipped.
      * @param message The message that explains why the tests are being skipped.
      */
-    public skip(message?: string): TestSkip
+    public skip(shouldSkip?: boolean, message?: string): TestSkip
     {
-        return TestRunner.skip(this, message);
+        return TestRunner.skip(this, shouldSkip, message);
     }
 
     /**
      * Create a {@link TestSkip} object that will prevent tests from being run.
+     * @param shouldSkip Whether these tests should be skipped.
      * @param message The message that explains why the tests are being skipped.
      */
-    public static skip(_runner: TestRunner, message?: string): TestSkip
+    public static skip(_runner: TestRunner, shouldSkip?: boolean, message?: string): TestSkip
     {
-        return TestSkip.create(message);
+        return TestSkip.create(shouldSkip, message);
+    }
+
+    /**
+     * Get whether the tests associated with the provided {@link TestSkip} should be
+     * skipped.
+     * @param skip The {@link TestSkip} associated with a set of tests.
+     */
+    public static shouldSkip(skip: TestSkip | undefined): boolean
+    {
+        return skip?.getShouldSkip() === true;
+    }
+
+    /**
+     * Get whether the tests associated with the provided {@link TestSkip} should be
+     * run.
+     * @param skip The {@link TestSkip} associated with a set of tests.
+     */
+    public static shouldRun(skip: TestSkip | undefined): boolean
+    {
+        return !TestRunner.shouldSkip(skip);
     }
 
     /**
@@ -49,15 +71,15 @@ export abstract class TestRunner
      * @param fileName The name of the file that is being tested.
      * @param testAction The action that will run the tests.
      */
-    public testFile(fileName: string, testAction: () => void): void;
+    public testFile(fileName: string, testAction: (() => void) | ((test: Test) => void)): void;
     /**
      * Create a test group that will test the provided file.
      * @param fileName The name of the file that is being tested.
      * @param skip A value that indicates whether these tests should be skipped.
      * @param testAction The action that will run the tests.
      */
-    public testFile(fileName: string, skip: TestSkip | undefined, testAction: () => void): void;
-    testFile(fileName: string, skipOrTestAction: TestSkip | (() => void) | undefined, testAction?: () => void): void
+    public testFile(fileName: string, skip: TestSkip | undefined, testAction: (() => void) | ((test: Test) => void)): void;
+    testFile(fileName: string, skipOrTestAction: TestSkip | ((() => void) | ((test: Test) => void)) | undefined, testAction?: (() => void) | ((test: Test) => void)): void
     {
         TestRunner.testFile(this, fileName, skipOrTestAction, testAction);
     }
@@ -68,7 +90,7 @@ export abstract class TestRunner
      * @param fileName The name of the file that is being tested.
      * @param testAction The action that will run the tests.
      */
-    public static testFile(runner: TestRunner, fileName: string, skipOrTestAction: TestSkip | (() => void) | undefined, testAction?: () => void): void
+    public static testFile(runner: TestRunner, fileName: string, skipOrTestAction: TestSkip | ((() => void) | ((test: Test) => void)) | undefined, testAction?: (() => void) | ((test: Test) => void)): void
     {
         Pre.condition.assertNotUndefinedAndNotNull(runner, "runner");
         Pre.condition.assertNotUndefinedAndNotNull(fileName, "fileName");
@@ -95,15 +117,15 @@ export abstract class TestRunner
      * @param type The {@link Type} or name of the type that is being tested.
      * @param testAction The action that will run the tests.
      */
-    public testType(typeNameOrType: string | Type<unknown>, testAction: () => void): void;
+    public testType(typeNameOrType: string | Type<unknown>, testAction: (() => void) | ((test: Test) => void)): void;
     /**
      * Create a test group that will test the provided type.
      * @param type The {@link Type} or name of the type that is being tested.
      * @param skip A value that indicates whether these tests should be skipped.
      * @param testAction The action that will run the tests.
      */
-    public testType(typeNameOrType: string | Type<unknown>, skip: TestSkip | undefined, testAction: () => void): void;
-    testType(typeNameOrType: string | Type<unknown>, skipOrTestAction: TestSkip | undefined | (() => void), testAction?: () => void): void
+    public testType(typeNameOrType: string | Type<unknown>, skip: TestSkip | undefined, testAction: (() => void) | ((test: Test) => void)): void;
+    testType(typeNameOrType: string | Type<unknown>, skipOrTestAction: TestSkip | undefined | ((() => void) | ((test: Test) => void)), testAction?: (() => void) | ((test: Test) => void)): void
     {
         TestRunner.testType(this, typeNameOrType, skipOrTestAction, testAction);
     }
@@ -114,7 +136,7 @@ export abstract class TestRunner
      * @param type The {@link Type} or name of the type that is being tested.
      * @param testAction The action that will run the tests.
      */
-    public static testType(runner: TestRunner, typeNameOrType: string | Type<unknown>, skipOrTestAction: TestSkip | undefined | (() => void), testAction: (() => void) | undefined): void
+    public static testType(runner: TestRunner, typeNameOrType: string | Type<unknown>, skipOrTestAction: TestSkip | undefined | ((() => void) | ((test: Test) => void)), testAction: ((() => void) | ((test: Test) => void)) | undefined): void
     {
         Pre.condition.assertNotUndefinedAndNotNull(runner, "runner");
         Pre.condition.assertNotUndefinedAndNotNull(typeNameOrType, "typeNameOrType");
@@ -145,9 +167,9 @@ export abstract class TestRunner
      * @param functionSignature The signature of the function that is being tested.
      * @param testAction The action that will run the tests.
      */
-    public testFunction(functionSignature: string, testAction: () => void): void;
-    public testFunction(functionSignature: string, skip: TestSkip | undefined, testAction: () => void): void;
-    testFunction(functionSignature: string, skipOrTestAction: TestSkip | undefined | (() => void), testAction?: () => void): void
+    public testFunction(functionSignature: string, testAction: (() => void) | ((test: Test) => void)): void;
+    public testFunction(functionSignature: string, skip: TestSkip | undefined, testAction: (() => void) | ((test: Test) => void)): void;
+    testFunction(functionSignature: string, skipOrTestAction: TestSkip | undefined | ((() => void) | ((test: Test) => void)), testAction?: (() => void) | ((test: Test) => void)): void
     {
         TestRunner.testFunction(this, functionSignature, skipOrTestAction, testAction);
     }
@@ -158,7 +180,7 @@ export abstract class TestRunner
      * @param functionSignature The signature of the function that is being tested.
      * @param testAction The action that will run the tests.
      */
-    public static testFunction(runner: TestRunner, functionSignature: string, skipOrTestAction: TestSkip | undefined | (() => void), testAction: (() => void) | undefined): void
+    public static testFunction(runner: TestRunner, functionSignature: string, skipOrTestAction: TestSkip | undefined | ((() => void) | ((test: Test) => void)), testAction: ((() => void) | ((test: Test) => void)) | undefined): void
     {
         Pre.condition.assertNotUndefinedAndNotNull(runner, "runner");
         Pre.condition.assertNotUndefinedAndNotNull(functionSignature, "functionSignature");
@@ -185,13 +207,13 @@ export abstract class TestRunner
      * @param testGroupName The name of the test group to run.
      * @param testAction The action that runs the test group.
      */
-    public abstract testGroup(testGroupName: string, testAction: () => void): void;
+    public abstract testGroup(testGroupName: string, testAction: (() => void) | ((test: Test) => void)): void;
     /**
      * Create and run a test group with the provided name.
      * @param testGroupName The name of the test group to run.
      * @param testAction The action that runs the test group.
      */
-    public abstract testGroup(testGroupName: string, skip: TestSkip | undefined, testAction: () => void): void;
+    public abstract testGroup(testGroupName: string, skip: TestSkip | undefined, testAction: (() => void) | ((test: Test) => void)): void;
 
     /**
      * Create and run a test with the provided name.

@@ -5,7 +5,7 @@ export function test(runner: TestRunner): void
 {
     runner.testFile("condition.ts", () =>
     {
-        runner.testType(Condition, () =>
+        runner.testType(Condition.name, () =>
         {
             runner.testFunction("create((string) => Error)", () =>
             {

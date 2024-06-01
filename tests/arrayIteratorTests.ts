@@ -6,9 +6,9 @@ function test(runner: TestRunner): void
 {
     runner.testFile("arrayIterator.ts", () =>
     {
-        runner.testType(ArrayIterator, () =>
+        runner.testType(ArrayIterator.name, () =>
         {
-            iteratorTests(() => ArrayIterator.create<number>([]));
+            iteratorTests(runner, () => ArrayIterator.create<number>([]));
 
             runner.testFunction("create(T[])", () =>
             {
@@ -65,7 +65,7 @@ function test(runner: TestRunner): void
                 createTest([2, "", true]);
             });
 
-            runner.test("start()", (test: Test) =>
+            runner.testFunction("start()", (test: Test) =>
             {
                 const iterator: ArrayIterator<string> = ArrayIterator.create(["a", "b", "c"]);
                 test.assertFalse(iterator.hasStarted());
@@ -81,7 +81,7 @@ function test(runner: TestRunner): void
                 }
             });
 
-            runner.test("takeCurrent()", (test: Test) =>
+            runner.testFunction("takeCurrent()", (test: Test) =>
             {
                 const values: string[] = ["a", "b", "c"];
                 const iterator: ArrayIterator<string> = ArrayIterator.create(values);

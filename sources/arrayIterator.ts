@@ -10,7 +10,7 @@ export class ArrayIterator<T> extends IndexableIteratorBase<T>
     private currentIndex: number;
     private started: boolean;
 
-    public constructor(values: T[])
+    private constructor(values: T[])
     {
         super();
 

@@ -6,7 +6,7 @@ export function test(runner: TestRunner): void
 {
     runner.testFile("httpNpmClient.ts", () =>
     {
-        runner.testType(HttpNpmClient, () =>
+        runner.testType(HttpNpmClient.name, () =>
         {
             runner.testFunction("create(HttpClient)", () =>
             {
