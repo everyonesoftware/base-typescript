@@ -1,5 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { TextToken, TextTokenType, TextTokenizer, toLowercase, toUppercase, toCamelCase, toPascalCase, toSnakeCase, toUpperSnakeCase, toKebabCase, toUpperKebabCase } from "../sources";
+import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -583,4 +584,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());

@@ -1,6 +1,7 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { ByteListByteWriteStream } from "../sources";
 import { byteWriteStreamTests } from "./byteWriteStreamTests";
+import { createTestRunner } from "./tests";
 
 function test(runner: TestRunner): void
 {
@@ -18,7 +19,7 @@ function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());
 
 export function byteListByteWriteStreamTests(runner: TestRunner, creator: () => ByteListByteWriteStream): void
 {

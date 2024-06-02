@@ -1,5 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { BasicJsonToken, JsonTokenType, PreConditionError } from "../sources";
+import { createTestRunner } from "./tests";
 
 function test(runner: TestRunner): void
 {
@@ -74,4 +75,4 @@ function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());

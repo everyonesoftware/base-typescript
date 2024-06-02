@@ -1,6 +1,7 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { JavascriptMapMap } from "../sources";
 import { mapTests } from "./mapTests";
+import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -18,4 +19,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());

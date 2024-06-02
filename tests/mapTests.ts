@@ -1,5 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { Iterator, JavascriptIterable, Map, NotFoundError } from "../sources";
+import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -17,8 +18,7 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
-
+test(createTestRunner());
 
 export function mapTests(runner: TestRunner, creator: () => Map<number,string>): void
 {

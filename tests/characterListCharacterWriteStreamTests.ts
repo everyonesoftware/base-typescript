@@ -1,6 +1,7 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { CharacterListCharacterWriteStream } from "../sources";
 import { characterWriteStreamTests } from "./characterWriteStreamTests";
+import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -72,4 +73,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());

@@ -1,5 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { PreConditionError, Result } from "../sources";
+import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -963,4 +964,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());
