@@ -15,12 +15,27 @@ export class AssertTest implements Test
         return new AssertTest();
     }
 
+    public fail(message?: string): void
+    {
+        assert.fail(message);
+    }
+
     public assertUndefined(value: unknown): asserts value is undefined
     {
         Test.assertUndefined(this, value);
     }
 
+    public assertNotUndefined<T>(value: T): asserts value is NonNullable<T>
+    {
+        Test.assertNotUndefined(this, value);
+    }
+
     public assertNull(value: unknown): asserts value is null
+    {
+        Test.assertNull(this, value);
+    }
+
+    public assertNotNull<T>(value: T): asserts value is NonNullable<T>
     {
         Test.assertNull(this, value);
     }

@@ -1,23 +1,24 @@
-import * as assert from "assert";
+import { PostConditionError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { PostConditionError } from "../sources";
-
-suite("postConditionError.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite(PostConditionError.name, () =>
+    runner.testFile("postConditionError.ts", () =>
     {
-        suite("constructor(string|undefined)", () =>
+        runner.testType(PostConditionError.name, () =>
         {
-            test("with no arguments", () =>
+            runner.testFunction("constructor(string|undefined)", () =>
             {
-                const error: PostConditionError = new PostConditionError();
-                assert.notStrictEqual(error, undefined);
-                assert.notStrictEqual(error, null);
-                assert.strictEqual(error.name, "Error");
-                assert.strictEqual(error.message, "");
-                assert.notStrictEqual(error.stack, undefined);
-                assert.notStrictEqual(error.stack, null);
+                runner.test("with no arguments", (test: Test) =>
+                {
+                    const error: PostConditionError = new PostConditionError();
+                    test.assertNotUndefinedAndNotNull(error);
+                    test.assertEqual(error.name, "Error");
+                    test.assertEqual(error.message, "");
+                    test.assertNotUndefinedAndNotNull(error.stack);
+                });
             });
         });
     });
-});
+}
+test(MochaTestRunner.create());

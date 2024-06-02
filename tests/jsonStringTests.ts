@@ -1,4 +1,4 @@
-import { JsonSegmentType, JsonString, JsonTokenType, PreConditionError, Test, TestRunner, andList } from "../sources";
+import { JsonSegmentType, JsonString, JsonTokenType, PreConditionError, Test, TestRunner } from "../sources";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -11,7 +11,7 @@ export function test(runner: TestRunner): void
             {
                 function createErrorTest(value: string, quote: string, expected: Error): void
                 {
-                    runner.test(`with ${andList([value, quote].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([value, quote])}`, (test: Test) =>
                     {
                         test.assertThrows(() => JsonString.create(value, quote), expected);
                     });
@@ -45,7 +45,7 @@ export function test(runner: TestRunner): void
 
                 function createTest(value: string, quote: string, expectedQuote: string = quote): void
                 {
-                    runner.test(`with ${andList([value, quote].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([value, quote])}`, (test: Test) =>
                     {
                         const json: JsonString = JsonString.create(value, quote);
                         test.assertSame(json.getValue(), value);
@@ -66,7 +66,7 @@ export function test(runner: TestRunner): void
             {
                 function toStringTest(value: string, quote: string, expected: string): void
                 {
-                    runner.test(`with ${andList([value, quote].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([value, quote])}`, (test: Test) =>
                     {
                         const json: JsonString = JsonString.create(value, quote);
                         test.assertSame(json.toString(), expected);

@@ -1,4 +1,4 @@
-import { Iterator, JavascriptIterable, Map, NotFoundError, Test, TestRunner, andList } from "../sources";
+import { Iterator, JavascriptIterable, Map, NotFoundError, Test, TestRunner } from "../sources";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -75,7 +75,7 @@ export function mapTests(runner: TestRunner, creator: () => Map<number,string>):
         {
             function setTest(map: Map<number,string>, key: number, value: string): void
             {
-                runner.test(`with ${andList([map, key, value].map(runner.toString))}`, (test: Test) =>
+                runner.test(`with ${runner.andList([map, key, value])}`, (test: Test) =>
                 {
                     const setResult: Map<number,string> = map.set(key, value);
                     test.assertSame(setResult, map);

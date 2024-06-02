@@ -1,4 +1,4 @@
-import { JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonProperty, JsonSegment, JsonSegmentType, JsonString, NotFoundError, PreConditionError, Test, TestRunner, WrongTypeError, andList } from "../sources";
+import { JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonProperty, JsonSegment, JsonSegmentType, JsonString, NotFoundError, PreConditionError, Test, TestRunner, WrongTypeError } from "../sources";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -19,7 +19,7 @@ export function test(runner: TestRunner): void
             {
                 function setErrorTest(propertyName: string, propertyValue: JsonSegment, expected: Error): void
                 {
-                    runner.test(`with ${andList([propertyName, propertyValue].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([propertyName, propertyValue])}`, (test: Test) =>
                     {
                         const json: JsonObject = JsonObject.create();
                         test.assertThrows(() => json.set(propertyName, propertyValue), expected);
@@ -54,7 +54,7 @@ export function test(runner: TestRunner): void
 
                 function setTest(propertyName: string, propertyValue: JsonSegment|number|boolean|string|null, expectedPropertyValue?: JsonSegment): void
                 {
-                    runner.test(`with ${andList([propertyName, propertyValue].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([propertyName, propertyValue])}`, (test: Test) =>
                     {
                         if (expectedPropertyValue === undefined)
                         {
@@ -123,7 +123,7 @@ export function test(runner: TestRunner): void
             {
                 function getNullErrorTest(json: JsonObject, propertyName: string, expected: Error): void
                 {
-                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
                         test.assertThrows(() => json.getNull(propertyName).await(), expected);
                     });
@@ -137,7 +137,7 @@ export function test(runner: TestRunner): void
 
                 function getNullTest(json: JsonObject, propertyName: string): void
                 {
-                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
                         test.assertEqual(json.getNull(propertyName).await(), JsonNull.create());
                     });
@@ -150,7 +150,7 @@ export function test(runner: TestRunner): void
             {
                 function getStringErrorTest(json: JsonObject, propertyName: string, expected: Error): void
                 {
-                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
                         test.assertThrows(() => json.getString(propertyName).await(),
                             expected);
@@ -165,7 +165,7 @@ export function test(runner: TestRunner): void
 
                 function getStringTest(json: JsonObject, propertyName: string, expected: JsonString): void
                 {
-                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
                         test.assertEqual(json.getString(propertyName).await(), expected);
                     });
@@ -178,7 +178,7 @@ export function test(runner: TestRunner): void
             {
                 function getStringValueErrorTest(json: JsonObject, propertyName: string, expected: Error): void
                 {
-                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
                         test.assertThrows(() => json.getStringValue(propertyName).await(),
                             expected);
@@ -193,7 +193,7 @@ export function test(runner: TestRunner): void
 
                 function getStringValueTest(json: JsonObject, propertyName: string, expected: string): void
                 {
-                    runner.test(`with ${andList([json, propertyName].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
                         test.assertEqual(json.getStringValue(propertyName).await(), expected);
                     });
