@@ -1,4 +1,4 @@
-import { andList, join, Condition, PostConditionError, JavascriptIterable, PreConditionError, TestRunner, Test } from "../sources/";
+import { join, Condition, PostConditionError, JavascriptIterable, PreConditionError, TestRunner, Test } from "../sources/";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -190,7 +190,7 @@ export function test(runner: TestRunner): void
             {
                 function assertSameErrorTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([expected, actual, expression, message].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([expected, actual, expression, message])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertSame(expected, actual, expression, message), expectedError);
@@ -255,7 +255,7 @@ export function test(runner: TestRunner): void
 
                 function assertSameTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined): void
                 {
-                    runner.test(`with ${andList([expected, actual, expression, message].map(runner.toString))}`, (_test: Test) =>
+                    runner.test(`with ${runner.andList([expected, actual, expression, message])}`, (_test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertSame(expected, actual, expression, message);
@@ -273,11 +273,11 @@ export function test(runner: TestRunner): void
                 assertSameTest(o, o, "fake-expression", "fake-message");
             });
 
-            suite("assertNotSame<T>(T,T,string?,string?)", () =>
+            runner.testFunction("assertNotSame<T>(T,T,string?,string?)", () =>
             {
                 function assertNotSameErrorTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([expected, actual, expression, message].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([expected, actual, expression, message])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertNotSame(expected, actual, expression, message), expectedError);
@@ -366,7 +366,7 @@ export function test(runner: TestRunner): void
 
                 function assertNotSameTest<T>(expected: T, actual: T, expression: string | undefined, message: string | undefined): void
                 {
-                    runner.test(`with ${andList([expected, actual, expression, message].map(runner.toString))}`, (_test: Test) =>
+                    runner.test(`with ${runner.andList([expected, actual, expression, message])}`, (_test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertNotSame(expected, actual, expression, message);
@@ -385,7 +385,7 @@ export function test(runner: TestRunner): void
             {
                 function assertNotEmptyErrorTest(value: string, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([value, expression, message].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([value, expression, message])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertNotEmpty(value, expression, message), expectedError);
@@ -413,7 +413,7 @@ export function test(runner: TestRunner): void
 
                 function assertNotEmptyTest(value: string, expression: string | undefined, message: string | undefined): void
                 {
-                    runner.test(`with ${andList([value, expression, message].map(runner.toString))}`, (_test: Test) =>
+                    runner.test(`with ${runner.andList([value, expression, message])}`, (_test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertNotEmpty(value, expression, message);
@@ -428,7 +428,7 @@ export function test(runner: TestRunner): void
             {
                 function assertLessThanErrorTest(value: number, upperBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([value, upperBound].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([value, upperBound])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertLessThan(value, upperBound, expression, message), expectedError);
@@ -456,7 +456,7 @@ export function test(runner: TestRunner): void
 
                 function assertLessThanTest(value: number, upperBound: number, expression?: string, message?: string): void
                 {
-                    runner.test(`with ${andList([value, upperBound].map(runner.toString))}`, () =>
+                    runner.test(`with ${runner.andList([value, upperBound])}`, () =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertLessThan(value, upperBound, expression, message);
@@ -473,7 +473,7 @@ export function test(runner: TestRunner): void
             {
                 function assertLessThanOrEqualToErrorTest(value: number, upperBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([value, upperBound].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([value, upperBound])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertLessThanOrEqualTo(value, upperBound, expression, message), expectedError);
@@ -493,7 +493,7 @@ export function test(runner: TestRunner): void
 
                 function assertLessThanOrEqualToTest(value: number, upperBound: number, expression: string | undefined, message: string | undefined): void
                 {
-                    runner.test(`with ${andList([value, upperBound].map(runner.toString))}`, () =>
+                    runner.test(`with ${runner.andList([value, upperBound])}`, () =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertLessThanOrEqualTo(value, upperBound, expression, message);
@@ -513,7 +513,7 @@ export function test(runner: TestRunner): void
             {
                 function assertGreaterThanOrEqualToErrorTest(value: number, lowerBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([value, lowerBound].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([value, lowerBound])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertGreaterThanOrEqualTo(value, lowerBound, expression, message), expectedError);
@@ -533,7 +533,7 @@ export function test(runner: TestRunner): void
 
                 function assertGreaterThanOrEqualToTest(value: number, lowerBound: number, expression?: string, message?: string): void
                 {
-                    runner.test(`with ${andList([value, lowerBound].map(runner.toString))}`, (_test: Test) =>
+                    runner.test(`with ${runner.andList([value, lowerBound])}`, (_test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertGreaterThanOrEqualTo(value, lowerBound, expression, message);
@@ -553,7 +553,7 @@ export function test(runner: TestRunner): void
             {
                 function assertGreaterThanErrorTest(value: number, lowerBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([value, lowerBound].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([value, lowerBound])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertGreaterThan(value, lowerBound, expression, message), expectedError);
@@ -581,7 +581,7 @@ export function test(runner: TestRunner): void
 
                 function assertGreaterThanTest(value: number, lowerBound: number, expression?: string, message?: string): void
                 {
-                    runner.test(`with ${andList([value, lowerBound].map(runner.toString))}`, (_test: Test) =>
+                    runner.test(`with ${runner.andList([value, lowerBound])}`, (_test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertGreaterThan(value, lowerBound, expression, message);
@@ -598,7 +598,7 @@ export function test(runner: TestRunner): void
             {
                 function assertBetweenErrorTest(lowerBound: number, value: number, upperBound: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([lowerBound, value, upperBound].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([lowerBound, value, upperBound])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertBetween(lowerBound, value, upperBound, expression, message), expectedError);
@@ -629,7 +629,7 @@ export function test(runner: TestRunner): void
 
                 function assertBetweenTest(lowerBound: number, value: number, upperBound: number, expression?: string, message?: string): void
                 {
-                    runner.test(`with ${andList([lowerBound, value, upperBound].map(runner.toString))}`, () =>
+                    runner.test(`with ${runner.andList([lowerBound, value, upperBound])}`, () =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertBetween(lowerBound, value, upperBound, expression, message);
@@ -648,7 +648,7 @@ export function test(runner: TestRunner): void
             {
                 function assertAccessIndexTest(index: number, count: number, expression?: string, message?: string): void
                 {
-                    runner.test(`with ${andList([index, count].map(runner.toString))}`, (_test: Test) =>
+                    runner.test(`with ${runner.andList([index, count])}`, (_test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertAccessIndex(index, count, expression, message);
@@ -661,7 +661,7 @@ export function test(runner: TestRunner): void
 
                 function assertAccessIndexErrorTest(index: number, count: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([index, count].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([index, count])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertAccessIndex(index, count, expression, message), expectedError);
@@ -713,7 +713,7 @@ export function test(runner: TestRunner): void
             {
                 function assertInsertIndexErrorTest(index: number, count: number, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([index, count].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([index, count])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertInsertIndex(index, count, expression, message), expectedError);
@@ -755,7 +755,7 @@ export function test(runner: TestRunner): void
 
                 function assertInsertIndexTest(index: number, count: number, expression?: string, message?: string): void
                 {
-                    runner.test(`with ${andList([index, count].map(runner.toString))}`, (_test: Test) =>
+                    runner.test(`with ${runner.andList([index, count])}`, (_test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertInsertIndex(index, count, expression, message);
@@ -774,7 +774,7 @@ export function test(runner: TestRunner): void
             {
                 function assertOneOfErrorTest<T>(possibilities: JavascriptIterable<T>, value: T, expression: string | undefined, message: string | undefined, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([possibilities, value, expression, message].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([possibilities, value, expression, message])}`, (test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         test.assertThrows(() => condition.assertOneOf(possibilities, value, expression, message), expectedError);
@@ -835,7 +835,7 @@ export function test(runner: TestRunner): void
 
                 function assertOneOfTest<T>(possibilities: JavascriptIterable<T>, value: T, expression?: string, message?: string): void
                 {
-                    runner.test(`with ${andList([possibilities, value, expression, message].map(runner.toString))}`, (_test: Test) =>
+                    runner.test(`with ${runner.andList([possibilities, value, expression, message])}`, (_test: Test) =>
                     {
                         const condition: Condition = Condition.create();
                         condition.assertOneOf(possibilities, value, expression, message);

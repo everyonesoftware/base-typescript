@@ -37,7 +37,7 @@ function test(runner: TestRunner): void
 
                 function createTest<T>(values: T[]): void
                 {
-                    runner.test(`with "${runner.toString(values)}"`, (test: Test) =>
+                    runner.test(`with "${runner.andList(values)}"`, (test: Test) =>
                     {
                         const iterator: ArrayIterator<T> = ArrayIterator.create(values);
 
@@ -120,7 +120,7 @@ function test(runner: TestRunner): void
             {
                 function nextTest<T>(values: T[]): void
                 {
-                    runner.test(`with "${runner.toString(values)}"`, (test: Test) =>
+                    runner.test(`with "${runner.andList(values)}"`, (test: Test) =>
                     {
                         const iterator: ArrayIterator<T> = ArrayIterator.create(values);
 
@@ -160,7 +160,7 @@ function test(runner: TestRunner): void
             {
                 function forOfTest<T>(values: T[]): void
                 {
-                    runner.test(`with "${runner.toString(values)}"`, (test: Test) =>
+                    runner.test(`with "${runner.andList(values)}"`, (test: Test) =>
                     {
                         const iterator: ArrayIterator<T> = ArrayIterator.create(values);
 
@@ -203,7 +203,7 @@ function test(runner: TestRunner): void
             {
                 function anyTest<T>(values: T[], expected: boolean): void
                 {
-                    runner.test(`with ${runner.toString(values)}`, (test: Test) =>
+                    runner.test(`with ${runner.andList(values)}`, (test: Test) =>
                     {
                         const iterator: ArrayIterator<T> = ArrayIterator.create(values);
                         for (let i = 0; i < 3; i++)
@@ -223,7 +223,7 @@ function test(runner: TestRunner): void
             {
                 function getCountTest<T>(values: T[], expected: number): void
                 {
-                    runner.test(`with ${runner.toString(values)}`, (test: Test) =>
+                    runner.test(`with ${runner.andList(values)}`, (test: Test) =>
                     {
                         const iterator: ArrayIterator<T> = ArrayIterator.create(values);
                         test.assertSame(iterator.getCount(), expected);
@@ -244,7 +244,7 @@ function test(runner: TestRunner): void
             {
                 function toArrayTest<T>(values: T[]): void
                 {
-                    runner.test(`with ${runner.toString(values)}`, (test: Test) =>
+                    runner.test(`with ${runner.andList(values)}`, (test: Test) =>
                     {
                         const iterator: ArrayIterator<T> = ArrayIterator.create(values);
                         test.assertFalse(iterator.hasStarted());

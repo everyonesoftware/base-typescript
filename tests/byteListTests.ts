@@ -1,4 +1,4 @@
-import { ByteList, Bytes, List, PreConditionError, Test, TestRunner, andList } from "../sources";
+import { ByteList, Bytes, List, PreConditionError, Test, TestRunner } from "../sources";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -52,7 +52,7 @@ export function test(runner: TestRunner): void
             {
                 function setErrorTest(list: ByteList, index: number, value: number, expected: Error): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         test.assertThrows(() => list.set(index, value), expected);
                     });
@@ -97,7 +97,7 @@ export function test(runner: TestRunner): void
 
                 function setTest(list: ByteList, index: number, value: number): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         const setResult: ByteList = list.set(index, value);
                         test.assertSame(setResult, list);
@@ -118,7 +118,7 @@ export function test(runner: TestRunner): void
             {
                 function getErrorTest(list: ByteList, index: number, expected: Error): void
                 {
-                    runner.test(`with ${andList([list, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index])}`, (test: Test) =>
                     {
                         test.assertThrows(() => list.get(index), expected);
                     });
@@ -160,7 +160,7 @@ export function test(runner: TestRunner): void
             {
                 function insertErrorTest(list: ByteList, index: number, value: number, expected: Error): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         test.assertThrows(() => list.insert(index, value), expected);
                     });
@@ -185,7 +185,7 @@ export function test(runner: TestRunner): void
 
                 function insertTest(list: ByteList, index: number, value: number, expected: number[]): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         const insertResult: ByteList = list.insert(index, value);
                         test.assertSame(list, insertResult);

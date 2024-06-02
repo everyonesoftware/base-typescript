@@ -6,6 +6,12 @@ import { Pre } from "./pre";
 export abstract class Test
 {
     /**
+     * Fail the current test with the provided message.
+     * @param message The message that explains why this test failed.
+     */
+    public abstract fail(message?: string): void;
+
+    /**
      * Assert that the provided value is undefined;
      * @param value The value to check.
      */
@@ -25,6 +31,25 @@ export abstract class Test
     }
 
     /**
+     * Assert that the provided value is not undefined;
+     * @param value The value to check.
+     */
+    public assertNotUndefined<T>(value: T): asserts value is NonNullable<T>
+    {
+        Test.assertNotUndefined(this, value);
+    }
+
+    /**
+     * Assert that the provided value is not undefined.
+     * @param test The current {@link Test}.
+     * @param value The value to check.
+     */
+    public static assertNotUndefined<T>(test: Test, value: unknown): asserts value is NonNullable<T>
+    {
+        test.assertNotSame(value, undefined);
+    }
+
+    /**
      * Assert that the provided value is null.
      * @param value The value to check.
      */
@@ -40,6 +65,24 @@ export abstract class Test
     public static assertNull(test: Test, value: unknown): asserts value is null
     {
         test.assertSame(value, null);
+    }
+
+    /**
+     * Assert that the provided value is not null.
+     * @param value The value to check.
+     */
+    public assertNotNull<T>(value: T): asserts value is NonNullable<T>
+    {
+        Test.assertNull(this, value);
+    }
+
+    /**
+     * Assert that the provided value is not null.
+     * @param value The value to check.
+     */
+    public static assertNotNull<T>(test: Test, value: T): asserts value is NonNullable<T>
+    {
+        test.assertNotSame(value, null);
     }
 
     /**

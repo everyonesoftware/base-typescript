@@ -1,4 +1,4 @@
-import { Pre, Test, TestRunner, Type, isFunction } from "../sources";
+import { Pre, Test, TestRunner, Type, isFunction, Iterable } from "../sources";
 import { TestSkip } from "../sources/testSkip";
 import { AssertTest } from "./assertTest";
 
@@ -7,6 +7,8 @@ import { AssertTest } from "./assertTest";
  */
 export class MochaTestRunner implements TestRunner
 {
+    private currentTest: Test | undefined;
+
     protected constructor()
     {
     }
@@ -14,6 +16,25 @@ export class MochaTestRunner implements TestRunner
     public static create(): MochaTestRunner
     {
         return new MochaTestRunner();
+    }
+
+    private getCurrentTest(): Test | undefined
+    {
+        return this.currentTest;
+    }
+
+    private setCurrentTest(currentTest: Test | undefined): void
+    {
+        this.currentTest = currentTest;
+    }
+
+    private assertNoCurrentTest(): void
+    {
+        const currentTest: Test | undefined = this.getCurrentTest();
+        if (currentTest !== undefined)
+        {
+            currentTest.fail("Can't start a new test group or a new test while running a test.");
+        }
     }
 
     public skip(shouldSkip?: boolean, message?: string): TestSkip
@@ -62,6 +83,8 @@ export class MochaTestRunner implements TestRunner
         }
         Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
 
+        this.assertNoCurrentTest();
+
         if (TestRunner.shouldRun(skip))
         {
             suite(testGroupName, () =>
@@ -91,11 +114,22 @@ export class MochaTestRunner implements TestRunner
         }
         Pre.condition.assertNotUndefinedAndNotNull(testAction, "testAction");
 
+        this.assertNoCurrentTest();
+
         if (TestRunner.shouldRun(skip))
         {
             test(testName, () =>
             {
-                testAction(AssertTest.create());
+                const currentTest: Test = AssertTest.create();
+                this.setCurrentTest(currentTest);
+                try
+                {
+                    testAction(currentTest);
+                }
+                finally
+                {
+                    this.setCurrentTest(undefined);
+                }
             });
         }
     }
@@ -127,6 +161,11 @@ export class MochaTestRunner implements TestRunner
                 await testAction(AssertTest.create());
             });
         }
+    }
+
+    public andList(values: unknown[] | Iterable<unknown>): string
+    {
+        return TestRunner.andList(this, values);
     }
 
     public toString(value: unknown): string

@@ -1,4 +1,4 @@
-import { JsonProperty, JsonSegment, PreConditionError, Test, TestRunner, andList } from "../sources";
+import { JsonProperty, JsonSegment, PreConditionError, Test, TestRunner } from "../sources";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -11,7 +11,7 @@ export function test(runner: TestRunner): void
             {
                 function createErrorTest(name: string, value: JsonSegment, expected: Error): void
                 {
-                    runner.test(`with ${andList([name, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([name, value])}`, (test: Test) =>
                     {
                         test.assertThrows(() => JsonProperty.create(name, value), expected);
                     });
@@ -60,7 +60,7 @@ export function test(runner: TestRunner): void
 
                 function createTest(name: string, value: JsonSegment): void
                 {
-                    runner.test(`with ${andList([name, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([name, value])}`, (test: Test) =>
                     {
                         const property: JsonProperty = JsonProperty.create(name, value);
                         test.assertSame(property.getName(), name);

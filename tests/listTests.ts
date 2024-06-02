@@ -1,4 +1,4 @@
-import { Iterable, JavascriptIterable, List, PreConditionError, Test, TestRunner, andList } from "../sources/";
+import { Iterable, JavascriptIterable, List, PreConditionError, Test, TestRunner } from "../sources/";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -68,7 +68,7 @@ export function test(runner: TestRunner): void
             {
                 function setErrorTest(list: List<number>, index: number, value: number, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         const backupList: List<number> = List.create(list);
                         test.assertThrows(() => list.set(index, value), expectedError);
@@ -104,7 +104,7 @@ export function test(runner: TestRunner): void
 
                 function setTest(list: List<number>, index: number, value: number, expected: number[]): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         const setResult: List<number> = list.set(index, value);
                         test.assertSame(list, setResult);
@@ -117,11 +117,11 @@ export function test(runner: TestRunner): void
                 setTest(List.create([1, 2]), 1, 5, [1, 5]);
             });
 
-            suite("get(number)", () =>
+            runner.testFunction("get(number)", () =>
             {
                 function getErrorTest(list: List<number>, index: number, expectedError: Error): void
                 {
-                    runner.test(`with ${andList([list, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index])}`, (test: Test) =>
                     {
                         const backupList: List<number> = List.create(list);
                         test.assertThrows(() => list.get(index), expectedError);
@@ -157,7 +157,7 @@ export function test(runner: TestRunner): void
 
                 function getTest(list: List<number>, index: number, expected: number): void
                 {
-                    runner.test(`with ${andList([list, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index])}`, (test: Test) =>
                     {
                         test.assertSame(list.get(index), expected);
                     });
@@ -168,11 +168,11 @@ export function test(runner: TestRunner): void
                 getTest(List.create([1, 2]), 1, 2);
             });
 
-            suite("add(T)", () =>
+            runner.testFunction("add(T)", () =>
             {
                 function addTest(list: List<number>, value: number, expected: number[]): void
                 {
-                    runner.test(`with ${andList([list, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, value])}`, (test: Test) =>
                     {
                         const addResult: List<number> = list.add(value);
                         test.assertSame(addResult, list);
@@ -185,11 +185,11 @@ export function test(runner: TestRunner): void
                 addTest(List.create([1, 2]), 3, [1, 2, 3]);
             });
 
-            suite("addAll(T)", () =>
+            runner.testFunction("addAll(T)", () =>
             {
                 function addAllTest(list: List<number>, values: JavascriptIterable<number>, expected: number[]): void
                 {
-                    runner.test(`with ${andList([list, values].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, values])}`, (test: Test) =>
                     {
                         const addResult: List<number> = list.addAll(values);
                         test.assertSame(addResult, list);
@@ -212,11 +212,11 @@ export function test(runner: TestRunner): void
                 addAllTest(List.create([1, 2]), List.create([3, 4]), [1, 2, 3, 4]);
             });
 
-            suite("insert(number,T)", () =>
+            runner.testFunction("insert(number,T)", () =>
             {
                 function insertErrorTest(list: List<number>, index: number, value: number, expected: Error): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         const backupList: List<number> = List.create(list);
                         test.assertThrows(() => list.insert(index, value), expected);
@@ -247,7 +247,7 @@ export function test(runner: TestRunner): void
 
                 function insertTest(list: List<number>, index: number, value: number, expected: number[]): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         const insertResult: List<number> = list.insert(index, value);
                         test.assertSame(insertResult, list);
@@ -263,11 +263,11 @@ export function test(runner: TestRunner): void
                 insertTest(List.create([1, 2]), 2, 3, [1, 2, 3]);
             });
 
-            suite("insertAll(number,T)", () =>
+            runner.testFunction("insertAll(number,T)", () =>
             {
                 function insertAllErrorTest(list: List<number>, index: number, values: number[] | Iterable<number>, expected: Error): void
                 {
-                    runner.test(`with ${andList([list, index, values].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, values])}`, (test: Test) =>
                     {
                         const backupList: List<number> = List.create(list);
                         test.assertThrows(() => list.insertAll(index, values), expected);
@@ -298,7 +298,7 @@ export function test(runner: TestRunner): void
 
                 function insertAllTest(list: List<number>, index: number, values: JavascriptIterable<number>, expected: number[]): void
                 {
-                    runner.test(`with ${andList([list, index, values].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, values])}`, (test: Test) =>
                     {
                         const insertResult: List<number> = list.insertAll(index, values);
                         test.assertSame(insertResult, list);

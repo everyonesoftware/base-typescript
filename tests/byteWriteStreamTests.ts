@@ -1,4 +1,4 @@
-import { ByteWriteStream, PreConditionError, Test, TestRunner, andList } from "../sources";
+import { ByteWriteStream, PreConditionError, Test, TestRunner } from "../sources";
 
 export function byteWriteStreamTests(runner: TestRunner, creator: () => ByteWriteStream): void
 {
@@ -38,7 +38,7 @@ export function byteWriteStreamTests(runner: TestRunner, creator: () => ByteWrit
         {
             function writeBytesErrorTest(values: number[] | Uint8Array, startIndex: number | undefined, length: number | undefined, expected: Error): void
             {
-                runner.test(`with ${andList([values, startIndex, length].map(runner.toString))}`, (test: Test) =>
+                runner.test(`with ${runner.andList([values, startIndex, length])}`, (test: Test) =>
                 {
                     const writeStream: ByteWriteStream = creator();
                     test.assertThrows(() => writeStream.writeBytes(values, startIndex, length).await(), expected);

@@ -1,23 +1,24 @@
-import * as assert from "assert";
+import { PreConditionError, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { PreConditionError } from "../sources";
-
-suite("preConditionError.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite(PreConditionError.name, () =>
+    runner.testFile("preConditionError.ts", () =>
     {
-        suite("constructor(string|undefined)", () =>
+        runner.testType(PreConditionError.name, () =>
         {
-            test("with no arguments", () =>
+            runner.testFunction("constructor(string|undefined)", () =>
             {
-                const error: PreConditionError = new PreConditionError();
-                assert.notStrictEqual(error, undefined);
-                assert.notStrictEqual(error, null);
-                assert.strictEqual(error.name, "Error");
-                assert.strictEqual(error.message, "");
-                assert.notStrictEqual(error.stack, undefined);
-                assert.notStrictEqual(error.stack, null);
+                runner.test("with no arguments", (test: Test) =>
+                {
+                    const error: PreConditionError = new PreConditionError();
+                    test.assertNotUndefinedAndNotNull(error);
+                    test.assertEqual(error.name, "Error");
+                    test.assertEqual(error.message, "");
+                    test.assertNotUndefinedAndNotNull(error.stack);
+                });
             });
         });
     });
-});
+}
+test(MochaTestRunner.create());

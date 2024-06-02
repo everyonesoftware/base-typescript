@@ -1,16 +1,18 @@
-import * as assert from "assert";
+import { Pre, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { Pre } from "../sources";
-
-suite("pre.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite(Pre.name, () =>
+    runner.testFile("pre.ts", () =>
     {
-        test("Condition is not undefined and not null", () =>
+        runner.testType(Pre.name, () =>
         {
-            assert.notStrictEqual(Pre.condition, undefined);
-            assert.notStrictEqual(Pre.condition, null);
-            Pre.condition.assertTrue(true);
+            runner.test("Condition is not undefined and not null", (test: Test) =>
+            {
+                test.assertNotUndefinedAndNotNull(Pre.condition);
+                Pre.condition.assertTrue(true);
+            });
         });
     });
-});
+}
+test(MochaTestRunner.create());

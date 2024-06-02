@@ -1,4 +1,4 @@
-import { BasicJsonToken, JsonTokenType, PreConditionError, Test, TestRunner, andList } from "../sources";
+import { BasicJsonToken, JsonTokenType, PreConditionError, Test, TestRunner } from "../sources";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 function test(runner: TestRunner): void
@@ -11,7 +11,7 @@ function test(runner: TestRunner): void
             {
                 function createErrorTest(tokenType: JsonTokenType, text: string, expected: Error): void
                 {
-                    runner.test(`with ${andList([tokenType, text].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([tokenType, text])}`, (test: Test) =>
                     {
                         test.assertThrows(() => BasicJsonToken.create(tokenType, text), expected);
                     });
@@ -60,7 +60,7 @@ function test(runner: TestRunner): void
 
                 function createTest(tokenType: JsonTokenType, text: string): void
                 {
-                    runner.test(`with ${andList([tokenType, text].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([tokenType, text])}`, (test: Test) =>
                     {
                         const token: BasicJsonToken = BasicJsonToken.create(tokenType, text);
                         test.assertSame(token.getTokenType(), tokenType);

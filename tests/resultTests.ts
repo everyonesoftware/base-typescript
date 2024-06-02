@@ -1,958 +1,966 @@
-import * as assert from "assert";
+import { PreConditionError, Result, Test, TestRunner } from "../sources";
+import { MochaTestRunner } from "./mochaTestRunner";
 
-import { PreConditionError, Result } from "../sources";
-
-suite("result.ts", () =>
+export function test(runner: TestRunner): void
 {
-    suite("Result<T>", () =>
+    runner.testFile("result.ts", () =>
     {
-        suite("create((() => T))", () =>
+        runner.testType("Result<T>", () =>
         {
-            test("with undefined", () =>
+            runner.testFunction("create((() => T))", () =>
             {
-                assert.throws(() => Result.create(undefined!),
-                    new PreConditionError(
-                        "Expression: createFunction",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined"));
-            });
-
-            test("with null", () =>
-            {
-                assert.throws(() => Result.create(null!),
-                    new PreConditionError(
-                        "Expression: createFunction",
-                        "Expected: not undefined and not null",
-                        "Actual: null"));
-            });
-
-            test("with function that doesn't return a value", () =>
-            {
-                const result: Result<void> = Result.create(() => {});
-                assert.strictEqual(result.await(), undefined);
-            });
-
-            test("with function that returns undefined", () =>
-            {
-                const result: Result<undefined> = Result.create(() => undefined);
-                assert.strictEqual(result.await(), undefined);
-            });
-
-            test("with function that returns null", () =>
-            {
-                const result: Result<null> = Result.create(() => null);
-                assert.strictEqual(result.await(), null);
-            });
-
-            test("with function that returns a string", () =>
-            {
-                const result: Result<string> = Result.create(() => "there");
-                assert.strictEqual(result.await(), "there");
-            });
-
-            test("with function that throws an Error", () =>
-            {
-                const result: Result<never> = Result.create(() => { throw new Error("oops!"); });
-                assert.throws(() => result.await(), new Error("oops!"));
-            });
-
-            test("with function that returns an Error", () =>
-            {
-                const result: Result<Error> = Result.create(() => { return new Error("oops!"); });
-                assert.deepStrictEqual(result.await(), new Error("oops!"));
-            });
-        });
-
-        suite("value(value: T)", () =>
-        {
-            test("with undefined", () =>
-            {
-                const result: Result<undefined> = Result.value(undefined);
-                assert.strictEqual(result.await(), undefined);
-            });
-
-            test("with null", () =>
-            {
-                const result: Result<null> = Result.value(null);
-                assert.strictEqual(result.await(), null);
-            });
-
-            test("with string", () =>
-            {
-                const value: string = "hello";
-                const result: Result<string> = Result.value(value);
-                assert.strictEqual(result.await(), value);
-            });
-
-            test("with number", () =>
-            {
-                const value: number = 51234;
-                const result: Result<number> = Result.value(value);
-                assert.strictEqual(result.await(), value);
-            });
-
-            test("with function that doesn't return a value", () =>
-            {
-                const result: Result<() => void> = Result.value(() => {});
-                assert.strictEqual(result.await()(), undefined);
-            });
-
-            test("with function that returns undefined", () =>
-            {
-                const result: Result<() => undefined> = Result.value(() => undefined);
-                assert.strictEqual(result.await()(), undefined);
-            });
-
-            test("with function that returns null", () =>
-            {
-                const result: Result<() => null> = Result.value(() => null);
-                assert.strictEqual(result.await()(), null);
-            });
-
-            test("with function that returns a string", () =>
-            {
-                const result: Result<() => string> = Result.value(() => "there");
-                assert.strictEqual(result.await()(), "there");
-            });
-
-            test("with function that throws an Error", () =>
-            {
-                const result: Result<() => Error> = Result.value(() => { throw new Error("oops!"); });
-                assert.throws(() => result.await()(),
-                    new Error("oops!"));
-            });
-        });
-
-        suite("error(unknown)", () =>
-        {
-            test("with undefined", () =>
-            {
-                assert.throws(
-                    () => Result.error(undefined),
-                    new PreConditionError(
-                        "Expression: error",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined",
-                    ));
-            });
-
-            test("with null", () =>
-            {
-                assert.throws(
-                    () => Result.error(null),
-                    new PreConditionError(
-                        "Expression: error",
-                        "Expected: not undefined and not null",
-                        "Actual: null",
-                    ));
-            });
-
-            test("with Error", () =>
-            {
-                const result: Result<number> = Result.error(new Error("Hello"));
-                assert.throws(() => result.await(), new Error("Hello"));
-            });
-        });
-
-        suite("then<U>((() => U) | ((T) => U))", () =>
-        {
-            test("with error parent", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                const thenResult: Result<string> = parentResult.then(() => "hello");
-                assert.throws(() => thenResult.await(), new Error("abc"));
-            });
-
-            test("with error parent and thenFunction with side-effects", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const thenResult: Result<string> = parentResult.then(() => { counter++; return "hello"; });
-                assert.strictEqual(0, counter);
-                assert.throws(() => thenResult.await(), new Error("abc"));
-                assert.strictEqual(0, counter);
-            });
-
-            test("with successful parent and successful thenFunction that ignores parentResult value", () =>
-            {
-                const parentResult: Result<number> = Result.value(1);
-                const thenResult: Result<string> = parentResult.then(() => "hello");
-                assert.strictEqual("hello", thenResult.await());
-            });
-
-            test("with successful parent and successful thenFunction that uses parentResult value", () =>
-            {
-                const parentResult: Result<number> = Result.value(1);
-                const thenResult: Result<string> = parentResult.then((argument: number) => (argument + 1).toString());
-                assert.strictEqual("2", thenResult.await());
-            });
-
-            test("with successful parent and successful thenFunction that uses parentResult value with side-effects", () =>
-            {
-                const parentResult: Result<number> = Result.value(1);
-                let counter: number = 0;
-                const thenResult: Result<string> = parentResult.then((argument: number) => { counter++; return (argument + 1).toString(); });
-                assert.strictEqual(1, counter);
-                assert.strictEqual("2", thenResult.await());
-                assert.strictEqual(1, counter);
-            });
-
-            test("with successful parent and thenFunction that throws", () =>
-            {
-                const parentResult: Result<number> = Result.value(10);
-                let counter: number = 0;
-                const thenResult: Result<string> = parentResult.then((argument: number) =>
+                runner.test("with undefined", (test: Test) =>
                 {
-                    counter++;
-                    throw new Error(`arg: ${argument}`);
+                    test.assertThrows(() => Result.create(undefined!),
+                        new PreConditionError(
+                            "Expression: createFunction",
+                            "Expected: not undefined and not null",
+                            "Actual: undefined"));
                 });
-                assert.strictEqual(counter, 1);
 
-                for (let i = 0; i < 3; i++)
+                runner.test("with null", (test: Test) =>
                 {
-                    assert.throws(() => thenResult.await(),
-                        new Error("arg: 10"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-        });
-
-        suite("onValue((() => void) | ((T) => void))", () =>
-        {
-            test("with error parent", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const onValueResult: Result<number> = parentResult.onValue(() => counter++);
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => onValueResult.await(), new Error("abc"));
-                    assert.strictEqual(counter, 0);
-                }
-            });
-
-            test("with successful parent and successful thenFunction that ignores parentResult value", () =>
-            {
-                const parentResult: Result<number> = Result.value(10);
-                let counter: number = 0;
-                const onValueResult: Result<number> = parentResult.onValue(() => counter++);
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.strictEqual(10, onValueResult.await());
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with successful parent and successful thenFunction that uses parentResult value", () =>
-            {
-                const parentResult: Result<number> = Result.value(2);
-                let counter: number = 0;
-                const onValueResult: Result<number> = parentResult.onValue((argument: number) => counter += argument);
-                assert.strictEqual(counter, 2);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.strictEqual(onValueResult.await(), 2);
-                    assert.strictEqual(counter, 2);
-                }
-            });
-
-            test("with successful parent and onValueFunction that throws", () =>
-            {
-                const parentResult: Result<number> = Result.value(2);
-                let counter: number = 0;
-                const onValueResult: Result<number> = parentResult.onValue((argument: number) =>
-                {
-                    counter += argument;
-                    throw new Error(`argument: ${argument}`);
+                    test.assertThrows(() => Result.create(null!),
+                        new PreConditionError(
+                            "Expression: createFunction",
+                            "Expected: not undefined and not null",
+                            "Actual: null"));
                 });
-                assert.strictEqual(counter, 2);
-                for (let i = 0; i < 3; i++)
+
+                runner.test("with function that doesn't return a value", (test: Test) =>
                 {
-                    assert.throws(() => onValueResult.await(),
-                        new Error("argument: 2"));
-                    assert.strictEqual(counter, 2);
-                }
-            });
-        });
+                    const result: Result<void> = Result.create(() => {});
+                    test.assertUndefined(result.await());
+                });
 
-        suite("catch<TError>(Type<TError>,(() => T) | ((TError) => T))", () =>
-        {
-            test("with undefined errorType", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                assert.throws(() => parentResult.catch(undefined!, () => 6),
-                    new PreConditionError(
-                        "Expression: errorType",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined"));
-            });
-
-            test("with null errorType", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                assert.throws(() => parentResult.catch(null!, () => 6),
-                    new PreConditionError(
-                        "Expression: errorType",
-                        "Expected: not undefined and not null",
-                        "Actual: null"));
-            });
-
-            test("with error parent", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                const catchResult: Result<number> = parentResult.catch(Error, () => 20);
-                assert.strictEqual(catchResult.await(), 20);
-            });
-
-            test("with error parent, no errorType, and no error parameter", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.catch(() => { counter++; return 21; });
-                assert.strictEqual(1, counter);
-                for (let i = 0; i < 3; i++)
+                runner.test("with function that returns undefined", (test: Test) =>
                 {
-                    assert.strictEqual(catchResult.await(), 21);
-                    assert.strictEqual(1, counter);
-                }
+                    const result: Result<undefined> = Result.create(() => undefined);
+                    const awaitResult: undefined = result.await();
+                    test.assertUndefined(awaitResult);
+                });
+
+                runner.test("with function that returns null", (test: Test) =>
+                {
+                    const result: Result<null> = Result.create(() => null);
+                    const awaitResult: null = result.await();
+                    test.assertNull(awaitResult);
+                });
+
+                runner.test("with function that returns a string", (test: Test) =>
+                {
+                    const result: Result<string> = Result.create(() => "there");
+                    const awaitResult: string = result.await();
+                    test.assertEqual(awaitResult, "there");
+                });
+
+                runner.test("with function that throws an Error", (test: Test) =>
+                {
+                    const result: Result<never> = Result.create(() => { throw new Error("oops!"); });
+                    test.assertThrows(() => result.await(), new Error("oops!"));
+                });
+
+                runner.test("with function that returns an Error", (test: Test) =>
+                {
+                    const result: Result<Error> = Result.create(() => { return new Error("oops!"); });
+                    test.assertEqual(result.await(), new Error("oops!"));
+                });
             });
 
-            test("with error parent, no errorType, and unknown error parameter", () =>
+            runner.testFunction("value(value: T)", () =>
             {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.catch((error: unknown) =>
+                runner.test("with undefined", (test: Test) =>
                 {
-                    if (error instanceof Error)
+                    const result: Result<undefined> = Result.value(undefined);
+                    const awaitResult: undefined = result.await();
+                    test.assertUndefined(awaitResult);
+                });
+
+                runner.test("with null", (test: Test) =>
+                {
+                    const result: Result<null> = Result.value(null);
+                    const awaitResult: null = result.await();
+                    test.assertNull(awaitResult);
+                });
+
+                runner.test("with string", (test: Test) =>
+                {
+                    const value: string = "hello";
+                    const result: Result<string> = Result.value(value);
+                    test.assertSame(result.await(), value);
+                });
+
+                runner.test("with number", (test: Test) =>
+                {
+                    const value: number = 51234;
+                    const result: Result<number> = Result.value(value);
+                    test.assertSame(result.await(), value);
+                });
+
+                runner.test("with function that doesn't return a value", (test: Test) =>
+                {
+                    const result: Result<() => void> = Result.value(() => {});
+                    test.assertSame(result.await()(), undefined);
+                });
+
+                runner.test("with function that returns undefined", (test: Test) =>
+                {
+                    const result: Result<() => undefined> = Result.value(() => undefined);
+                    test.assertSame(result.await()(), undefined);
+                });
+
+                runner.test("with function that returns null", (test: Test) =>
+                {
+                    const result: Result<() => null> = Result.value(() => null);
+                    test.assertSame(result.await()(), null);
+                });
+
+                runner.test("with function that returns a string", (test: Test) =>
+                {
+                    const result: Result<() => string> = Result.value(() => "there");
+                    test.assertSame(result.await()(), "there");
+                });
+
+                runner.test("with function that throws an Error", (test: Test) =>
+                {
+                    const result: Result<() => Error> = Result.value(() => { throw new Error("oops!"); });
+                    test.assertThrows(() => result.await()(),
+                        new Error("oops!"));
+                });
+            });
+
+            runner.testFunction("error(unknown)", () =>
+            {
+                runner.test("with undefined", (test: Test) =>
+                {
+                    test.assertThrows(
+                        () => Result.error(undefined),
+                        new PreConditionError(
+                            "Expression: error",
+                            "Expected: not undefined and not null",
+                            "Actual: undefined",
+                        ));
+                });
+
+                runner.test("with null", (test: Test) =>
+                {
+                    test.assertThrows(
+                        () => Result.error(null),
+                        new PreConditionError(
+                            "Expression: error",
+                            "Expected: not undefined and not null",
+                            "Actual: null",
+                        ));
+                });
+
+                runner.test("with Error", (test: Test) =>
+                {
+                    const result: Result<number> = Result.error(new Error("Hello"));
+                    test.assertThrows(() => result.await(), new Error("Hello"));
+                });
+            });
+
+            runner.testFunction("then<U>((() => U) | ((T) => U))", () =>
+            {
+                runner.test("with error parent", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    const thenResult: Result<string> = parentResult.then(() => "hello");
+                    test.assertThrows(() => thenResult.await(), new Error("abc"));
+                });
+
+                runner.test("with error parent and thenFunction with side-effects", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const thenResult: Result<string> = parentResult.then(() => { counter++; return "hello"; });
+                    test.assertEqual(0, counter);
+                    test.assertThrows(() => thenResult.await(), new Error("abc"));
+                    test.assertEqual(0, counter);
+                });
+
+                runner.test("with successful parent and successful thenFunction that ignores parentResult value", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(1);
+                    const thenResult: Result<string> = parentResult.then(() => "hello");
+                    test.assertEqual("hello", thenResult.await());
+                });
+
+                runner.test("with successful parent and successful thenFunction that uses parentResult value", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(1);
+                    const thenResult: Result<string> = parentResult.then((argument: number) => (argument + 1).toString());
+                    test.assertEqual("2", thenResult.await());
+                });
+
+                runner.test("with successful parent and successful thenFunction that uses parentResult value with side-effects", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(1);
+                    let counter: number = 0;
+                    const thenResult: Result<string> = parentResult.then((argument: number) => { counter++; return (argument + 1).toString(); });
+                    test.assertEqual(1, counter);
+                    test.assertEqual("2", thenResult.await());
+                    test.assertEqual(1, counter);
+                });
+
+                runner.test("with successful parent and thenFunction that throws", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(10);
+                    let counter: number = 0;
+                    const thenResult: Result<string> = parentResult.then((argument: number) =>
                     {
-                        counter += error.message.length;
-                    }
-                    else
+                        counter++;
+                        throw new Error(`arg: ${argument}`);
+                    });
+                    test.assertEqual(counter, 1);
+
+                    for (let i = 0; i < 3; i++)
                     {
-                        counter -= 1;
+                        test.assertThrows(() => thenResult.await(),
+                            new Error("arg: 10"));
+                        test.assertEqual(counter, 1);
                     }
-                    return 21;
                 });
-                assert.strictEqual(3, counter);
-                for (let i = 0; i < 3; i++)
+            });
+
+            runner.testFunction("onValue((() => void) | ((T) => void))", () =>
+            {
+                runner.test("with error parent", (test: Test) =>
                 {
-                    assert.strictEqual(catchResult.await(), 21);
-                    assert.strictEqual(3, counter);
-                }
-            });
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const onValueResult: Result<number> = parentResult.onValue(() => counter++);
+                    test.assertEqual(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => onValueResult.await(), new Error("abc"));
+                        test.assertEqual(counter, 0);
+                    }
+                });
 
-            test("with error parent and catchFunction with side-effects", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.catch(Error, () => { counter++; return 21; });
-                assert.strictEqual(1, counter);
-                for (let i = 0; i < 3; i++)
+                runner.test("with successful parent and successful thenFunction that ignores parentResult value", (test: Test) =>
                 {
-                    assert.strictEqual(catchResult.await(), 21);
-                    assert.strictEqual(1, counter);
-                }
-            });
+                    const parentResult: Result<number> = Result.value(10);
+                    let counter: number = 0;
+                    const onValueResult: Result<number> = parentResult.onValue(() => counter++);
+                    test.assertEqual(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertEqual(10, onValueResult.await());
+                        test.assertEqual(counter, 1);
+                    }
+                });
 
-            test("with errorType that is a super-type of the actual error without error parameter", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
-                const catchResult: Result<number> = parentResult.catch(Error, () => 5);
-                assert.strictEqual(catchResult.await(), 5);
-            });
-
-            test("with errorType that is a super-type of the actual error with error parameter", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
-                const catchResult: Result<number> = parentResult.catch(Error, (error: Error) => error.message.length);
-                assert.strictEqual(catchResult.await(), 3);
-            });
-
-            test("with errorType that is a sub-type of the actual error", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                const catchResult: Result<number> = parentResult.catch(PreConditionError, () => 20);
-                assert.throws(() => catchResult.await(),
-                    new Error("abc"));
-            });
-
-            test("with errorType that is unrelated to the actual error", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("def"));
-                const catchResult: Result<number> = parentResult.catch(RangeError, () => 20);
-                assert.throws(() => catchResult.await(),
-                    new PreConditionError("def"));
-            });
-
-            test("with catchFunction that throws", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("def"));
-                const catchResult: Result<number> = parentResult.catch(Error, () => { throw new TypeError("abc"); });
-                assert.throws(() => catchResult.await(),
-                    new TypeError("abc"));
-            });
-
-            test("with successful parent", () =>
-            {
-                const parentResult: Result<number> = Result.value(1);
-                const catchResult: Result<number> = parentResult.catch(Error, () => 2);
-                assert.strictEqual(catchResult.await(), 1);
-            });
-        });
-
-        suite("onError<TError>(Type<TError>,(() => void) | ((TError) => void))", () =>
-        {
-            test("with undefined errorType", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                assert.throws(() => parentResult.onError(undefined!, () => 6),
-                    new PreConditionError(
-                        "Expression: errorType",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined"));
-            });
-
-            test("with null errorType", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                assert.throws(() => parentResult.onError(null!, () => 6),
-                    new PreConditionError(
-                        "Expression: errorType",
-                        "Expected: not undefined and not null",
-                        "Actual: null"));
-            });
-
-            test("with error parent, no errorType, and no error parameter", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.onError(() => { counter++; });
-                assert.strictEqual(1, counter);
-                for (let i = 0; i < 3; i++)
+                runner.test("with successful parent and successful thenFunction that uses parentResult value", (test: Test) =>
                 {
-                    assert.throws(() => catchResult.await(),
+                    const parentResult: Result<number> = Result.value(2);
+                    let counter: number = 0;
+                    const onValueResult: Result<number> = parentResult.onValue((argument: number) => counter += argument);
+                    test.assertEqual(counter, 2);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(onValueResult.await(), 2);
+                        test.assertSame(counter, 2);
+                    }
+                });
+
+                runner.test("with successful parent and onValueFunction that throws", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(2);
+                    let counter: number = 0;
+                    const onValueResult: Result<number> = parentResult.onValue((argument: number) =>
+                    {
+                        counter += argument;
+                        throw new Error(`argument: ${argument}`);
+                    });
+                    test.assertSame(counter, 2);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => onValueResult.await(),
+                            new Error("argument: 2"));
+                        test.assertSame(counter, 2);
+                    }
+                });
+            });
+
+            runner.testFunction("catch<TError>(Type<TError>,(() => T) | ((TError) => T))", () =>
+            {
+                runner.test("with undefined errorType", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(5);
+                    test.assertThrows(() => parentResult.catch(undefined!, () => 6),
+                        new PreConditionError(
+                            "Expression: errorType",
+                            "Expected: not undefined and not null",
+                            "Actual: undefined"));
+                });
+
+                runner.test("with null errorType", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(5);
+                    test.assertThrows(() => parentResult.catch(null!, () => 6),
+                        new PreConditionError(
+                            "Expression: errorType",
+                            "Expected: not undefined and not null",
+                            "Actual: null"));
+                });
+
+                runner.test("with error parent", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    const catchResult: Result<number> = parentResult.catch(Error, () => 20);
+                    test.assertSame(catchResult.await(), 20);
+                });
+
+                runner.test("with error parent, no errorType, and no error parameter", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.catch(() => { counter++; return 21; });
+                    test.assertSame(1, counter);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(catchResult.await(), 21);
+                        test.assertSame(1, counter);
+                    }
+                });
+
+                runner.test("with error parent, no errorType, and unknown error parameter", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.catch((error: unknown) =>
+                    {
+                        if (error instanceof Error)
+                        {
+                            counter += error.message.length;
+                        }
+                        else
+                        {
+                            counter -= 1;
+                        }
+                        return 21;
+                    });
+                    test.assertSame(3, counter);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(catchResult.await(), 21);
+                        test.assertSame(3, counter);
+                    }
+                });
+
+                runner.test("with error parent and catchFunction with side-effects", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.catch(Error, () => { counter++; return 21; });
+                    test.assertSame(1, counter);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(catchResult.await(), 21);
+                        test.assertSame(1, counter);
+                    }
+                });
+
+                runner.test("with errorType that is a super-type of the actual error without error parameter", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
+                    const catchResult: Result<number> = parentResult.catch(Error, () => 5);
+                    test.assertSame(catchResult.await(), 5);
+                });
+
+                runner.test("with errorType that is a super-type of the actual error with error parameter", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
+                    const catchResult: Result<number> = parentResult.catch(Error, (error: Error) => error.message.length);
+                    test.assertSame(catchResult.await(), 3);
+                });
+
+                runner.test("with errorType that is a sub-type of the actual error", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    const catchResult: Result<number> = parentResult.catch(PreConditionError, () => 20);
+                    test.assertThrows(() => catchResult.await(),
                         new Error("abc"));
-                    assert.strictEqual(1, counter);
-                }
-            });
-
-            test("with error parent, no errorType, and unknown error parameter", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.onError((error: unknown) =>
-                {
-                    if (error instanceof Error)
-                    {
-                        counter += error.message.length;
-                    }
-                    else
-                    {
-                        counter -= 1;
-                    }
-                    return 21;
                 });
-                assert.strictEqual(3, counter);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => catchResult.await(),
-                        new Error("abc"));
-                    assert.strictEqual(3, counter);
-                }
-            });
 
-            test("with errorType that is a super-type of the actual error without error parameter", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.onError(Error, () => counter++);
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
+                runner.test("with errorType that is unrelated to the actual error", (test: Test) =>
                 {
-                    assert.throws(() => catchResult.await(),
-                        new PreConditionError("abc"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with errorType that is a super-type of the actual error with error parameter", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.onError(Error, (error: Error) => counter += error.message.length);
-                assert.strictEqual(counter, 3);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => catchResult.await(), 
-                        new PreConditionError("abc"));
-                    assert.strictEqual(counter, 3);
-                }
-            });
-
-            test("with errorType that is a sub-type of the actual error", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.onError(PreConditionError, () => counter++);
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => catchResult.await(),
-                        new Error("abc"));
-                    assert.strictEqual(counter, 0);
-                }
-            });
-
-            test("with errorType that is unrelated to the actual error", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("def"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.onError(RangeError, () => counter++);
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => catchResult.await(),
+                    const parentResult: Result<number> = Result.error(new PreConditionError("def"));
+                    const catchResult: Result<number> = parentResult.catch(RangeError, () => 20);
+                    test.assertThrows(() => catchResult.await(),
                         new PreConditionError("def"));
-                    assert.strictEqual(counter, 0);
-                }
-            });
-
-            test("with onErrorFunction that throws", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("def"));
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.onError(Error, () => { counter++; throw new Error("abc"); });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => catchResult.await(),
-                        new Error("abc"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with successful parent", () =>
-            {
-                const parentResult: Result<number> = Result.value(1);
-                let counter: number = 0;
-                const catchResult: Result<number> = parentResult.onError(Error, () => counter++);
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.strictEqual(catchResult.await(), 1);
-                    assert.strictEqual(counter, 0);
-                }
-            });
-        });
-
-        suite("convertError<TError>((() => unknown))", () =>
-        {
-            test("with undefined convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                assert.throws(() => parentResult.convertError(undefined!),
-                    new PreConditionError(
-                        "Expression: convertErrorFunction",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined"));
-            });
-
-            test("with null convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                assert.throws(() => parentResult.convertError(null!),
-                    new PreConditionError(
-                        "Expression: convertErrorFunction",
-                        "Expected: not undefined and not null",
-                        "Actual: null"));
-            });
-
-            test("with successful parent", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(() =>
-                {
-                    counter++;
-                    return new Error("abc");
                 });
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.strictEqual(convertErrorResult.await(), 5);
-                    assert.strictEqual(counter, 0);
-                }
-            });
 
-            test("with error parent and non-throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(() =>
+                runner.test("with catchFunction that throws", (test: Test) =>
                 {
-                    counter++;
-                    return new Error("def");
-                });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with error parent and throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(() =>
-                {
-                    counter++;
-                    throw new Error("def");
-                });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-        });
-
-        suite("convertError<TError>(((unknown) => unknown))", () =>
-        {
-            test("with undefined convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                assert.throws(() => parentResult.convertError(undefined!),
-                    new PreConditionError(
-                        "Expression: convertErrorFunction",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined"));
-            });
-
-            test("with null convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                assert.throws(() => parentResult.convertError(null!),
-                    new PreConditionError(
-                        "Expression: convertErrorFunction",
-                        "Expected: not undefined and not null",
-                        "Actual: null"));
-            });
-
-            test("with successful parent", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError((error: unknown) =>
-                {
-                    counter++;
-                    return new Error(`${error} - abc`);
-                });
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.strictEqual(convertErrorResult.await(), 5);
-                    assert.strictEqual(counter, 0);
-                }
-            });
-
-            test("with error parent and non-throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError((error: unknown) =>
-                {
-                    counter++;
-                    return new Error(`${error} - def`);
-                });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("Error: abc - def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with error parent and throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError((error: unknown) =>
-                {
-                    counter++;
-                    throw new Error(`${error} - def`);
-                });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("Error: abc - def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-        });
-
-        suite("convertError<TError>(Type<TError>,(() => unknown))", () =>
-        {
-            test("with successful parent", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
-                {
-                    counter++;
-                    return new Error("abc");
-                });
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.strictEqual(convertErrorResult.await(), 5);
-                    assert.strictEqual(counter, 0);
-                }
-            });
-
-            test("with error parent, exact error match, and non-throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
-                {
-                    counter++;
-                    return new Error("def");
-                });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with error parent, super error match, and non-throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
-                {
-                    counter++;
-                    return new Error("def");
-                });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with error parent, no error match, and non-throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(TypeError, () =>
-                {
-                    counter++;
-                    return new Error("def");
-                });
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new PreConditionError("abc"));
-                    assert.strictEqual(counter, 0);
-                }
-            });
-
-            test("with error parent, exact error match, and throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
-                {
-                    counter++;
-                    throw new Error("def");
-                });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with error parent, super error match, and throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new TypeError("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
-                {
-                    counter++;
-                    throw new Error("def");
-                });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
-
-            test("with error parent, no error match, and throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new TypeError("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(PreConditionError, () =>
-                {
-                    counter++;
-                    throw new Error("def");
-                });
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
+                    const parentResult: Result<number> = Result.error(new PreConditionError("def"));
+                    const catchResult: Result<number> = parentResult.catch(Error, () => { throw new TypeError("abc"); });
+                    test.assertThrows(() => catchResult.await(),
                         new TypeError("abc"));
-                    assert.strictEqual(counter, 0);
-                }
-            });
-        });
-
-        suite("convertError<TError>(Type<TError>,((TError) => unknown))", () =>
-        {
-            test("with successful parent", () =>
-            {
-                const parentResult: Result<number> = Result.value(5);
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
-                {
-                    counter++;
-                    return new Error(`${error} - abc`);
                 });
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
+
+                runner.test("with successful parent", (test: Test) =>
                 {
-                    assert.strictEqual(convertErrorResult.await(), 5);
-                    assert.strictEqual(counter, 0);
-                }
+                    const parentResult: Result<number> = Result.value(1);
+                    const catchResult: Result<number> = parentResult.catch(Error, () => 2);
+                    test.assertSame(catchResult.await(), 1);
+                });
             });
 
-            test("with error parent, exact error match, and non-throwing convertErrorFunction", () =>
+            runner.testFunction("onError<TError>(Type<TError>,(() => void) | ((TError) => void))", () =>
             {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                runner.test("with undefined errorType", (test: Test) =>
                 {
-                    counter++;
-                    return new Error(`${error} - def`);
+                    const parentResult: Result<number> = Result.value(5);
+                    test.assertThrows(() => parentResult.onError(undefined!, () => 6),
+                        new PreConditionError(
+                            "Expression: errorType",
+                            "Expected: not undefined and not null",
+                            "Actual: undefined"));
                 });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
+
+                runner.test("with null errorType", (test: Test) =>
                 {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("Error: abc - def"));
-                    assert.strictEqual(counter, 1);
-                }
+                    const parentResult: Result<number> = Result.value(5);
+                    test.assertThrows(() => parentResult.onError(null!, () => 6),
+                        new PreConditionError(
+                            "Expression: errorType",
+                            "Expected: not undefined and not null",
+                            "Actual: null"));
+                });
+
+                runner.test("with error parent, no errorType, and no error parameter", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.onError(() => { counter++; });
+                    test.assertSame(1, counter);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => catchResult.await(),
+                            new Error("abc"));
+                        test.assertSame(1, counter);
+                    }
+                });
+
+                runner.test("with error parent, no errorType, and unknown error parameter", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.onError((error: unknown) =>
+                    {
+                        if (error instanceof Error)
+                        {
+                            counter += error.message.length;
+                        }
+                        else
+                        {
+                            counter -= 1;
+                        }
+                        return 21;
+                    });
+                    test.assertSame(3, counter);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => catchResult.await(),
+                            new Error("abc"));
+                        test.assertSame(3, counter);
+                    }
+                });
+
+                runner.test("with errorType that is a super-type of the actual error without error parameter", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.onError(Error, () => counter++);
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => catchResult.await(),
+                            new PreConditionError("abc"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with errorType that is a super-type of the actual error with error parameter", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.onError(Error, (error: Error) => counter += error.message.length);
+                    test.assertSame(counter, 3);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => catchResult.await(), 
+                            new PreConditionError("abc"));
+                        test.assertSame(counter, 3);
+                    }
+                });
+
+                runner.test("with errorType that is a sub-type of the actual error", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.onError(PreConditionError, () => counter++);
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => catchResult.await(),
+                            new Error("abc"));
+                        test.assertSame(counter, 0);
+                    }
+                });
+
+                runner.test("with errorType that is unrelated to the actual error", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("def"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.onError(RangeError, () => counter++);
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => catchResult.await(),
+                            new PreConditionError("def"));
+                        test.assertSame(counter, 0);
+                    }
+                });
+
+                runner.test("with onErrorFunction that throws", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("def"));
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.onError(Error, () => { counter++; throw new Error("abc"); });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => catchResult.await(),
+                            new Error("abc"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with successful parent", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(1);
+                    let counter: number = 0;
+                    const catchResult: Result<number> = parentResult.onError(Error, () => counter++);
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(catchResult.await(), 1);
+                        test.assertSame(counter, 0);
+                    }
+                });
             });
 
-            test("with error parent, super error match, and non-throwing convertErrorFunction", () =>
+            runner.testFunction("convertError<TError>((() => unknown))", () =>
             {
-                const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                runner.test("with undefined convertErrorFunction", (test: Test) =>
                 {
-                    counter++;
-                    return new Error(`${error} - def`);
+                    const parentResult: Result<number> = Result.value(5);
+                    test.assertThrows(() => parentResult.convertError(undefined!),
+                        new PreConditionError(
+                            "Expression: convertErrorFunction",
+                            "Expected: not undefined and not null",
+                            "Actual: undefined"));
                 });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
+
+                runner.test("with null convertErrorFunction", (test: Test) =>
                 {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("Error: abc - def"));
-                    assert.strictEqual(counter, 1);
-                }
+                    const parentResult: Result<number> = Result.value(5);
+                    test.assertThrows(() => parentResult.convertError(null!),
+                        new PreConditionError(
+                            "Expression: convertErrorFunction",
+                            "Expected: not undefined and not null",
+                            "Actual: null"));
+                });
+
+                runner.test("with successful parent", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(5);
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(() =>
+                    {
+                        counter++;
+                        return new Error("abc");
+                    });
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(convertErrorResult.await(), 5);
+                        test.assertSame(counter, 0);
+                    }
+                });
+
+                runner.test("with error parent and non-throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(() =>
+                    {
+                        counter++;
+                        return new Error("def");
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent and throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(() =>
+                    {
+                        counter++;
+                        throw new Error("def");
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
             });
 
-            test("with error parent, no error match, and non-throwing convertErrorFunction", () =>
+            runner.testFunction("convertError<TError>(((unknown) => unknown))", () =>
             {
-                const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(TypeError, (error: TypeError) =>
+                runner.test("with undefined convertErrorFunction", (test: Test) =>
                 {
-                    counter++;
-                    return new Error(`${error} - def`);
+                    const parentResult: Result<number> = Result.value(5);
+                    test.assertThrows(() => parentResult.convertError(undefined!),
+                        new PreConditionError(
+                            "Expression: convertErrorFunction",
+                            "Expected: not undefined and not null",
+                            "Actual: undefined"));
                 });
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
+
+                runner.test("with null convertErrorFunction", (test: Test) =>
                 {
-                    assert.throws(() => convertErrorResult.await(),
-                        new PreConditionError("abc"));
-                    assert.strictEqual(counter, 0);
-                }
+                    const parentResult: Result<number> = Result.value(5);
+                    test.assertThrows(() => parentResult.convertError(null!),
+                        new PreConditionError(
+                            "Expression: convertErrorFunction",
+                            "Expected: not undefined and not null",
+                            "Actual: null"));
+                });
+
+                runner.test("with successful parent", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.value(5);
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError((error: unknown) =>
+                    {
+                        counter++;
+                        return new Error(`${error} - abc`);
+                    });
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(convertErrorResult.await(), 5);
+                        test.assertSame(counter, 0);
+                    }
+                });
+
+                runner.test("with error parent and non-throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError((error: unknown) =>
+                    {
+                        counter++;
+                        return new Error(`${error} - def`);
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("Error: abc - def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent and throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError((error: unknown) =>
+                    {
+                        counter++;
+                        throw new Error(`${error} - def`);
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("Error: abc - def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
             });
 
-            test("with error parent, exact error match, and throwing convertErrorFunction", () =>
+            runner.testFunction("convertError<TError>(Type<TError>,(() => unknown))", () =>
             {
-                const parentResult: Result<number> = Result.error(new Error("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                runner.test("with successful parent", (test: Test) =>
                 {
-                    counter++;
-                    throw new Error(`${error} - def`);
+                    const parentResult: Result<number> = Result.value(5);
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
+                    {
+                        counter++;
+                        return new Error("abc");
+                    });
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(convertErrorResult.await(), 5);
+                        test.assertSame(counter, 0);
+                    }
                 });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
+
+                runner.test("with error parent, exact error match, and non-throwing convertErrorFunction", (test: Test) =>
                 {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("Error: abc - def"));
-                    assert.strictEqual(counter, 1);
-                }
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
+                    {
+                        counter++;
+                        return new Error("def");
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent, super error match, and non-throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
+                    {
+                        counter++;
+                        return new Error("def");
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent, no error match, and non-throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(TypeError, () =>
+                    {
+                        counter++;
+                        return new Error("def");
+                    });
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new PreConditionError("abc"));
+                        test.assertSame(counter, 0);
+                    }
+                });
+
+                runner.test("with error parent, exact error match, and throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
+                    {
+                        counter++;
+                        throw new Error("def");
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent, super error match, and throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new TypeError("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, () =>
+                    {
+                        counter++;
+                        throw new Error("def");
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent, no error match, and throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new TypeError("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(PreConditionError, () =>
+                    {
+                        counter++;
+                        throw new Error("def");
+                    });
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new TypeError("abc"));
+                        test.assertSame(counter, 0);
+                    }
+                });
             });
 
-            test("with error parent, super error match, and throwing convertErrorFunction", () =>
+            runner.testFunction("convertError<TError>(Type<TError>,((TError) => unknown))", () =>
             {
-                const parentResult: Result<number> = Result.error(new TypeError("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                runner.test("with successful parent", (test: Test) =>
                 {
-                    counter++;
-                    throw new Error(`${error} - def`);
+                    const parentResult: Result<number> = Result.value(5);
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                    {
+                        counter++;
+                        return new Error(`${error} - abc`);
+                    });
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertSame(convertErrorResult.await(), 5);
+                        test.assertSame(counter, 0);
+                    }
                 });
-                assert.strictEqual(counter, 1);
-                for (let i = 0; i < 3; i++)
-                {
-                    assert.throws(() => convertErrorResult.await(),
-                        new Error("TypeError: abc - def"));
-                    assert.strictEqual(counter, 1);
-                }
-            });
 
-            test("with error parent, no error match, and throwing convertErrorFunction", () =>
-            {
-                const parentResult: Result<number> = Result.error(new TypeError("abc"));
-                let counter: number = 0;
-                const convertErrorResult: Result<number> = parentResult.convertError(PreConditionError, (error: PreConditionError) =>
+                runner.test("with error parent, exact error match, and non-throwing convertErrorFunction", (test: Test) =>
                 {
-                    counter++;
-                    throw new Error(`${error} - def`);
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                    {
+                        counter++;
+                        return new Error(`${error} - def`);
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("Error: abc - def"));
+                        test.assertSame(counter, 1);
+                    }
                 });
-                assert.strictEqual(counter, 0);
-                for (let i = 0; i < 3; i++)
+
+                runner.test("with error parent, super error match, and non-throwing convertErrorFunction", (test: Test) =>
                 {
-                    assert.throws(() => convertErrorResult.await(),
-                        new TypeError("abc"));
-                    assert.strictEqual(counter, 0);
-                }
+                    const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                    {
+                        counter++;
+                        return new Error(`${error} - def`);
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("Error: abc - def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent, no error match, and non-throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new PreConditionError("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(TypeError, (error: TypeError) =>
+                    {
+                        counter++;
+                        return new Error(`${error} - def`);
+                    });
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new PreConditionError("abc"));
+                        test.assertSame(counter, 0);
+                    }
+                });
+
+                runner.test("with error parent, exact error match, and throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new Error("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                    {
+                        counter++;
+                        throw new Error(`${error} - def`);
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("Error: abc - def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent, super error match, and throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new TypeError("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(Error, (error: Error) =>
+                    {
+                        counter++;
+                        throw new Error(`${error} - def`);
+                    });
+                    test.assertSame(counter, 1);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new Error("TypeError: abc - def"));
+                        test.assertSame(counter, 1);
+                    }
+                });
+
+                runner.test("with error parent, no error match, and throwing convertErrorFunction", (test: Test) =>
+                {
+                    const parentResult: Result<number> = Result.error(new TypeError("abc"));
+                    let counter: number = 0;
+                    const convertErrorResult: Result<number> = parentResult.convertError(PreConditionError, (error: PreConditionError) =>
+                    {
+                        counter++;
+                        throw new Error(`${error} - def`);
+                    });
+                    test.assertSame(counter, 0);
+                    for (let i = 0; i < 3; i++)
+                    {
+                        test.assertThrows(() => convertErrorResult.await(),
+                            new TypeError("abc"));
+                        test.assertSame(counter, 0);
+                    }
+                });
             });
         });
     });
-});
+}
+test(MochaTestRunner.create());

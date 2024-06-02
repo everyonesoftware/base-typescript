@@ -1,4 +1,4 @@
-import { CharacterList, List, PreConditionError, Test, TestRunner, andList } from "../sources";
+import { CharacterList, List, PreConditionError, Test, TestRunner } from "../sources";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -54,7 +54,7 @@ export function test(runner: TestRunner): void
             {
                 function setErrorTest(list: CharacterList, index: number, value: string, expected: Error): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         test.assertThrows(() => list.set(index, value), expected);
                     });
@@ -91,7 +91,7 @@ export function test(runner: TestRunner): void
 
                 function setTest(list: CharacterList, index: number, value: string): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         const setResult: CharacterList = list.set(index, value);
                         test.assertEqual(setResult, list);
@@ -112,7 +112,7 @@ export function test(runner: TestRunner): void
             {
                 function getErrorTest(list: CharacterList, index: number, expected: Error): void
                 {
-                    runner.test(`with ${andList([list, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index])}`, (test: Test) =>
                     {
                         test.assertThrows(() => list.get(index), expected);
                     });
@@ -154,7 +154,7 @@ export function test(runner: TestRunner): void
             {
                 function insertErrorTest(list: CharacterList, index: number, value: string, expected: Error): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         test.assertThrows(() => list.insert(index, value), expected);
                     });
@@ -171,7 +171,7 @@ export function test(runner: TestRunner): void
 
                 function insertTest(list: CharacterList, index: number, value: string, expected: string[]): void
                 {
-                    runner.test(`with ${andList([list, index, value].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([list, index, value])}`, (test: Test) =>
                     {
                         const insertResult: CharacterList = list.insert(index, value);
                         test.assertEqual(list, insertResult);

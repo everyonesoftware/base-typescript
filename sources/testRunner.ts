@@ -1,3 +1,5 @@
+import { andList } from "./english";
+import { Iterable } from "./iterable";
 import { Pre } from "./pre";
 import { escapeAndQuote } from "./strings";
 import { Test } from "./test";
@@ -9,6 +11,26 @@ import { Type, getName, getParameterCount, isFunction, isString } from "./types"
  */
 export abstract class TestRunner
 {
+    /**
+     * Get a {@link string} that concatenates the {@link string} representation of each
+     * of the provided values into an "and-list".
+     * @param values The values to concatenate.
+     */
+    public andList(values: unknown[] | Iterable<unknown>): string
+    {
+        return TestRunner.andList(this, values);
+    }
+
+    /**
+     * Get a {@link string} that concatenates the {@link string} representation of each
+     * of the provided values into an "and-list".
+     * @param values The values to concatenate.
+     */
+    public static andList(runner: TestRunner, values: unknown[] | Iterable<unknown>): string
+    {
+        return andList(values.map(runner.toString));
+    }
+
     /**
      * Get the {@link string} representation of the provided value.
      * @param value The value to get the {@link string} representation of.

@@ -1,4 +1,4 @@
-import { Comparison, NumberComparer, Test, TestRunner, andList } from "../sources";
+import { Comparison, NumberComparer, Test, TestRunner } from "../sources";
 import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
@@ -11,7 +11,7 @@ export function test(runner: TestRunner): void
             {
                 function compareTest(left: number, right: number, expected: Comparison): void
                 {
-                    runner.test(`with ${andList([left, right].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([left, right])}`, (test: Test) =>
                     {
                         const comparer: NumberComparer = NumberComparer.create();
                         test.assertSame(comparer.compare(left, right), expected);
