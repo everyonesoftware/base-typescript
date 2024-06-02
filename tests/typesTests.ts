@@ -1,5 +1,5 @@
-import { Indexable, Iterable, List, MutableIndexable, Test, TestRunner, hasFunction, hasProperty, isArray, isBoolean, isFunction, isNumber, isObject, isObjectOrArrayOrNull as isObjectArrayOrNull, isString } from "../sources/";
-import { MochaTestRunner } from "./mochaTestRunner";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { Indexable, Iterable, List, MutableIndexable, hasFunction, hasProperty, isArray, isBoolean, isFunction, isNumber, isObject, isObjectOrArrayOrNull as isObjectArrayOrNull, isString } from "../sources/";
 
 export function test(runner: TestRunner): void
 {
@@ -257,4 +257,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());

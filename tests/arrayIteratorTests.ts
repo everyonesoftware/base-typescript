@@ -1,6 +1,6 @@
-import { join, ArrayIterator, PreConditionError, Test, TestRunner } from "../sources/";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { join, ArrayIterator, PreConditionError } from "../sources/";
 import { iteratorTests } from "./iteratorTests";
-import { MochaTestRunner } from "./mochaTestRunner";
 
 function test(runner: TestRunner): void
 {
@@ -265,4 +265,4 @@ function test(runner: TestRunner): void
     });
 }
 
-test(MochaTestRunner.create());
+test(TestRunner.create());

@@ -1,4 +1,5 @@
-import { CharacterWriteStream, PreConditionError, Test, TestRunner } from "../sources";
+import { TestRunner, Test } from "@everyonesoftware/test-typescript";
+import { CharacterWriteStream, PreConditionError } from "../sources";
 
 export function characterWriteStreamTests(runner: TestRunner, creator: () => CharacterWriteStream): void
 {

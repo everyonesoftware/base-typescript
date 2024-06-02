@@ -1,5 +1,5 @@
-import { JsonProperty, JsonSegment, PreConditionError, Test, TestRunner } from "../sources";
-import { MochaTestRunner } from "./mochaTestRunner";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { JsonProperty, JsonSegment, PreConditionError } from "../sources";
 
 export function test(runner: TestRunner): void
 {
@@ -75,4 +75,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());

@@ -1,4 +1,5 @@
-import { ByteWriteStream, PreConditionError, Test, TestRunner } from "../sources";
+import { TestRunner, Test } from "@everyonesoftware/test-typescript";
+import { ByteWriteStream, PreConditionError } from "../sources";
 
 export function byteWriteStreamTests(runner: TestRunner, creator: () => ByteWriteStream): void
 {

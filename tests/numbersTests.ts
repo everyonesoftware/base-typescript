@@ -1,5 +1,5 @@
-import { MissingValueParseError, StringIterator, Test, TestRunner, WrongValueParseError, join, readNumber } from "../sources";
-import { MochaTestRunner } from "./mochaTestRunner";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { MissingValueParseError, StringIterator, WrongValueParseError, join, readNumber } from "../sources";
 
 export function test(runner: TestRunner): void
 {
@@ -96,4 +96,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());

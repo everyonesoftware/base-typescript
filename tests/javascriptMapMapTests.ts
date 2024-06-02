@@ -1,6 +1,6 @@
-import { JavascriptMapMap, Test, TestRunner } from "../sources";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { JavascriptMapMap } from "../sources";
 import { mapTests } from "./mapTests";
-import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
 {
@@ -18,4 +18,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());

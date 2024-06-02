@@ -1,4 +1,5 @@
-import { Iterator, JavascriptIterator, JavascriptIteratorResult, MapIterator, PreConditionError, Test, TestRunner } from "../sources";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { Iterator, JavascriptIterator, JavascriptIteratorResult, MapIterator, PreConditionError } from "../sources";
 
 export function test(runner: TestRunner): void
 {
@@ -43,7 +44,7 @@ export function test(runner: TestRunner): void
         });
     });
 }
-
+test(TestRunner.create());
 
 export function iteratorTests<T>(runner: TestRunner, creator: () => Iterator<T>): void
 {

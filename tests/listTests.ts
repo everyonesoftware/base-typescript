@@ -1,5 +1,5 @@
-import { Iterable, JavascriptIterable, List, PreConditionError, Test, TestRunner } from "../sources/";
-import { MochaTestRunner } from "./mochaTestRunner";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { Iterable, JavascriptIterable, List, PreConditionError } from "../sources/";
 
 export function test(runner: TestRunner): void
 {
@@ -331,4 +331,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());

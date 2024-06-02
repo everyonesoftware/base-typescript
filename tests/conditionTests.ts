@@ -1,5 +1,5 @@
-import { join, Condition, PostConditionError, JavascriptIterable, PreConditionError, TestRunner, Test } from "../sources/";
-import { MochaTestRunner } from "./mochaTestRunner";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { join, Condition, PostConditionError, JavascriptIterable, PreConditionError } from "../sources/";
 
 export function test(runner: TestRunner): void
 {
@@ -898,4 +898,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());

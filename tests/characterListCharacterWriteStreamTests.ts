@@ -1,6 +1,6 @@
-import { CharacterListCharacterWriteStream, Test, TestRunner } from "../sources";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { CharacterListCharacterWriteStream } from "../sources";
 import { characterWriteStreamTests } from "./characterWriteStreamTests";
-import { MochaTestRunner } from "./mochaTestRunner";
 
 export function test(runner: TestRunner): void
 {
@@ -72,4 +72,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());
