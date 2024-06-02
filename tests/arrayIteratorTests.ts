@@ -1,6 +1,7 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { join, ArrayIterator, PreConditionError } from "../sources/";
 import { iteratorTests } from "./iteratorTests";
+import { createTestRunner } from "./tests";
 
 function test(runner: TestRunner): void
 {
@@ -265,4 +266,4 @@ function test(runner: TestRunner): void
     });
 }
 
-test(TestRunner.create());
+test(createTestRunner());

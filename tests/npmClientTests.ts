@@ -1,5 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { Iterator, HttpClient, JsonDocument, JsonObject, NotFoundError, NpmClient, NpmPackageDetails, PackageJson, Pre, PreConditionError, DependencyUpdate } from "../sources";
+import { createTestRunner, skipNetworkTests } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -39,13 +40,13 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());
 
 export function npmClientTests(runner: TestRunner, creator: (() => NpmClient)): void
 {
     Pre.condition.assertNotUndefinedAndNotNull(creator, "creator");
 
-    runner.testType(NpmClient.name, runner.skip(false), () =>
+    runner.testType(NpmClient.name, skipNetworkTests(runner), () =>
     {
         runner.testFunction("getPackageDetails(string)", () =>
         {

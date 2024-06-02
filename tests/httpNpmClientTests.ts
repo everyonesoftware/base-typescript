@@ -1,6 +1,7 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { HttpClient, HttpNpmClient, Pre, PreConditionError } from "../sources";
 import { npmClientTests } from "./npmClientTests";
+import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -48,4 +49,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());

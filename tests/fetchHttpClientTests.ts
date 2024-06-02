@@ -1,5 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { FetchHttpClient, HttpClient, HttpMethod, HttpRequest, HttpResponse, PreConditionError } from "../sources";
+import { createTestRunner, skipNetworkTests } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -53,7 +54,7 @@ export function test(runner: TestRunner): void
 
                 function sendRequestTest(request: HttpRequest, expectedStatusCode: number, expectedBody: unknown): void
                 {
-                    runner.testAsync(`with ${runner.toString(request)}`, runner.skip(false), async (test: Test) =>
+                    runner.testAsync(`with ${runner.toString(request)}`, skipNetworkTests(runner), async (test: Test) =>
                     {
                         const client: HttpClient = FetchHttpClient.create();
                         const response: HttpResponse = await client.sendRequest(request);
@@ -87,4 +88,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());

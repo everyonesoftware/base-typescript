@@ -2,6 +2,7 @@ import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { ByteListCharacterToByteWriteStream } from "../sources";
 import { byteListByteWriteStreamTests } from "./byteListByteWriteStreamTests";
 import { characterWriteStreamTests } from "./characterWriteStreamTests";
+import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -75,4 +76,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());

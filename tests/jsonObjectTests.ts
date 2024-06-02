@@ -1,5 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { JsonBoolean, JsonNull, JsonNumber, JsonObject, JsonProperty, JsonSegment, JsonSegmentType, JsonString, NotFoundError, PreConditionError, WrongTypeError } from "../sources";
+import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
@@ -204,4 +205,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(TestRunner.create());
+test(createTestRunner());
