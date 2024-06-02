@@ -1,7 +1,6 @@
-import { ByteListByteWriteStream, Test, TestRunner } from "../sources";
-
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { ByteListByteWriteStream } from "../sources";
 import { byteWriteStreamTests } from "./byteWriteStreamTests";
-import { MochaTestRunner } from "./mochaTestRunner";
 
 function test(runner: TestRunner): void
 {
@@ -19,7 +18,7 @@ function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());
 
 export function byteListByteWriteStreamTests(runner: TestRunner, creator: () => ByteListByteWriteStream): void
 {

@@ -1,5 +1,5 @@
-import { BasicJsonToken, JsonTokenType, PreConditionError, Test, TestRunner } from "../sources";
-import { MochaTestRunner } from "./mochaTestRunner";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { BasicJsonToken, JsonTokenType, PreConditionError } from "../sources";
 
 function test(runner: TestRunner): void
 {
@@ -74,4 +74,4 @@ function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());

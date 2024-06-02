@@ -1,5 +1,5 @@
-import { PreConditionError, Test, TestRunner, escape, escapeAndQuote, getLength, isDigit, isLetter, isLetterOrDigit, isLowercasedLetter, isUppercasedLetter, isWhitespace, join, quote } from "../sources";
-import { MochaTestRunner } from "./mochaTestRunner";
+import { Test, TestRunner } from "@everyonesoftware/test-typescript";
+import { PreConditionError, escape, escapeAndQuote, getLength, isDigit, isLetter, isLetterOrDigit, isLowercasedLetter, isUppercasedLetter, isWhitespace, join, quote } from "../sources";
 
 export function test(runner: TestRunner): void
 {
@@ -509,4 +509,4 @@ export function test(runner: TestRunner): void
         });
     });
 }
-test(MochaTestRunner.create());
+test(TestRunner.create());
