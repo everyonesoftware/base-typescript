@@ -202,7 +202,11 @@ export function npmClientTests(runner: TestRunner, creator: (() => NpmClient)): 
                         '8.0.0',
                         '8.0.1',
                         '9.0.0',
-                        '9.1.0'
+                        '9.1.0',
+                        "10.0.0",
+                        "10.1.0",
+                        "10.1.1",
+                        "10.1.2",
                     ]));
         });
 
