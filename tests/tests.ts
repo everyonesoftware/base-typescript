@@ -8,5 +8,5 @@ export function createTestRunner(): TestRunner
 
 export function skipNetworkTests(runner: TestRunner): TestSkip
 {
-    return runner.skip(false, "Skipping network tests");
+    return runner.skip(true, "Skipping network tests");
 }

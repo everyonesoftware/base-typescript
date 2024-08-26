@@ -1,83 +1,46 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { JsonSegmentType, JsonString, JsonTokenType, PreConditionError } from "../sources";
+import { JsonDataString, PreConditionError } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
     runner.testFile("jsonString.ts", () =>
     {
-        runner.testType(JsonString, () =>
+        runner.testType(JsonDataString, () =>
         {
-            runner.testFunction("create(string, string)", () =>
+            runner.testFunction("create(string)", () =>
             {
-                function createErrorTest(value: string, quote: string, expected: Error): void
+                function createErrorTest(value: string, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([value, quote])}`, (test: Test) =>
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                     {
-                        test.assertThrows(() => JsonString.create(value, quote), expected);
+                        test.assertThrows(() => JsonDataString.create(value), expected);
                     });
                 }
 
-                createErrorTest(undefined!, `"`, new PreConditionError(
+                createErrorTest(undefined!, new PreConditionError(
                     "Expression: value",
                     "Expected: not undefined and not null",
                     "Actual: undefined",
                 ));
-                createErrorTest(null!, `"`, new PreConditionError(
+                createErrorTest(null!, new PreConditionError(
                     "Expression: value",
                     "Expected: not undefined and not null",
                     "Actual: null",
                 ));
-                createErrorTest("", null!, new PreConditionError(
-                    "Expression: quote",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-                createErrorTest("", "", new PreConditionError(
-                    "Expression: quote.length",
-                    "Expected: 1",
-                    "Actual: 0",
-                ));
-                createErrorTest("", "ab", new PreConditionError(
-                    "Expression: quote.length",
-                    "Expected: 1",
-                    "Actual: 2",
-                ));
 
-                function createTest(value: string, quote: string, expectedQuote: string = quote): void
+                function createTest(value: string): void
                 {
-                    runner.test(`with ${runner.andList([value, quote])}`, (test: Test) =>
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                     {
-                        const json: JsonString = JsonString.create(value, quote);
+                        const json: JsonDataString = JsonDataString.create(value);
                         test.assertSame(json.getValue(), value);
-                        test.assertSame(json.getQuote(), expectedQuote);
-                        test.assertSame(json.getSegmentType(), JsonSegmentType.String);
-                        test.assertSame(json.getTokenType(), JsonTokenType.String);
+                        test.assertSame(json.toString(), value);
                     });
                 }
 
-                createTest("", undefined!, `"`);
-                createTest("", `'`);
-                createTest("abc", `'`);
-                createTest("", `'`);
-                createTest("abc", `'`);
-            });
-
-            runner.testFunction("toString()", () =>
-            {
-                function toStringTest(value: string, quote: string, expected: string): void
-                {
-                    runner.test(`with ${runner.andList([value, quote])}`, (test: Test) =>
-                    {
-                        const json: JsonString = JsonString.create(value, quote);
-                        test.assertSame(json.toString(), expected);
-                    });
-                }
-
-                toStringTest("", `'`, `''`);
-                toStringTest("abc", `'`, `'abc'`);
-                toStringTest("", `"`, `""`);
-                toStringTest("abc", `"`, `"abc"`);
+                createTest("");
+                createTest("abc");
             });
         });
     });

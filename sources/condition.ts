@@ -3,6 +3,7 @@ import { Bytes } from "./bytes";
 import { Comparer } from "./comparer";
 import { Comparison } from "./comparison";
 import { JavascriptIterable } from "./javascript";
+import { isUndefinedOrNull } from "./types";
 
 /**
  * A collection of condition methods that can be used to assert the state of an application.
@@ -251,7 +252,7 @@ export class Condition
         }
     }
 
-    public assertNotEmpty(value: string, expression?: string, message?: string): asserts value is string
+    public assertNotEmpty(value: string | undefined | null, expression?: string, message?: string): asserts value is string
     {
         this.assertNotUndefinedAndNotNull(value, expression, message);
         if (value.length === 0)
@@ -320,7 +321,7 @@ export class Condition
     public assertBetween(lowerBound: number, value: number, upperBound: number, expression?: string, message?: string): void
     {
         this.assertLessThanOrEqualTo(lowerBound, upperBound, "lowerBound");
-        if (!(lowerBound <= value && value <= upperBound))
+        if (isUndefinedOrNull(value) || !(lowerBound <= value && value <= upperBound))
         {
             throw this.createError({
                 expected: (lowerBound === upperBound ? `${lowerBound}` : `between ${lowerBound} and ${upperBound}`),

@@ -1,4 +1,7 @@
+import { Comparable } from "./comparable";
+import { Comparison } from "./comparison";
 import { DocumentPosition } from "./documentPosition";
+import { DocumentRange } from "./documentRange";
 import { Pre } from "./pre";
 
 /**
@@ -95,5 +98,50 @@ export class MutableDocumentPosition implements DocumentPosition
     public getColumnNumber(): number
     {
         return this.getColumnIndex() + 1;
+    }
+
+    public plusColumns(columns: number): DocumentPosition
+    {
+        return DocumentPosition.plusColumns(this, columns);
+    }
+
+    public createRange(columns: number): DocumentRange
+    {
+        return DocumentPosition.createRange(this, columns);
+    }
+
+    public compareTo(value: DocumentPosition): Comparison
+    {
+        return DocumentPosition.compareTo(this, value);
+    }
+
+    public lessThan(value: DocumentPosition): boolean
+    {
+        return Comparable.lessThan(this, value);
+    }
+
+    public lessThanOrEqualTo(value: DocumentPosition): boolean
+    {
+        return Comparable.lessThanOrEqualTo(this, value);
+    }
+
+    public equals(value: DocumentPosition): boolean
+    {
+        return Comparable.equals(this, value);
+    }
+
+    public notEquals(value: DocumentPosition): boolean
+    {
+        return Comparable.notEquals(this, value);
+    }
+
+    public greaterThanOrEqualTo(value: DocumentPosition): boolean
+    {
+        return Comparable.greaterThanOrEqualTo(this, value);
+    }
+
+    public greaterThan(value: DocumentPosition): boolean
+    {
+        return Comparable.greaterThan(this, value);
     }
 }

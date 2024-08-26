@@ -5,9 +5,6 @@ import { HttpClientDecorator } from "./httpClientDecorator";
 import { Pre } from "./pre";
 import { HttpResponse } from "./httpResponse";
 import { NotFoundError } from "./notFoundError";
-import { Iterator } from "./iterator";
-import { PackageJson } from "./packageJson";
-import { DependencyUpdate } from "./dependencyUpdate";
 
 /**
  * A {@link NpmClient} that uses a {@link HttpClient} to make its requests.
@@ -42,8 +39,8 @@ export class HttpNpmClient extends HttpClientDecorator implements NpmClient, Htt
         return result;
     }
     
-    public async findDependencyUpdates(packageJson: PackageJson): Promise<Iterator<DependencyUpdate>>
-    {
-        return NpmClient.findDependencyUpdates(this, packageJson);
-    }
+    // public async findDependencyUpdates(packageJson: PackageJson): Promise<Iterator<DependencyUpdate>>
+    // {
+    //     return NpmClient.findDependencyUpdates(this, packageJson);
+    // }
 }

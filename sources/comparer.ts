@@ -87,4 +87,25 @@ export abstract class Comparer<TLeft, TRight = TLeft>
         }
         return result;
     }
+
+    public static compareNumbers(left: number | undefined | null, right: number | undefined | null): Comparison
+    {
+        let result: Comparison | undefined = Comparer.compareSameUndefinedNull(left, right);
+        if (result === undefined)
+        {
+            if (left! < right!)
+            {
+                result = Comparison.LessThan;
+            }
+            else if (left === right)
+            {
+                result = Comparison.Equal;
+            }
+            else
+            {
+                result = Comparison.GreaterThan;
+            }
+        }
+        return result;
+    }
 }

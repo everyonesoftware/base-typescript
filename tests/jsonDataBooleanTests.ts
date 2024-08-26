@@ -1,20 +1,20 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { JsonNumber, JsonSegmentType, PreConditionError } from "../sources";
+import { JsonDataBoolean, PreConditionError } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
-    runner.testFile("jsonNumber.ts", () =>
+    runner.testFile("jsonDataBoolean.ts", () =>
     {
-        runner.testType(JsonNumber, () =>
+        runner.testType(JsonDataBoolean.name, () =>
         {
-            runner.testFunction("create(number)", () =>
+            runner.testFunction("create(boolean)", () =>
             {
-                function createErrorTest(value: number, expected: Error): void
+                function createErrorTest(value: boolean, expected: Error): void
                 {
                     runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                     {
-                        test.assertThrows(() => JsonNumber.create(value), expected);
+                        test.assertThrows(() => JsonDataBoolean.create(value), expected);
                     });
                 }
 
@@ -29,39 +29,33 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function createTest(value: number): void
+                function createTest(value: boolean): void
                 {
                     runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                     {
-                        const json: JsonNumber = JsonNumber.create(value);
+                        const json: JsonDataBoolean = JsonDataBoolean.create(value);
                         test.assertEqual(json.getValue(), value);
-                        test.assertEqual(json.getSegmentType(), JsonSegmentType.Number);
+                        test.assertSame(json, JsonDataBoolean.create(value));
                     });
                 }
 
-                createTest(0);
-                createTest(-1);
-                createTest(1);
-                createTest(-0.1);
-                createTest(0.1);
+                createTest(false);
+                createTest(true);
             });
 
             runner.testFunction("toString()", () =>
             {
-                function toStringTest(value: number, expected: string): void
+                function toStringTest(value: boolean, expected: string): void
                 {
                     runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                     {
-                        const json: JsonNumber = JsonNumber.create(value);
+                        const json: JsonDataBoolean = JsonDataBoolean.create(value);
                         test.assertEqual(json.toString(), expected);
                     });
                 }
 
-                toStringTest(0, "0");
-                toStringTest(1, "1");
-                toStringTest(-1, "-1");
-                toStringTest(-0.1, "-0.1");
-                toStringTest(0.1, "0.1");
+                toStringTest(false, "false");
+                toStringTest(true, "true");
             });
         });
     });
