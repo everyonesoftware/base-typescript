@@ -39,7 +39,7 @@ export class DocumentIterator extends IteratorDecorator<string>
      */
     public getPosition(): DocumentPosition
     {
-        Pre.condition.assertTrue(this.hasCurrent(), "this.hasCurrent()");
+        Pre.condition.assertTrue(this.hasStarted(), "this.hasStarted()");
 
         return this.position;
     }

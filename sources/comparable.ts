@@ -38,6 +38,27 @@ export abstract class Comparable<T>
     }
 
     /**
+     * Get whether this value is less than or equal to the provided value.
+     * @param value The value to compare against.
+     */
+    public lessThanOrEqualTo(value: T): boolean
+    {
+        return Comparable.lessThanOrEqualTo(this, value);
+    }
+
+    /**
+     * Get whether the left value is less than or equal to the right value.
+     * @param left The left value in the comparison.
+     * @param right The right value in the comparison.
+     */
+    public static lessThanOrEqualTo<T>(left: Comparable<T>, right: T): boolean
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(left, "left");
+
+        return left.compareTo(right) !== Comparison.GreaterThan;
+    }
+
+    /**
      * Get whether this value equals the provided value.
      * @param value The value to compare against.
      */
@@ -56,6 +77,48 @@ export abstract class Comparable<T>
         Pre.condition.assertNotUndefinedAndNotNull(left, "left");
 
         return left.compareTo(right) === Comparison.Equal;
+    }
+
+    /**
+     * Get whether this value is not equal to the provided value.
+     * @param value The value to compare against.
+     */
+    public notEquals(value: T): boolean
+    {
+        return Comparable.notEquals(this, value);
+    }
+
+    /**
+     * Get whether the left value is not equal to the right value.
+     * @param left The left value in the comparison.
+     * @param right The right value in the comparison.
+     */
+    public static notEquals<T>(left: Comparable<T>, right: T): boolean
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(left, "left");
+
+        return left.compareTo(right) !== Comparison.Equal;
+    }
+
+    /**
+     * Get whether this value is greater than or equal to the provided value.
+     * @param value The value to compare against.
+     */
+    public greaterThanOrEqualTo(value: T): boolean
+    {
+        return Comparable.greaterThanOrEqualTo(this, value);
+    }
+
+    /**
+     * Get whether the left value is greater than or equal to the right value.
+     * @param left The left value in the comparison.
+     * @param right The right value in the comparison.
+     */
+    public static greaterThanOrEqualTo<T>(left: Comparable<T>, right: T): boolean
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(left, "left");
+
+        return left.compareTo(right) !== Comparison.LessThan;
     }
 
     /**

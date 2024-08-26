@@ -2,9 +2,18 @@ import { Iterable } from "./iterable";
 import { JavascriptIterable, JavascriptIterator } from "./javascript";
 
 /**
- * A {@link Type} type that can be used to pass class types as parameters.
+ * A {@link Type} that can be used to pass types as parameters.
  */
-export type Type<T> = new (...args: any[]) => T;
+export type Type<T> = Function & { prototype: T };
+
+/**
+ * Get whether the provided value is undefined or null.
+ * @param value The value to check.
+ */
+export function isUndefinedOrNull(value: unknown): value is undefined | null
+{
+    return value === undefined || value === null;
+}
 
 /**
  * Get whether the provided value is a {@link boolean}.
@@ -52,6 +61,16 @@ export function getParameterCount(value: Function): number
 }
 
 /**
+ * Get whether the provided value is a function with the provided parameter count.
+ * @param value The value to check.
+ * @param parameterCount The number of parameters the function must have.
+ */
+export function isFunctionWithParameterCount(value: unknown, parameterCount: number): value is Function
+{
+    return isFunction(value) && getParameterCount(value) === parameterCount;
+}
+
+/**
  * Get whether the provided value is an {@link Array}.
  * @param value The value to check.
  */
@@ -94,9 +113,22 @@ export function hasProperty<TValue, TPropertyKey extends PropertyKey>(value: TVa
  * @param value The value to check.
  * @param functionName The name of the function to look for.
  */
-export function hasFunction<TValue, TPropertyKey extends PropertyKey>(value: TValue, functionName: TPropertyKey): value is TValue & Record<TPropertyKey,Function>
+export function hasFunction<TValue, TPropertyKey extends PropertyKey>(value: TValue, functionName: TPropertyKey, parameterCount?: number): value is TValue & Record<TPropertyKey,Function>
 {
-    return value !== undefined && value !== null && isFunction((value as any)[functionName]);
+    let result: boolean = false;
+    if (value !== undefined && value !== null)
+    {
+        const func: unknown = (value as any)[functionName];
+        if (isUndefinedOrNull(parameterCount))
+        {
+            result = isFunction(func);
+        }
+        else
+        {
+            result = isFunctionWithParameterCount(func, parameterCount);
+        }
+    }
+    return result;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { JsonObject } from "./jsonObject";
+import { JsonDataObject } from "./jsonDataObject";
 import { Pre } from "./pre";
 
 export class DependencyUpdate
@@ -48,7 +48,7 @@ export class DependencyUpdate
 
     public toString(): string
     {
-        return JsonObject.create()
+        return JsonDataObject.create()
             .set("name", this.name)
             .set("currentVersion", this.currentVersion)
             .set("latestVersion", this.latestVersion)

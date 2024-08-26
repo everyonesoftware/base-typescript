@@ -1,18 +1,18 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { JsonNull, JsonSegmentType } from "../sources";
+import { JsonDataNull } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
 {
-    runner.testFile("jsonNull.ts", () =>
+    runner.testFile("jsonDataNull.ts", () =>
     {
-        runner.testType(JsonNull, () =>
+        runner.testType(JsonDataNull.name, () =>
         {
             runner.testFunction("create()", (test: Test) =>
             {
-                const json: JsonNull = JsonNull.create();
-                test.assertEqual(json.getSegmentType(), JsonSegmentType.Null);
+                const json: JsonDataNull = JsonDataNull.create();
                 test.assertEqual(json.toString(), "null");
+                test.assertSame(json, JsonDataNull.create());
             });
         });
     });

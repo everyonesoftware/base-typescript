@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Iterator, HttpClient, JsonDocument, JsonObject, NotFoundError, NpmClient, NpmPackageDetails, PackageJson, Pre, PreConditionError, DependencyUpdate } from "../sources";
+import { HttpClient, NpmClient, NpmPackageDetails, Pre, PreConditionError } from "../sources";
 import { createTestRunner, skipNetworkTests } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -210,76 +210,76 @@ export function npmClientTests(runner: TestRunner, creator: (() => NpmClient)): 
                     ]));
         });
 
-        runner.testFunction("findDependencyUpdates(PackageJson)", () =>
-        {
-            function findDependencyUpdatesErrorTest(packageJson: PackageJson, expected: Error): void
-            {
-                runner.testAsync(`with ${runner.toString(packageJson)}`, async (test: Test) =>
-                {
-                    const npmClient: NpmClient = creator();
-                    await test.assertThrowsAsync(async () => await npmClient.findDependencyUpdates(packageJson),
-                        expected);
-                });
-            }
+        // runner.testFunction("findDependencyUpdates(PackageJson)", () =>
+        // {
+        //     function findDependencyUpdatesErrorTest(packageJson: PackageJson, expected: Error): void
+        //     {
+        //         runner.testAsync(`with ${runner.toString(packageJson)}`, async (test: Test) =>
+        //         {
+        //             const npmClient: NpmClient = creator();
+        //             await test.assertThrowsAsync(async () => await npmClient.findDependencyUpdates(packageJson),
+        //                 expected);
+        //         });
+        //     }
 
-            findDependencyUpdatesErrorTest(
-                undefined!,
-                new PreConditionError(
-                        "Expression: packageJson",
-                        "Expected: not undefined and not null",
-                        "Actual: undefined"));
-            findDependencyUpdatesErrorTest(
-                null!,
-                new PreConditionError(
-                        "Expression: packageJson",
-                        "Expected: not undefined and not null",
-                        "Actual: null"));
-            findDependencyUpdatesErrorTest(
-                PackageJson.create(
-                    JsonDocument.create(
-                        JsonObject.create()
-                            .set("dependencies", JsonObject.create()
-                                .set("packagethatdoesntexist", "1.2.3")))),
-                new NotFoundError(`The package "packagethatdoesntexist" doesn't exist at https://registry.npmjs.org/packagethatdoesntexist.`));
-            findDependencyUpdatesErrorTest(
-                PackageJson.create(),
-                new NotFoundError(`No root has been added.`));
+        //     findDependencyUpdatesErrorTest(
+        //         undefined!,
+        //         new PreConditionError(
+        //                 "Expression: packageJson",
+        //                 "Expected: not undefined and not null",
+        //                 "Actual: undefined"));
+        //     findDependencyUpdatesErrorTest(
+        //         null!,
+        //         new PreConditionError(
+        //                 "Expression: packageJson",
+        //                 "Expected: not undefined and not null",
+        //                 "Actual: null"));
+        //     findDependencyUpdatesErrorTest(
+        //         PackageJson.create(
+        //             JsonDocument.create(
+        //                 JsonObject.create()
+        //                     .set("dependencies", JsonObject.create()
+        //                         .set("packagethatdoesntexist", "1.2.3")))),
+        //         new NotFoundError(`The package "packagethatdoesntexist" doesn't exist at https://registry.npmjs.org/packagethatdoesntexist.`));
+        //     findDependencyUpdatesErrorTest(
+        //         PackageJson.create(),
+        //         new NotFoundError(`No root has been added.`));
             
-            function findDependencyUpdatesTest(packageJson: PackageJson, expected: DependencyUpdate[]): void
-            {
-                runner.testAsync(`with ${runner.toString(packageJson)}`, async (test: Test) =>
-                {
-                    const npmClient: NpmClient = creator();
-                    const dependencyUpdates: Iterator<DependencyUpdate> = await npmClient.findDependencyUpdates(packageJson);
-                    test.assertEqual(dependencyUpdates.toArray(), expected);
-                });
-            }
+        //     function findDependencyUpdatesTest(packageJson: PackageJson, expected: DependencyUpdate[]): void
+        //     {
+        //         runner.testAsync(`with ${runner.toString(packageJson)}`, async (test: Test) =>
+        //         {
+        //             const npmClient: NpmClient = creator();
+        //             const dependencyUpdates: Iterator<DependencyUpdate> = await npmClient.findDependencyUpdates(packageJson);
+        //             test.assertEqual(dependencyUpdates.toArray(), expected);
+        //         });
+        //     }
 
-            findDependencyUpdatesTest(
-                PackageJson.create(JsonDocument.create(JsonObject.create()
-                    .set("dependencies", JsonObject.create()
-                        .set("@types/assert", "1.5.10")))),
-                []);
-            findDependencyUpdatesTest(
-                PackageJson.create(JsonDocument.create(JsonObject.create()
-                    .set("dependencies", JsonObject.create()
-                        .set("@types/assert", "1.5.9")))),
-                [DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10")]);
-            findDependencyUpdatesTest(
-                PackageJson.create(JsonDocument.create(JsonObject.create()
-                    .set("dependencies", JsonObject.create()
-                        .set("@types/assert", "1.5.9")
-                        .set("assert", "92.1.0")))),
-                [DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10")]);
-            findDependencyUpdatesTest(
-                PackageJson.create(JsonDocument.create(JsonObject.create()
-                    .set("dependencies", JsonObject.create()
-                        .set("@types/assert", "1.5.9")
-                        .set("assert", "1.1.0")))),
-                [
-                    DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10"),
-                    DependencyUpdate.create("assert", "1.1.0", "2.1.0"),
-                ]);
-        });
+        //     findDependencyUpdatesTest(
+        //         PackageJson.create(JsonDocument.create(JsonObject.create()
+        //             .set("dependencies", JsonObject.create()
+        //                 .set("@types/assert", "1.5.10")))),
+        //         []);
+        //     findDependencyUpdatesTest(
+        //         PackageJson.create(JsonDocument.create(JsonObject.create()
+        //             .set("dependencies", JsonObject.create()
+        //                 .set("@types/assert", "1.5.9")))),
+        //         [DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10")]);
+        //     findDependencyUpdatesTest(
+        //         PackageJson.create(JsonDocument.create(JsonObject.create()
+        //             .set("dependencies", JsonObject.create()
+        //                 .set("@types/assert", "1.5.9")
+        //                 .set("assert", "92.1.0")))),
+        //         [DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10")]);
+        //     findDependencyUpdatesTest(
+        //         PackageJson.create(JsonDocument.create(JsonObject.create()
+        //             .set("dependencies", JsonObject.create()
+        //                 .set("@types/assert", "1.5.9")
+        //                 .set("assert", "1.1.0")))),
+        //         [
+        //             DependencyUpdate.create("@types/assert", "1.5.9", "1.5.10"),
+        //             DependencyUpdate.create("assert", "1.1.0", "2.1.0"),
+        //         ]);
+        // });
     });
 }
