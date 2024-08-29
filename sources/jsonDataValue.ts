@@ -56,10 +56,7 @@ export abstract class JsonDataValue
         return dataValue;
     }
 
-    public as<T extends JsonDataValue>(type: Type<T>, typeDisplayName: string): Result<T>
-    {
-        return JsonDataValue.as(this, type, typeDisplayName);
-    }
+    public abstract as<T extends JsonDataValue>(type: Type<T>, typeDisplayName: string): Result<T>;
 
     public static as<T extends JsonDataValue>(jsonDataValue: JsonDataValue, type: Type<T>, typeDisplayName: string): Result<T>
     {
@@ -67,10 +64,6 @@ export abstract class JsonDataValue
         {
             if (!(jsonDataValue instanceof type))
             {
-                if (!typeDisplayName)
-                {
-                    typeDisplayName = type.name;
-                }
                 throw new WrongTypeError(`Expected ${typeDisplayName} but found ${jsonDataValue.getTypeDisplayName()}.`);
             }
             return jsonDataValue as T;
