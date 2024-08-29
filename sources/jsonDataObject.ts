@@ -11,6 +11,7 @@ import { Map } from "./map";
 import { Pre } from "./pre";
 import { Result } from "./result";
 import { isString, isUndefinedOrNull, Type } from "./types";
+import { NotFoundError } from "./notFoundError";
 
 export class JsonDataObject implements JsonDataValue
 {
@@ -49,7 +50,7 @@ export class JsonDataObject implements JsonDataValue
 
     public iterateProperties(): Iterator<JsonDataProperty>
     {
-        return this.iteratePropertyNames().map(this.getProperty);
+        return this.iteratePropertyNames().map((propertyName: string) => this.getProperty(propertyName));
     }
 
     public getProperty(name: string): JsonDataProperty
@@ -61,10 +62,14 @@ export class JsonDataObject implements JsonDataValue
     {
         Pre.condition.assertNotUndefinedAndNotNull(name, "name");
 
-        return this.properties.get(name);
+        return this.properties.get(name)
+            .convertError(NotFoundError, () =>
+            {
+                return new NotFoundError(`The JSON object doesn't contain a property named "${name}".`);
+            });
     }
 
-    public getAs<T extends JsonDataValue>(propertyName: string, type: Type<T>, typeDisplayName: string): Result<T>
+    protected getAs<T extends JsonDataValue>(propertyName: string, type: Type<T>, typeDisplayName: string): Result<T>
     {
         return this.get(propertyName)
             .then((value: JsonDataValue) => value.as(type, typeDisplayName).await());

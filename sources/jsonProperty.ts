@@ -6,15 +6,15 @@ import { Result } from "./result";
 export class JsonDataProperty
 {
     private readonly source: JsonDataObject;
-    private readonly name: string;
+    private readonly propertyName: string;
 
-    private constructor(source: JsonDataObject, name: string)
+    private constructor(source: JsonDataObject, propertyName: string)
     {
         Pre.condition.assertNotUndefinedAndNotNull(source, "source");
-        Pre.condition.assertNotUndefinedAndNotNull(name, "name");
+        Pre.condition.assertNotUndefinedAndNotNull(propertyName, "propertyName");
 
         this.source = source;
-        this.name = name;
+        this.propertyName = propertyName;
     }
 
     public static create(source: JsonDataObject, name: string): JsonDataProperty
@@ -24,11 +24,11 @@ export class JsonDataProperty
 
     public getName(): string
     {
-        return this.name;
+        return this.propertyName;
     }
 
     public getValue(): Result<JsonDataValue>
     {
-        return this.source.get(this.name);
+        return this.source.get(this.propertyName);
     }
 }

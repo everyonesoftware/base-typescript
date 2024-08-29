@@ -13,6 +13,7 @@ export function test(runner: TestRunner): void
                 const json: JsonDataNull = JsonDataNull.create();
                 test.assertEqual(json.toString(), "null");
                 test.assertSame(json, JsonDataNull.create());
+                test.assertEqual(json.getTypeDisplayName(), "null");
             });
         });
     });
