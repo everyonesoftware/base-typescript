@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Iterator, JsonDataArray, JsonDataBoolean, JsonDataNull, JsonDataNumber, JsonDataObject, JsonDataProperty, JsonDataString, JsonDataType, JsonDataValue, NotFoundError, PreConditionError, WrongTypeError } from "../sources";
+import { Iterator, JsonDataArray, JsonDataObject, JsonDataProperty, JsonDataType, NotFoundError, PreConditionError, WrongTypeError } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -40,6 +40,23 @@ export function test(runner: TestRunner): void
                     test.assertTrue(json.any());
                     test.assertEqual(json.getPropertyCount(), 1);
                     test.assertEqual(json.toString(), `{a:1}`);
+                });
+
+                runner.test("with undefined property value", (test: Test) =>
+                {
+                    test.assertThrows(() => JsonDataObject.create({a: undefined!}), new PreConditionError(
+                        "Expression: propertyValue",
+                        "Expected: not undefined",
+                        "Actual: undefined",
+                    ));
+                });
+
+                runner.test("with undefined grandchild-property value", (test: Test) =>
+                {
+                    const json: JsonDataObject = JsonDataObject.create({a:{b:undefined!}});
+                    test.assertTrue(json.any());
+                    test.assertEqual(json.getPropertyCount(), 1);
+                    test.assertEqual(json.toString(), `{a:[object Object]}`);
                 });
 
                 runner.test("with empty JsonDataObject", (test: Test) =>
@@ -109,7 +126,7 @@ export function test(runner: TestRunner): void
                         {
                             test.assertTrue(properties.hasCurrent());
                             test.assertEqual(expectedProperty[0], properties.getCurrent().getName());
-                            test.assertEqual(JsonDataValue.toJsonDataValue(expectedProperty[1]), properties.getCurrent().getValue().await());
+                            test.assertEqual(expectedProperty[1], properties.getCurrent().getValue().await());
 
                             properties.next();
                         }
@@ -168,14 +185,8 @@ export function test(runner: TestRunner): void
                     const property: JsonDataProperty = jsonObject.getProperty("a");
                     test.assertNotUndefinedAndNotNull(property);
                     test.assertEqual("a", property.getName());
-                    test.assertEqual(JsonDataNumber.create(50), property.getValue().await());
+                    test.assertEqual(50, property.getValue().await());
                 });
-            });
-
-            runner.testFunction("getTypeDisplayName()", (test: Test) =>
-            {
-                const jsonObject: JsonDataObject = JsonDataObject.create();
-                test.assertEqual("object", jsonObject.getTypeDisplayName());
             });
 
             runner.testFunction("getString(string)", () =>
@@ -203,7 +214,7 @@ export function test(runner: TestRunner): void
                 getStringErrorTest(JsonDataObject.create(), "abc", new NotFoundError(`The JSON object doesn't contain a property named "abc".`));
                 getStringErrorTest(JsonDataObject.create().set("abc", 5), "abc", new WrongTypeError("Expected string but found number."));
 
-                function getStringTest(json: JsonDataObject, propertyName: string, expected: JsonDataString): void
+                function getStringTest(json: JsonDataObject, propertyName: string, expected: string): void
                 {
                     runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
@@ -211,43 +222,7 @@ export function test(runner: TestRunner): void
                     });
                 }
 
-                getStringTest(JsonDataObject.create().set("def", "ghi"), "def", JsonDataString.create("ghi"));
-            });
-
-            runner.testFunction("getStringValue(string)", () =>
-            {
-                function getStringValueErrorTest(json: JsonDataObject, propertyName: string, expected: Error): void
-                {
-                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
-                    {
-                        test.assertThrows(() => json.getStringValue(propertyName).await(),
-                            expected);
-                    });
-                }
-
-                getStringValueErrorTest(JsonDataObject.create(), undefined!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-                getStringValueErrorTest(JsonDataObject.create(), null!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-                getStringValueErrorTest(JsonDataObject.create(), "", new NotFoundError(`The JSON object doesn't contain a property named "".`));
-                getStringValueErrorTest(JsonDataObject.create(), "abc", new NotFoundError(`The JSON object doesn't contain a property named "abc".`));
-                getStringValueErrorTest(JsonDataObject.create().set("abc", 5), "abc", new WrongTypeError("Expected string but found number."));
-
-                function getStringValueTest(json: JsonDataObject, propertyName: string, expected: string): void
-                {
-                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
-                    {
-                        test.assertEqual(json.getStringValue(propertyName).await(), expected);
-                    });
-                }
-
-                getStringValueTest(JsonDataObject.create().set("def", "ghi"), "def", "ghi");
+                getStringTest(JsonDataObject.create().set("def", "ghi"), "def", "ghi");
             });
 
             runner.testFunction("getBoolean(string)", () =>
@@ -275,7 +250,7 @@ export function test(runner: TestRunner): void
                 getBooleanErrorTest(JsonDataObject.create(), "abc", new NotFoundError(`The JSON object doesn't contain a property named "abc".`));
                 getBooleanErrorTest(JsonDataObject.create().set("abc", 5), "abc", new WrongTypeError("Expected boolean but found number."));
 
-                function getBooleanTest(json: JsonDataObject, propertyName: string, expected: JsonDataBoolean): void
+                function getBooleanTest(json: JsonDataObject, propertyName: string, expected: boolean): void
                 {
                     runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
@@ -283,43 +258,7 @@ export function test(runner: TestRunner): void
                     });
                 }
 
-                getBooleanTest(JsonDataObject.create().set("def", true), "def", JsonDataBoolean.create(true));
-            });
-
-            runner.testFunction("getBooleanValue(string)", () =>
-            {
-                function getBooleanValueErrorTest(json: JsonDataObject, propertyName: string, expected: Error): void
-                {
-                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
-                    {
-                        test.assertThrows(() => json.getBooleanValue(propertyName).await(),
-                            expected);
-                    });
-                }
-
-                getBooleanValueErrorTest(JsonDataObject.create(), undefined!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-                getBooleanValueErrorTest(JsonDataObject.create(), null!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-                getBooleanValueErrorTest(JsonDataObject.create(), "", new NotFoundError(`The JSON object doesn't contain a property named "".`));
-                getBooleanValueErrorTest(JsonDataObject.create(), "abc", new NotFoundError(`The JSON object doesn't contain a property named "abc".`));
-                getBooleanValueErrorTest(JsonDataObject.create().set("abc", 5), "abc", new WrongTypeError("Expected boolean but found number."));
-
-                function getBooleanValueTest(json: JsonDataObject, propertyName: string, expected: boolean): void
-                {
-                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
-                    {
-                        test.assertEqual(json.getBooleanValue(propertyName).await(), expected);
-                    });
-                }
-
-                getBooleanValueTest(JsonDataObject.create().set("def", false), "def", false);
+                getBooleanTest(JsonDataObject.create().set("def", true), "def", true);
             });
 
             runner.testFunction("getNull(string)", () =>
@@ -350,46 +289,11 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
-                        test.assertEqual(json.getNull(propertyName).await(), JsonDataNull.create());
+                        test.assertEqual(json.getNull(propertyName).await(), null);
                     });
                 }
 
                 getNullTest(JsonDataObject.create().set("def", null), "def");
-            });
-
-            runner.testFunction("getNullValue(string)", () =>
-            {
-                function getNullValueErrorTest(json: JsonDataObject, propertyName: string, expected: Error): void
-                {
-                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
-                    {
-                        test.assertThrows(() => json.getNullValue(propertyName).await(), expected);
-                    });
-                }
-
-                getNullValueErrorTest(JsonDataObject.create(), undefined!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-                getNullValueErrorTest(JsonDataObject.create(), null!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-                getNullValueErrorTest(JsonDataObject.create(), "", new NotFoundError(`The JSON object doesn't contain a property named "".`));
-                getNullValueErrorTest(JsonDataObject.create(), "abc", new NotFoundError(`The JSON object doesn't contain a property named "abc".`));
-                getNullValueErrorTest(JsonDataObject.create().set("abc", "def"), "abc", new WrongTypeError("Expected null but found string."));
-
-                function getNullValueTest(json: JsonDataObject, propertyName: string): void
-                {
-                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
-                    {
-                        test.assertNull(json.getNullValue(propertyName).await());
-                    });
-                }
-
-                getNullValueTest(JsonDataObject.create().set("def", null), "def");
             });
 
             runner.testFunction("getNumber(string)", () =>
@@ -417,7 +321,7 @@ export function test(runner: TestRunner): void
                 getNumberErrorTest(JsonDataObject.create(), "abc", new NotFoundError(`The JSON object doesn't contain a property named "abc".`));
                 getNumberErrorTest(JsonDataObject.create().set("abc", "5"), "abc", new WrongTypeError("Expected number but found string."));
 
-                function getNumberTest(json: JsonDataObject, propertyName: string, expected: JsonDataNumber): void
+                function getNumberTest(json: JsonDataObject, propertyName: string, expected: number): void
                 {
                     runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
                     {
@@ -425,43 +329,7 @@ export function test(runner: TestRunner): void
                     });
                 }
 
-                getNumberTest(JsonDataObject.create().set("def", 13), "def", JsonDataNumber.create(13));
-            });
-
-            runner.testFunction("getNumberValue(string)", () =>
-            {
-                function getNumberValueErrorTest(json: JsonDataObject, propertyName: string, expected: Error): void
-                {
-                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
-                    {
-                        test.assertThrows(() => json.getNumberValue(propertyName).await(),
-                            expected);
-                    });
-                }
-
-                getNumberValueErrorTest(JsonDataObject.create(), undefined!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-                getNumberValueErrorTest(JsonDataObject.create(), null!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-                getNumberValueErrorTest(JsonDataObject.create(), "", new NotFoundError(`The JSON object doesn't contain a property named "".`));
-                getNumberValueErrorTest(JsonDataObject.create(), "abc", new NotFoundError(`The JSON object doesn't contain a property named "abc".`));
-                getNumberValueErrorTest(JsonDataObject.create().set("abc", "5"), "abc", new WrongTypeError("Expected number but found string."));
-
-                function getNumberValueTest(json: JsonDataObject, propertyName: string, expected: number): void
-                {
-                    runner.test(`with ${runner.andList([json, propertyName])}`, (test: Test) =>
-                    {
-                        test.assertEqual(json.getNumberValue(propertyName).await(), expected);
-                    });
-                }
-
-                getNumberValueTest(JsonDataObject.create().set("def", 5), "def", 5);
+                getNumberTest(JsonDataObject.create().set("def", 13), "def", 13);
             });
 
             runner.testFunction("getObject(string)", () =>
@@ -475,20 +343,43 @@ export function test(runner: TestRunner): void
                     });
                 }
 
-                getObjectErrorTest(JsonDataObject.create(), undefined!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-                getObjectErrorTest(JsonDataObject.create(), null!, new PreConditionError(
-                    "Expression: name",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-                getObjectErrorTest(JsonDataObject.create(), "", new NotFoundError(`The JSON object doesn't contain a property named "".`));
-                getObjectErrorTest(JsonDataObject.create(), "abc", new NotFoundError(`The JSON object doesn't contain a property named "abc".`));
-                getObjectErrorTest(JsonDataObject.create().set("abc", "5"), "abc", new WrongTypeError("Expected object but found string."));
-                getObjectErrorTest(JsonDataObject.create().set("abc", JsonDataArray.create()), "abc", new WrongTypeError("Expected object but found array."));
+                getObjectErrorTest(
+                    JsonDataObject.create(),
+                    undefined!,
+                    new PreConditionError(
+                        "Expression: name",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined",
+                    ),
+                );
+                getObjectErrorTest(
+                    JsonDataObject.create(),
+                    null!,
+                    new PreConditionError(
+                        "Expression: name",
+                        "Expected: not undefined and not null",
+                        "Actual: null",
+                    ),
+                );
+                getObjectErrorTest(
+                    JsonDataObject.create(),
+                    "",
+                    new NotFoundError(`The JSON object doesn't contain a property named "".`),
+                );
+                getObjectErrorTest(
+                    JsonDataObject.create(),
+                    "abc1",
+                    new NotFoundError(`The JSON object doesn't contain a property named "abc1".`),
+                );
+                getObjectErrorTest(
+                    JsonDataObject.create().set("abc2", "5"),
+                    "abc2",
+                    new WrongTypeError("Expected object but found string."));
+                getObjectErrorTest(
+                    JsonDataObject.create().set("abc3", JsonDataArray.create()),
+                    "abc3",
+                    new WrongTypeError("Expected object but found array."),
+                );
 
                 function getObjectTest(json: JsonDataObject, propertyName: string, expected: JsonDataObject): void
                 {
@@ -554,54 +445,49 @@ export function test(runner: TestRunner): void
 
                 setErrorTest(
                     undefined!,
-                    JsonDataNull.create(),
+                    null,
                     new PreConditionError(
-                        "Expression: isString(name)",
-                        "Expected: true",
-                        "Actual: false",
+                        "Expression: propertyName",
+                        "Expected: not undefined and not null",
+                        "Actual: undefined",
                     ));
                 setErrorTest(
                     null!,
-                    JsonDataNull.create(),
+                    null,
                     new PreConditionError(
-                        "Expression: isString(name)",
-                        "Expected: true",
-                        "Actual: false",
+                        "Expression: propertyName",
+                        "Expected: not undefined and not null",
+                        "Actual: null",
                     ));
                 setErrorTest(
                     "abc",
                     undefined!,
                     new PreConditionError(
-                        "Expression: value",
+                        "Expression: propertyValue",
                         "Expected: not undefined",
                         "Actual: undefined",
                     ));
 
-                function setTest(propertyName: string, propertyValue: JsonDataType, expectedPropertyValue?: JsonDataValue): void
+                function setTest(propertyName: string, propertyValue: JsonDataType): void
                 {
                     runner.test(`with ${runner.andList([propertyName, propertyValue])}`, (test: Test) =>
                     {
-                        if (expectedPropertyValue === undefined)
-                        {
-                            expectedPropertyValue = propertyValue as JsonDataValue;
-                        }
-
                         const json: JsonDataObject = JsonDataObject.create();
                         const setResult: JsonDataObject = json.set(propertyName, propertyValue);
                         test.assertSame(setResult, json);
                         test.assertEqual(json.getPropertyCount(), 1);
-                        test.assertEqual(json.get(propertyName).await(), expectedPropertyValue);
+                        test.assertEqual(json.get(propertyName).await(), propertyValue);
                     });
                 }
 
-                setTest("abc", JsonDataNull.create());
-                setTest("abc", JsonDataBoolean.create(true));
-                setTest("one", 1, JsonDataNumber.create(1));
-                setTest("two", "2", JsonDataString.create("2"));
-                setTest("def", null, JsonDataNull.create());
-                setTest("def", {}, JsonDataObject.create());
-                setTest("def", {a:1}, JsonDataObject.create().set("a", 1));
-                setTest("abc", [], JsonDataArray.create());
+                setTest("abc", null);
+                setTest("abc", true);
+                setTest("one", 1);
+                setTest("two", "2");
+                setTest("def", {});
+                setTest("def", {a:1});
+                setTest("def", JsonDataObject.create({b:3}));
+                setTest("abc", []);
             });
 
             runner.testFunction("setAll(string,JsonDataObject|{[propertyName:string]:JsonDataType})", () =>

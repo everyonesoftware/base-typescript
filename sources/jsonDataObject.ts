@@ -1,34 +1,26 @@
 import { Iterator } from "./iterator";
 import { JsonDataArray } from "./jsonDataArray";
-import { JsonDataBoolean } from "./jsonDataBoolean";
-import { JsonDataNull } from "./jsonDataNull";
-import { JsonDataNumber } from "./jsonDataNumber";
-import { JsonDataType } from "./jsonDataType";
-import { JsonDataValue } from "./jsonDataValue";
-import { JsonDataProperty } from "./jsonProperty";
-import { JsonDataString } from "./jsonDataString";
+import { asJsonArray, asJsonBoolean, asJsonNull, asJsonNumber, asJsonObject, asJsonString, JsonDataRawObject, JsonDataType } from "./jsonDataType";
+import { JsonDataProperty } from "./jsonDataProperty";
 import { Map } from "./map";
 import { Pre } from "./pre";
 import { Result } from "./result";
-import { isString, isUndefinedOrNull, Type } from "./types";
 import { NotFoundError } from "./notFoundError";
 
-export class JsonDataObject implements JsonDataValue
+export class JsonDataObject
 {
-    public static readonly typeDisplayName: string = "object";
+    private readonly properties: Map<string, JsonDataType>;
 
-    private readonly properties: Map<string, JsonDataValue>;
-
-    public constructor(properties?: JsonDataObject | { [propertyName: string]: JsonDataType })
+    public constructor(properties?: JsonDataObject | JsonDataRawObject)
     {
         this.properties = Map.create();
-        if (!isUndefinedOrNull(properties))
+        if (properties)
         {
             this.setAll(properties);
         }
     }
 
-    public static create(properties?: JsonDataObject | { [propertyName: string]: JsonDataType }): JsonDataObject
+    public static create(properties?: JsonDataObject | JsonDataRawObject): JsonDataObject
     {
         return new JsonDataObject(properties);
     }
@@ -53,98 +45,87 @@ export class JsonDataObject implements JsonDataValue
         return this.iteratePropertyNames().map((propertyName: string) => this.getProperty(propertyName));
     }
 
-    public getProperty(name: string): JsonDataProperty
+    public getProperty(propertyName: string): JsonDataProperty
     {
-        return JsonDataProperty.create(this, name);
+        return JsonDataProperty.create(this, propertyName);
     }
 
-    public get(name: string): Result<JsonDataValue>
+    public get(propertyName: string): Result<JsonDataType>
     {
-        Pre.condition.assertNotUndefinedAndNotNull(name, "name");
+        Pre.condition.assertNotUndefinedAndNotNull(propertyName, "name");
 
-        return this.properties.get(name)
+        return this.properties.get(propertyName)
             .convertError(NotFoundError, () =>
             {
-                return new NotFoundError(`The JSON object doesn't contain a property named "${name}".`);
+                return new NotFoundError(`The JSON object doesn't contain a property named "${propertyName}".`);
             });
     }
 
-    protected getAs<T extends JsonDataValue>(propertyName: string, type: Type<T>, typeDisplayName: string): Result<T>
+    public getNull(propertyName: string): Result<null>
     {
-        return this.get(propertyName)
-            .then((value: JsonDataValue) => value.as(type, typeDisplayName).await());
+        return Result.create(() =>
+        {
+            const json: JsonDataType = this.get(propertyName).await();
+            return asJsonNull(json).await();
+        });
     }
 
-    public getTypeDisplayName(): string
+    public getString(propertyName: string): Result<string>
     {
-        return JsonDataObject.typeDisplayName;
+        return Result.create(() =>
+        {
+            const json: JsonDataType = this.get(propertyName).await();
+            return asJsonString(json).await();
+        });
     }
 
-    public getString(propertyName: string): Result<JsonDataString>
+    public getBoolean(propertyName: string): Result<boolean>
     {
-        return this.getAs(propertyName, JsonDataString, JsonDataString.typeDisplayName);
+        return Result.create(() =>
+        {
+            const json: JsonDataType = this.get(propertyName).await();
+            return asJsonBoolean(json).await();
+        });
     }
 
-    public getStringValue(propertyName: string): Result<string>
+    public getNumber(propertyName: string): Result<number>
     {
-        return this.getString(propertyName)
-            .then((element: JsonDataString) => element.getValue());
+        return Result.create(() =>
+        {
+            const json: JsonDataType = this.get(propertyName).await();
+            return asJsonNumber(json).await();
+        });
     }
 
-    public getBoolean(name: string): Result<JsonDataBoolean>
+    public getObject(propertyName: string): Result<JsonDataObject>
     {
-        return this.getAs(name, JsonDataBoolean, JsonDataBoolean.typeDisplayName);
+        return Result.create(() =>
+        {
+            const json: JsonDataType = this.get(propertyName).await();
+            return asJsonObject(json).await();
+        });
     }
 
-    public getBooleanValue(name: string): Result<boolean>
+    public getArray(propertyName: string): Result<JsonDataArray>
     {
-        return this.getBoolean(name)
-            .then((element: JsonDataBoolean) => element.getValue());
+        return Result.create(() =>
+        {
+            const json: JsonDataType = this.get(propertyName).await();
+            return asJsonArray(json).await();
+        });
     }
 
-    public getNull(name: string): Result<JsonDataNull>
+    public set(propertyName: string, propertyValue: JsonDataType): JsonDataObject
     {
-        return this.getAs(name, JsonDataNull, JsonDataNull.typeDisplayName);
-    }
+        Pre.condition.assertNotUndefinedAndNotNull(propertyName, "propertyName");
+        Pre.condition.assertNotUndefined(propertyValue, "propertyValue");
 
-    public getNullValue(name: string): Result<null>
-    {
-        return this.getNull(name)
-            .then((element: JsonDataNull) => element.getValue());
-    }
-
-    public getNumber(name: string): Result<JsonDataNumber>
-    {
-        return this.getAs(name, JsonDataNumber, JsonDataNumber.typeDisplayName);
-    }
-
-    public getNumberValue(name: string): Result<number>
-    {
-        return this.getNumber(name)
-            .then((element: JsonDataNumber) => element.getValue());
-    }
-
-    public getObject(name: string): Result<JsonDataObject>
-    {
-        return this.getAs(name, JsonDataObject, JsonDataObject.typeDisplayName);
-    }
-
-    public getArray(name: string): Result<JsonDataArray>
-    {
-        return this.getAs(name, JsonDataArray, JsonDataArray.typeDisplayName);
-    }
-
-    public set(name: string, value: JsonDataType): JsonDataObject
-    {
-        Pre.condition.assertTrue(isString(name), "isString(name)");
-        Pre.condition.assertNotUndefined(value, "value");
-
-        this.properties.set(name, JsonDataValue.toJsonDataValue(value));
+        this.properties.set(propertyName, propertyValue);
 
         return this;
     }
 
-    public setAll(properties: JsonDataObject | { [propertyName: string]: JsonDataType }): JsonDataObject
+    public setAll(properties: JsonDataObject | JsonDataRawObject): JsonDataObject
     {
         Pre.condition.assertNotUndefinedAndNotNull(properties, "properties");
 
@@ -164,11 +145,6 @@ export class JsonDataObject implements JsonDataValue
         }
 
         return this;
-    }
-
-    public as<T extends JsonDataValue>(type: Type<T>, typeDisplayName: string): Result<T>
-    {
-        return JsonDataValue.as(this, type, typeDisplayName);
     }
 
     public toString(): string

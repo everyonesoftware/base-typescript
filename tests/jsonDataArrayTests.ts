@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Iterable, JavascriptIterable, JsonDataArray, JsonDataBoolean, JsonDataNull, PreConditionError, JsonDataType, JsonDataValue, List, WrongTypeError, JsonDataString, JsonDataNumber, JsonDataObject, Type } from "../sources";
+import { Iterable, JavascriptIterable, JsonDataArray, PreConditionError, JsonDataType, List, WrongTypeError, JsonDataObject } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -17,22 +17,7 @@ export function test(runner: TestRunner): void
                     test.assertEqual(json.toString(), "[]");
                 });
 
-                function createErrorTest(testName: string, elements: JavascriptIterable<JsonDataType>, expected: Error): void
-                {
-                    runner.test(testName, (test: Test) =>
-                    {
-                        test.assertThrows(() => JsonDataArray.create(elements), expected);
-                    });
-                }
-
-                createErrorTest(
-                    "with undefined element",
-                    [undefined!],
-                    new PreConditionError(
-                        "Expression: value",
-                        "Expected: not undefined",
-                        "Actual: undefined",
-                    ));
+                
 
                 function createTest(testName: string, elements: JavascriptIterable<JsonDataType>): void
                 {
@@ -40,7 +25,7 @@ export function test(runner: TestRunner): void
                     {
                         const json: JsonDataArray = JsonDataArray.create(elements);
 
-                        const elementsIterable: Iterable<JsonDataValue> = Iterable.create(elements).map(JsonDataValue.toJsonDataValue);
+                        const elementsIterable: Iterable<JsonDataType> = Iterable.create(elements);
                         test.assertEqual(json.getCount(), elementsIterable.getCount());
                         let index: number = 0;
                         for (const element of elementsIterable)
@@ -53,9 +38,12 @@ export function test(runner: TestRunner): void
 
                 createTest("with undefined elements", undefined!);
                 createTest("with no elements", []);
-                createTest("with one element", [JsonDataNull.create()]);
+                createTest("with one boolean element", [false]);
                 createTest("with one null element", [null]);
-                createTest("with two elements", [JsonDataBoolean.create(false), JsonDataNull.create()]);
+                createTest("with two elements", [false, null]);
+                
+                // I'm not going to validate the entire array's contents for performance reasons.
+                createTest("with one undefined element", [undefined!]);
             });
 
             runner.testFunction("add(JsonDataType)", () =>
@@ -317,8 +305,8 @@ export function test(runner: TestRunner): void
                     runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        const jsonNull: JsonDataNull = array.getNull(index).await();
-                        test.assertNotUndefinedAndNotNull(jsonNull);
+                        const json: null = array.getNull(index).await();
+                        test.assertNull(json);
                     });
                 }
 
@@ -417,135 +405,27 @@ export function test(runner: TestRunner): void
                     new WrongTypeError("Expected string but found number."),
                 );
 
-                function getStringTest(initialValues: Iterable<JsonDataType>, index: number, expected: JsonDataString): void
+                function getStringTest(initialValues: Iterable<JsonDataType>, index: number, expected: string): void
                 {
                     runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        const jsonString: JsonDataString = array.getString(index).await();
-                        test.assertEqual(jsonString, expected);
+                        const json: string = array.getString(index).await();
+                        test.assertEqual(json, expected);
                     });
                 }
 
                 getStringTest(
                     List.create<JsonDataType>(["hello"]),
                     0,
-                    JsonDataString.create("hello"),
+                    "hello",
                 );
                 getStringTest(
                     List.create<JsonDataType>(["hello", 1, 2, "there", 4]),
                     0,
-                    JsonDataString.create("hello"),
+                    "hello",
                 );
                 getStringTest(
-                    List.create<JsonDataType>(["hello", 1, 2, "there", 4]),
-                    3,
-                    JsonDataString.create("there"),
-                );
-            });
-
-            runner.testFunction("getStringValue(index)", () =>
-            {
-                function getStringValueErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
-                {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
-                    {
-                        const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        test.assertThrows(() => array.getStringValue(index).await(), expected);
-                        test.assertEqual(array, JsonDataArray.create(initialValues));
-                    });
-                }
-
-                getStringValueErrorTest(
-                    List.create<JsonDataType>(),
-                    undefined!,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getStringValueErrorTest(
-                    List.create<JsonDataType>(),
-                    null!,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getStringValueErrorTest(
-                    List.create<JsonDataType>(),
-                    -1,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getStringValueErrorTest(
-                    List.create<JsonDataType>(),
-                    0,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getStringValueErrorTest(
-                    List.create<JsonDataType>(),
-                    1,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getStringValueErrorTest(
-                    List.create<JsonDataType>([false]),
-                    -1,
-                    new PreConditionError(
-                        "Expression: index",
-                        "Expected: 0",
-                        "Actual: -1",
-                    ),
-                );
-                getStringValueErrorTest(
-                    List.create<JsonDataType>([false]),
-                    1,
-                    new PreConditionError(
-                        "Expression: index",
-                        "Expected: 0",
-                        "Actual: 1",
-                    ),
-                );
-                getStringValueErrorTest(
-                    List.create<JsonDataType>([20]),
-                    0,
-                    new WrongTypeError("Expected string but found number."),
-                );
-
-                function getStringValueTest(initialValues: Iterable<JsonDataType>, index: number, expected: string): void
-                {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
-                    {
-                        const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        const value: string = array.getStringValue(index).await();
-                        test.assertEqual(value, expected);
-                    });
-                }
-
-                getStringValueTest(
-                    List.create<JsonDataType>(["hello"]),
-                    0,
-                    "hello",
-                );
-                getStringValueTest(
-                    List.create<JsonDataType>(["hello", 1, 2, "there", 4]),
-                    0,
-                    "hello",
-                );
-                getStringValueTest(
                     List.create<JsonDataType>(["hello", 1, 2, "there", 4]),
                     3,
                     "there",
@@ -633,138 +513,30 @@ export function test(runner: TestRunner): void
                     new WrongTypeError("Expected boolean but found number."),
                 );
 
-                function getBooleanTest(initialValues: Iterable<JsonDataType>, index: number, expected: JsonDataBoolean): void
+                function getBooleanTest(initialValues: Iterable<JsonDataType>, index: number, expected: boolean): void
                 {
                     runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        const jsonBoolean: JsonDataBoolean = array.getBoolean(index).await();
-                        test.assertEqual(jsonBoolean, expected);
-                    });
-                }
-
-                getBooleanTest(
-                    List.create<JsonDataType>([false]),
-                    0,
-                    JsonDataBoolean.create(false),
-                );
-                getBooleanTest(
-                    List.create<JsonDataType>([true, 1, 2, false, 4]),
-                    0,
-                    JsonDataBoolean.create(true),
-                );
-                getBooleanTest(
-                    List.create<JsonDataType>([true, 1, 2, false, 4]),
-                    3,
-                    JsonDataBoolean.create(false),
-                );
-            });
-
-            runner.testFunction("getBooleanValue(index)", () =>
-            {
-                function getBooleanValueErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
-                {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
-                    {
-                        const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        test.assertThrows(() => array.getBooleanValue(index).await(), expected);
-                        test.assertEqual(array, JsonDataArray.create(initialValues));
-                    });
-                }
-
-                getBooleanValueErrorTest(
-                    List.create<JsonDataType>(),
-                    undefined!,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getBooleanValueErrorTest(
-                    List.create<JsonDataType>(),
-                    null!,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getBooleanValueErrorTest(
-                    List.create<JsonDataType>(),
-                    -1,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getBooleanValueErrorTest(
-                    List.create<JsonDataType>(),
-                    0,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getBooleanValueErrorTest(
-                    List.create<JsonDataType>(),
-                    1,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getBooleanValueErrorTest(
-                    List.create<JsonDataType>([false]),
-                    -1,
-                    new PreConditionError(
-                        "Expression: index",
-                        "Expected: 0",
-                        "Actual: -1",
-                    ),
-                );
-                getBooleanValueErrorTest(
-                    List.create<JsonDataType>([false]),
-                    1,
-                    new PreConditionError(
-                        "Expression: index",
-                        "Expected: 0",
-                        "Actual: 1",
-                    ),
-                );
-                getBooleanValueErrorTest(
-                    List.create<JsonDataType>([20]),
-                    0,
-                    new WrongTypeError("Expected boolean but found number."),
-                );
-
-                function getBooleanValueTest(initialValues: Iterable<JsonDataType>, index: number, expected: boolean): void
-                {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
-                    {
-                        const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        const value: boolean = array.getBooleanValue(index).await();
+                        const value: boolean = array.getBoolean(index).await();
                         test.assertEqual(value, expected);
                     });
                 }
 
-                getBooleanValueTest(
-                    List.create<JsonDataType>([true]),
-                    0,
-                    true,
-                );
-                getBooleanValueTest(
-                    List.create<JsonDataType>([false, 1, 2, true, 4]),
+                getBooleanTest(
+                    List.create<JsonDataType>([false]),
                     0,
                     false,
                 );
-                getBooleanValueTest(
-                    List.create<JsonDataType>([false, 1, 2, true, 4]),
-                    3,
+                getBooleanTest(
+                    List.create<JsonDataType>([true, 1, 2, false, 4]),
+                    0,
                     true,
+                );
+                getBooleanTest(
+                    List.create<JsonDataType>([true, 1, 2, false, 4]),
+                    3,
+                    false,
                 );
             });
 
@@ -849,135 +621,27 @@ export function test(runner: TestRunner): void
                     new WrongTypeError("Expected number but found string."),
                 );
 
-                function getNumberTest(initialValues: Iterable<JsonDataType>, index: number, expected: JsonDataNumber): void
+                function getNumberTest(initialValues: Iterable<JsonDataType>, index: number, expected: number): void
                 {
                     runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        const jsonNumber: JsonDataNumber = array.getNumber(index).await();
-                        test.assertEqual(jsonNumber, expected);
+                        const json: number = array.getNumber(index).await();
+                        test.assertEqual(json, expected);
                     });
                 }
 
                 getNumberTest(
                     List.create<JsonDataType>([33]),
                     0,
-                    JsonDataNumber.create(33),
+                    33,
                 );
                 getNumberTest(
-                    List.create<JsonDataType>([-10, 1, 2, 30, 4]),
-                    0,
-                    JsonDataNumber.create(-10),
-                );
-                getNumberTest(
-                    List.create<JsonDataType>([-10, 1, 2, 30, 4]),
-                    3,
-                    JsonDataNumber.create(30),
-                );
-            });
-
-            runner.testFunction("getNumberValue(index)", () =>
-            {
-                function getNumberValueErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
-                {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
-                    {
-                        const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        test.assertThrows(() => array.getNumberValue(index).await(), expected);
-                        test.assertEqual(array, JsonDataArray.create(initialValues));
-                    });
-                }
-
-                getNumberValueErrorTest(
-                    List.create<JsonDataType>(),
-                    undefined!,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getNumberValueErrorTest(
-                    List.create<JsonDataType>(),
-                    null!,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getNumberValueErrorTest(
-                    List.create<JsonDataType>(),
-                    -1,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getNumberValueErrorTest(
-                    List.create<JsonDataType>(),
-                    0,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getNumberValueErrorTest(
-                    List.create<JsonDataType>(),
-                    1,
-                    new PreConditionError(
-                        "Expression: count",
-                        "Expected: greater than or equal to 1",
-                        "Actual: 0",
-                    ),
-                );
-                getNumberValueErrorTest(
-                    List.create<JsonDataType>([false]),
-                    -1,
-                    new PreConditionError(
-                        "Expression: index",
-                        "Expected: 0",
-                        "Actual: -1",
-                    ),
-                );
-                getNumberValueErrorTest(
-                    List.create<JsonDataType>([false]),
-                    1,
-                    new PreConditionError(
-                        "Expression: index",
-                        "Expected: 0",
-                        "Actual: 1",
-                    ),
-                );
-                getNumberValueErrorTest(
-                    List.create<JsonDataType>([{}]),
-                    0,
-                    new WrongTypeError("Expected number but found object."),
-                );
-
-                function getNumberValueTest(initialValues: Iterable<JsonDataType>, index: number, expected: number): void
-                {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
-                    {
-                        const array: JsonDataArray = JsonDataArray.create(initialValues);
-                        const value: number = array.getNumberValue(index).await();
-                        test.assertEqual(value, expected);
-                    });
-                }
-
-                getNumberValueTest(
-                    List.create<JsonDataType>([15]),
-                    0,
-                    15,
-                );
-                getNumberValueTest(
                     List.create<JsonDataType>([-10, 1, 2, 30, 4]),
                     0,
                     -10,
                 );
-                getNumberValueTest(
+                getNumberTest(
                     List.create<JsonDataType>([-10, 1, 2, 30, 4]),
                     3,
                     30,
@@ -1198,60 +862,6 @@ export function test(runner: TestRunner): void
                     3,
                     JsonDataArray.create([30]),
                 );
-            });
-
-            runner.testFunction("getTypeDisplayName()", (test: Test) =>
-            {
-                const jsonArray: JsonDataArray = JsonDataArray.create();
-                test.assertEqual("array", jsonArray.getTypeDisplayName());
-            });
-
-            runner.testFunction("as(Type<T>,string)", () =>
-            {
-                function asErrorTest<T extends JsonDataType>(type: Type<T>, typeDisplayName: string, expected: Error): void
-                {
-                    runner.test(`with ${runner.andList([type, typeDisplayName].map(runner.toString))}`, (test: Test) =>
-                    {
-                        const jsonArray: JsonDataArray = JsonDataArray.create();
-                        test.assertThrows(() => jsonArray.as(type, typeDisplayName).await(), expected);
-                    });
-                }
-
-                asErrorTest(
-                    JsonDataNull,
-                    JsonDataNull.typeDisplayName,
-                    new WrongTypeError("Expected null but found array."),
-                );
-                asErrorTest(
-                    JsonDataBoolean,
-                    JsonDataBoolean.typeDisplayName,
-                    new WrongTypeError("Expected boolean but found array."),
-                );
-                asErrorTest(
-                    JsonDataNumber,
-                    JsonDataNumber.typeDisplayName,
-                    new WrongTypeError("Expected number but found array."));
-                asErrorTest(
-                    JsonDataString,
-                    JsonDataString.typeDisplayName,
-                    new WrongTypeError("Expected string but found array."),
-                );
-                asErrorTest(
-                    JsonDataObject,
-                    JsonDataObject.typeDisplayName,
-                    new WrongTypeError("Expected object but found array."),
-                );
-
-                function asTest<T extends JsonDataType>(type: Type<T>, typeDisplayName: string): void
-                {
-                    runner.test(`with ${runner.andList([type, typeDisplayName].map(runner.toString))}`, (test: Test) =>
-                    {
-                        const jsonArray: JsonDataArray = JsonDataArray.create();
-                        test.assertSame(jsonArray.as(type, typeDisplayName).await(), jsonArray);
-                    });
-                }
-
-                asTest(JsonDataArray, JsonDataArray.typeDisplayName);
             });
         });
     });

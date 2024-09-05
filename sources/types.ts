@@ -7,12 +7,51 @@ import { JavascriptIterable, JavascriptIterator } from "./javascript";
 export type Type<T> = Function & { prototype: T };
 
 /**
+ * If the provided {@link value} is of type {@link T} (according to the provided {@link typeCheck}),
+ * then return the {@link value}. Otherwise return undefined.
+ * @param typeCheck The function that will be used to determine if the {@link value} is of type
+ * {@link T}.
+ * @param value The value to check.
+ */
+export function as<T>(typeCheck: (value: unknown) => value is T, value: unknown): T | undefined
+{
+    return typeCheck(value) ? value : undefined;
+}
+
+/**
+ * Get whether the provided value is undefined.
+ * @param value The value to check.
+ */
+export function isUndefined(value: unknown): value is undefined
+{
+    return value === undefined;
+}
+
+/**
+ * Get whether the provided value is null.
+ * @param value The value to check.
+ */
+export function isNull(value: unknown): value is null
+{
+    return value === null;
+}
+
+/**
+ * Return the provided value if it is null, otherwise return undefined.
+ * @param value The value to check.
+ */
+export function asNull(value: unknown): null | undefined
+{
+    return as(isNull, value);
+}
+
+/**
  * Get whether the provided value is undefined or null.
  * @param value The value to check.
  */
 export function isUndefinedOrNull(value: unknown): value is undefined | null
 {
-    return value === undefined || value === null;
+    return isUndefined(value) || isNull(value);
 }
 
 /**
@@ -25,12 +64,30 @@ export function isBoolean(value: unknown): value is boolean
 }
 
 /**
+ * Return the provided value if it is a boolean, otherwise return undefined.
+ * @param value The value to check.
+ */
+export function asBoolean(value: unknown): boolean | undefined
+{
+    return as(isBoolean, value);
+}
+
+/**
  * Get whether the provided value is a {@link number}.
  * @param value The value to check.
  */
 export function isNumber(value: unknown): value is number
 {
     return typeof value === "number";
+}
+
+/**
+ * Return the provided value if it is a number, otherwise return undefined.
+ * @param value The value to check.
+ */
+export function asNumber(value: unknown): number | undefined
+{
+    return as(isNumber, value);
 }
 
 /**
@@ -43,12 +100,30 @@ export function isString(value: unknown): value is string
 }
 
 /**
+ * Return the provided value if it is a string, otherwise return undefined.
+ * @param value The value to check.
+ */
+export function asString(value: unknown): string | undefined
+{
+    return as(isString, value);
+}
+
+/**
  * Get whether the provided value is a {@link function}.
  * @param value The value to check.
  */
 export function isFunction(value: unknown): value is Function
 {
     return typeof value === "function";
+}
+
+/**
+ * Return the provided value if it is a function, otherwise return undefined.
+ * @param value The value to check.
+ */
+export function asFunction(value: unknown): Function | undefined
+{
+    return as(isFunction, value);
 }
 
 /**
@@ -71,12 +146,31 @@ export function isFunctionWithParameterCount(value: unknown, parameterCount: num
 }
 
 /**
+ * Return the provided value if it is a function with the provided {@link parameterCount}, otherwise
+ * return undefined.
+ * @param value The value to check.
+ */
+export function asFunctionWithParameterCount(value: unknown, parameterCount: number): Function | undefined
+{
+    return as((v: unknown) => isFunctionWithParameterCount(v, parameterCount), value);
+}
+
+/**
  * Get whether the provided value is an {@link Array}.
  * @param value The value to check.
  */
 export function isArray(value: unknown): value is unknown[]
 {
     return Array.isArray(value);
+}
+
+/**
+ * Return the provided value if it is an array, otherwise return undefined.
+ * @param value The value to check.
+ */
+export function asArray(value: unknown): unknown[] | undefined
+{
+    return as(isArray, value);
 }
 
 /**
@@ -89,6 +183,15 @@ export function isObjectOrArrayOrNull(value: unknown): value is {} | unknown[] |
 }
 
 /**
+ * Return the provided value if it is an array, otherwise return undefined.
+ * @param value The value to check.
+ */
+export function asObjectOrArrayOrNull(value: unknown): {} | unknown[] | null | undefined
+{
+    return as(isObjectOrArrayOrNull, value);
+}
+
+/**
  * Get whether the provided value is an {@link Object}.
  * @param value The value to check.
  * @returns 
@@ -96,6 +199,15 @@ export function isObjectOrArrayOrNull(value: unknown): value is {} | unknown[] |
 export function isObject(value: unknown): value is {}
 {
     return isObjectOrArrayOrNull(value) && !!value && !isArray(value);
+}
+
+/**
+ * Return the provided value if it is an {@link Object}, otherwise return undefined.
+ * @param value The value to check.
+ */
+export function asObject(value: unknown): {} | undefined
+{
+    return as(isObject, value);
 }
 
 /**
