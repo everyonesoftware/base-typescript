@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Iterator, JavascriptIterable, Map, NotFoundError } from "../sources";
+import { isMap, Iterator, JavascriptIterable, Map, NotFoundError } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -31,6 +31,7 @@ export function mapTests(runner: TestRunner, creator: () => Map<number,string>):
             const map: Map<number,string> = creator();
             test.assertNotUndefinedAndNotNull(map);
             test.assertEqual(map.getCount(), 0);
+            test.assertTrue(isMap(map));
         });
 
         runner.testFunction("containsKey(TKey)", () =>
@@ -106,8 +107,8 @@ export function mapTests(runner: TestRunner, creator: () => Map<number,string>):
             }
 
             toStringTest(creator(), "{}");
-            toStringTest(creator().set(1, "one"), "{1:one}");
-            toStringTest(creator().set(2, "2").set(1, "one"), "{2:2,1:one}");
+            toStringTest(creator().set(1, "one"), `{1:"one"}`);
+            toStringTest(creator().set(2, "2").set(1, "one"), `{2:"2",1:"one"}`);
         });
 
         runner.testFunction("iterateKeys()", () =>
