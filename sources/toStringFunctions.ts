@@ -6,27 +6,17 @@ import { escapeAndQuote, join } from "./strings";
 import { isArray, isIterable, isObject, isString } from "./types";
 
 /**
- * A function that determines if a the value is a match.
- */
-export type MatchFunction = (value: unknown) => boolean;
-
-/**
- * A function that converts the value into a {@link String}.
- */
-export type ToStringFunction<T> = (value: T) => string;
-
-/**
  * A collection of {@link ToStringFunction}s.
  */
 export class ToStringFunctions
 {
-    private readonly functions: List<[MatchFunction, ToStringFunction<any>]>;
-    private defaultToStringFunction: ToStringFunction<unknown>;
+    private readonly functions: List<[(value: unknown) => boolean, (value: unknown) => string]>;
+    private defaultToStringFunction: (value: unknown) => string;
 
     private constructor()
     {
         this.functions = List.create();
-        this.defaultToStringFunction = (value: any) => this.defaultToString(value);
+        this.defaultToStringFunction = (value: unknown) => this.defaultToString(value);
     }
 
     public static create(): ToStringFunctions
@@ -71,7 +61,7 @@ export class ToStringFunctions
      */
     public toString(value: unknown): string
     {
-        let toStringFunction: ToStringFunction<unknown> = this.defaultToStringFunction;
+        let toStringFunction: ((value: unknown) => string) = this.defaultToStringFunction;
         for (const [match, toString] of this.functions)
         {
             if (match(value))
@@ -83,12 +73,12 @@ export class ToStringFunctions
         return toStringFunction(value);
     }
 
-    public add<T>(matchFunction: MatchFunction, toStringFunction: ToStringFunction<T>): this
+    public add<T>(matchFunction: (value: unknown) => value is T, toStringFunction: (value: T) => string): this
     {
         Pre.condition.assertNotUndefinedAndNotNull(matchFunction, "matchFunction");
         Pre.condition.assertNotUndefinedAndNotNull(toStringFunction, "toStringFunction");
 
-        this.functions.insert(0, [matchFunction, toStringFunction]);
+        this.functions.insert(0, [matchFunction, toStringFunction as (value: unknown) => string]);
 
         return this;
     }
