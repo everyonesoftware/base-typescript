@@ -1,7 +1,9 @@
+import { Iterable } from "./iterable";
 import { List } from "./list";
+import { isMap, Map } from "./map";
 import { Pre } from "./pre";
 import { escapeAndQuote, join } from "./strings";
-import { isArray, isObject, isString } from "./types";
+import { isArray, isIterable, isObject, isString } from "./types";
 
 /**
  * A function that determines if a the value is a match.
@@ -89,5 +91,15 @@ export class ToStringFunctions
         this.functions.insert(0, [matchFunction, toStringFunction]);
 
         return this;
+    }
+
+    public addIterable(): this
+    {
+        return this.add(isIterable, (value: Iterable<unknown>) => value.toString(this));
+    }
+
+    public addMap(): this
+    {
+        return this.add(isMap, (value: Map<unknown,unknown>) => value.toString(this));
     }
 }

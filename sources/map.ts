@@ -6,6 +6,20 @@ import { MapIterable } from "./mapIterable";
 import { Pre } from "./pre";
 import { Result } from "./result";
 import { join } from "./strings";
+import { ToStringFunctions } from "./toStringFunctions";
+import { hasFunction } from "./types";
+
+export function isMap(value: unknown): value is Map<unknown,unknown>
+{
+    return value instanceof Map ||
+        (
+            hasFunction(value, "containsKey", 1) &&
+            hasFunction(value, "get", 1) &&
+            hasFunction(value, "set", 2) &&
+            hasFunction(value, "iterateKeys", 0) &&
+            hasFunction(value, "iterateValues", 0)
+        );
+}
 
 /**
  * A type that maps TKey values to TValue values.
@@ -29,11 +43,23 @@ export abstract class Map<TKey,TValue> implements Iterable<[TKey,TValue]>
 
     public abstract toArray(): [TKey, TValue][];
 
-    public abstract toString(): string;
+    /**
+     * Get the {@link String} representation of this {@link Map}.
+     */
+    public abstract toString(toStringFunctions?: ToStringFunctions): string;
 
-    public static toString<TKey,TValue>(map: Map<TKey,TValue>): string
+    /**
+     * Get the {@link String} representation of the provided {@link Map}.
+     */
+    public static toString<TKey,TValue>(map: Map<TKey,TValue>, toStringFunctions?: ToStringFunctions): string
     {
-        return `{${join(",", map.map((entry: [TKey,TValue]) => `${entry[0]}:${entry[1]}`))}}`;
+        Pre.condition.assertNotUndefinedAndNotNull(map, "iterable");
+
+        if (!toStringFunctions)
+        {
+            toStringFunctions = ToStringFunctions.create();
+        }
+        return `{${join(",", map.map((entry: [unknown,unknown]) => `${toStringFunctions.toString(entry[0])}:${toStringFunctions.toString(entry[1])}`))}}`;
     }
 
     public abstract map<TOutput>(mapping: (value: [TKey, TValue]) => TOutput): MapIterable<[TKey, TValue], TOutput>;

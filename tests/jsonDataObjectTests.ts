@@ -39,7 +39,7 @@ export function test(runner: TestRunner): void
                     const json: JsonDataObject = JsonDataObject.create({a:1});
                     test.assertTrue(json.any());
                     test.assertEqual(json.getPropertyCount(), 1);
-                    test.assertEqual(json.toString(), `{a:1}`);
+                    test.assertEqual(json.toString(), `{"a":1}`);
                 });
 
                 runner.test("with undefined property value", (test: Test) =>
@@ -56,7 +56,7 @@ export function test(runner: TestRunner): void
                     const json: JsonDataObject = JsonDataObject.create({a:{b:undefined!}});
                     test.assertTrue(json.any());
                     test.assertEqual(json.getPropertyCount(), 1);
-                    test.assertEqual(json.toString(), `{a:[object Object]}`);
+                    test.assertEqual(json.toString(), `{"a":{"b":undefined}}`);
                 });
 
                 runner.test("with empty JsonDataObject", (test: Test) =>
