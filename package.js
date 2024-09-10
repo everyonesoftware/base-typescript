@@ -1,7 +1,7 @@
 // Copied from https://janessagarrow.com/blog/typescript-and-esbuild/
 
 const { build } = require("esbuild");
-const { dependencies, engines, peerDependencies } = require("./package.json")
+const { dependencies, engines, peerDependencies } = require("./package.json");
 const { Generator } = require('npm-dts');
 
 const entryPoint = "sources/index.ts";
@@ -31,6 +31,7 @@ const sharedConfig = {
   bundle: true,
   minify: true,
   external: external,
+  sourcemap: "inline",
 };
 
 build({
