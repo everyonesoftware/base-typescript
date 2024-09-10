@@ -61,7 +61,7 @@ export function test(runner: TestRunner): void
 
                 function addTest(initialValues: Iterable<JsonDataType>, toAdd: JsonDataType, expected: Iterable<JsonDataType>): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, toAdd].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, toAdd])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const addResult: JsonDataArray = array.add(toAdd);
@@ -81,7 +81,7 @@ export function test(runner: TestRunner): void
             {
                 function addAllErrorTest(initialValues: Iterable<JsonDataType>, toAdd: Iterable<JsonDataType>, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, toAdd].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, toAdd])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         test.assertThrows(() => array.addAll(toAdd), expected);
@@ -110,7 +110,7 @@ export function test(runner: TestRunner): void
 
                 function addAllTest(initialValues: Iterable<JsonDataType>, toAdd: Iterable<JsonDataType>, expected: Iterable<JsonDataType>): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, toAdd].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, toAdd])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const addResult: JsonDataArray = array.addAll(toAdd);
@@ -135,7 +135,7 @@ export function test(runner: TestRunner): void
             {
                 function insertErrorTest(initialValues: Iterable<JsonDataType>, index: number, toInsert: JsonDataType, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index, toInsert].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index, toInsert])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         test.assertThrows(() => array.insert(index, toInsert), expected);
@@ -196,7 +196,7 @@ export function test(runner: TestRunner): void
 
                 function insertTest(initialValues: Iterable<JsonDataType>, index: number, toInsert: JsonDataType, expected: Iterable<JsonDataType>): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index, toInsert].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index, toInsert])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const insertResult: JsonDataArray = array.insert(index, toInsert);
@@ -223,7 +223,7 @@ export function test(runner: TestRunner): void
             {
                 function getNullErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         test.assertThrows(() => array.getNull(index).await(), expected);
@@ -302,7 +302,7 @@ export function test(runner: TestRunner): void
 
                 function getNullTest(initialValues: Iterable<JsonDataType>, index: number): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const json: null = array.getNull(index).await();
@@ -328,7 +328,7 @@ export function test(runner: TestRunner): void
             {
                 function getStringErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         test.assertThrows(() => array.getString(index).await(), expected);
@@ -407,7 +407,7 @@ export function test(runner: TestRunner): void
 
                 function getStringTest(initialValues: Iterable<JsonDataType>, index: number, expected: string): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const json: string = array.getString(index).await();
@@ -436,7 +436,7 @@ export function test(runner: TestRunner): void
             {
                 function getBooleanErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         test.assertThrows(() => array.getBoolean(index).await(), expected);
@@ -515,7 +515,7 @@ export function test(runner: TestRunner): void
 
                 function getBooleanTest(initialValues: Iterable<JsonDataType>, index: number, expected: boolean): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const value: boolean = array.getBoolean(index).await();
@@ -544,7 +544,7 @@ export function test(runner: TestRunner): void
             {
                 function getNumberErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         test.assertThrows(() => array.getNumber(index).await(), expected);
@@ -623,7 +623,7 @@ export function test(runner: TestRunner): void
 
                 function getNumberTest(initialValues: Iterable<JsonDataType>, index: number, expected: number): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const json: number = array.getNumber(index).await();
@@ -652,7 +652,7 @@ export function test(runner: TestRunner): void
             {
                 function getObjectErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         test.assertThrows(() => array.getObject(index).await(), expected);
@@ -731,7 +731,7 @@ export function test(runner: TestRunner): void
 
                 function getObjectTest(initialValues: Iterable<JsonDataType>, index: number, expected: JsonDataObject): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const jsonObject: JsonDataObject = array.getObject(index).await();
@@ -760,7 +760,7 @@ export function test(runner: TestRunner): void
             {
                 function getArrayErrorTest(initialValues: Iterable<JsonDataType>, index: number, expected: Error): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         test.assertThrows(() => array.getArray(index).await(), expected);
@@ -839,7 +839,7 @@ export function test(runner: TestRunner): void
 
                 function getArrayTest(initialValues: Iterable<JsonDataType>, index: number, expected: JsonDataArray): void
                 {
-                    runner.test(`with ${runner.andList([initialValues, index].map(runner.toString))}`, (test: Test) =>
+                    runner.test(`with ${runner.andList([initialValues, index])}`, (test: Test) =>
                     {
                         const array: JsonDataArray = JsonDataArray.create(initialValues);
                         const jsonArray: JsonDataArray = array.getArray(index).await();

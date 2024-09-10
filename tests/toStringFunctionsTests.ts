@@ -34,6 +34,9 @@ export function test(runner: TestRunner): void
                     toStringTest([undefined, undefined], "[undefined,undefined]");
                     toStringTest([1, 2.3, false], "[1,2.3,false]");
                     toStringTest([[[]]], "[[[]]]");
+                    toStringTest(Iterable.create(), `{"array":[]}`);
+                    toStringTest(Iterable.create<string>(["abc"]), `{"array":["abc"]}`);
+                    toStringTest(Iterable.create([1, 2, 3]), `{"array":[1,2,3]}`);
                     toStringTest(List.create(), `{"array":[]}`);
                     toStringTest(List.create<string>(["abc"]), `{"array":["abc"]}`);
                     toStringTest(List.create([1, 2, 3]), `{"array":[1,2,3]}`);
@@ -66,6 +69,9 @@ export function test(runner: TestRunner): void
                     toStringTest([undefined, undefined], "[undefined,undefined]");
                     toStringTest([1, 2.3, false], "[1,2.3,false]");
                     toStringTest([[[]]], "[[[]]]");
+                    toStringTest(Iterable.create(), `[]`);
+                    toStringTest(Iterable.create<string>(["abc"]), `["abc"]`);
+                    toStringTest(Iterable.create([1, 2, 3]), `[1,2,3]`);
                     toStringTest(List.create(), `[]`);
                     toStringTest(List.create<string>(["abc"]), `["abc"]`);
                     toStringTest(List.create([1, 2, 3]), `[1,2,3]`);
@@ -99,6 +105,9 @@ export function test(runner: TestRunner): void
                     toStringTest([undefined, undefined], "[undefined,undefined]");
                     toStringTest([1, 2.3, false], "[1,2.3,false]");
                     toStringTest([[[]]], "[[[]]]");
+                    toStringTest(Iterable.create(), `{"array":[]}`);
+                    toStringTest(Iterable.create<string>(["abc"]), `{"array":["abc"]}`);
+                    toStringTest(Iterable.create([1, 2, 3]), `{"array":[1,2,3]}`);
                     toStringTest(List.create(), `{"array":[]}`);
                     toStringTest(List.create<string>(["abc"]), `{"array":["abc"]}`);
                     toStringTest(List.create([1, 2, 3]), `{"array":[1,2,3]}`);
