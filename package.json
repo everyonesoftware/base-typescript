@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/everyonesoftware/base-typescript"
   },
-  "version": "23.0.0",
+  "version": "24.0.0",
   "module": "outputs/package/index.esm.js",
   "main": "outputs/package/index.js",
   "types": "outputs/package/index.d.ts",
@@ -25,17 +25,17 @@
     "test": "npm run build && npm run just-tests"
   },
   "devDependencies": {
-    "@everyonesoftware/test-typescript": "7.0.0",
-    "@everyonesoftware/mocha-typescript": "7.0.0",
-    "@types/node": "20.14.10",
+    "@everyonesoftware/test-typescript": "10.0.0",
+    "@everyonesoftware/mocha-typescript": "11.0.0",
+    "@types/node": "22.5.4",
     "@typescript-eslint/eslint-plugin": "7.15.0",
     "@typescript-eslint/parser": "7.15.0",
     "c8": "10.1.2",
-    "esbuild": "0.23.0",
+    "esbuild": "0.23.1",
     "eslint": "8.56.0",
-    "npm-dts": "1.3.12",
+    "npm-dts": "1.3.13",
     "source-map-support": "0.5.21",
-    "typescript": "5.5.3",
+    "typescript": "5.5.4",
     "rimraf": "6.0.1"
   },
   "mocha": {
