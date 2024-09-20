@@ -1,17 +1,30 @@
+import { DocumentRange } from "./documentRange";
 import { orList } from "./english";
 import { JavascriptIterable } from "./javascript";
 import { Pre } from "./pre";
 import { join } from "./strings";
-import { isJavascriptIterable, isString } from "./types";
+import { isString } from "./types";
 
 /**
  * An {@link Error} that is thrown when a parser fails.
  */
 export class ParseError extends Error
 {
-    public constructor(...message: string[])
+    private readonly range: DocumentRange;
+
+    public constructor(range: DocumentRange, ...message: string[])
     {
+        Pre.condition.assertNotUndefinedAndNotNull(range, "range");
+        Pre.condition.assertNotUndefinedAndNotNull(message, "message");
+
         super(join({ separator: "\n", values: message }));
+
+        this.range = range;
+    }
+
+    public getRange(): DocumentRange
+    {
+        return this.range;
     }
 }
 
@@ -22,23 +35,25 @@ export class MissingValueParseError extends ParseError
 {
     private readonly missingValue: string;
 
-    public constructor(missingValue: string);
-    public constructor(parameters: { missingValue: string });
-    constructor(missingValueOrParameters: string | { missingValue: string })
+    public constructor(range: DocumentRange, missingValue: string);
+    public constructor(parameters: { range: DocumentRange, missingValue: string });
+    constructor(rangeOrParameters: DocumentRange | { range: DocumentRange, missingValue: string }, missingValue?: string)
     {
-        let missingValue: string;
-        if (isString(missingValueOrParameters))
+        let range: DocumentRange;
+        if (rangeOrParameters instanceof DocumentRange)
         {
-            missingValue = missingValueOrParameters;
+            range = rangeOrParameters;
         }
         else
         {
-            missingValue = missingValueOrParameters.missingValue;
+            range = rangeOrParameters.range;
+            missingValue = rangeOrParameters.missingValue;
         }
 
+        Pre.condition.assertNotUndefinedAndNotNull(range, "range");
         Pre.condition.assertNotEmpty(missingValue, "missingValue");
 
-        super(`Missing ${missingValue}.`);
+        super(range, `Missing ${missingValue}.`);
 
         this.missingValue = missingValue;
     }
@@ -61,21 +76,23 @@ export class WrongValueParseError extends ParseError
     private readonly expected: string | JavascriptIterable<string>;
     private readonly actual: string;
 
-    public constructor(expected: string | JavascriptIterable<string>, actual: string);
-    public constructor(parameters: { expected: string | JavascriptIterable<string>, actual: string });
-    constructor(expectedOrParameters: string | JavascriptIterable<string> | { expected: string | JavascriptIterable<string>, actual: string }, actual?: string)
+    public constructor(range: DocumentRange, expected: string | JavascriptIterable<string>, actual: string);
+    public constructor(parameters: { range: DocumentRange, expected: string | JavascriptIterable<string>, actual: string });
+    constructor(rangeOrParameters: DocumentRange | { range: DocumentRange, expected: string | JavascriptIterable<string>, actual: string }, expected?: string | JavascriptIterable<string>, actual?: string)
     {
-        let expected: string | JavascriptIterable<string>;
-        if (isString(expectedOrParameters) || isJavascriptIterable(expectedOrParameters))
+        let range: DocumentRange;
+        if (rangeOrParameters instanceof DocumentRange)
         {
-            expected = expectedOrParameters;
+            range = rangeOrParameters;
         }
         else
         {
-            expected = expectedOrParameters.expected;
-            actual = expectedOrParameters.actual;
+            range = rangeOrParameters.range;
+            expected = rangeOrParameters.expected;
+            actual = rangeOrParameters.actual;
         }
 
+        Pre.condition.assertNotUndefinedAndNotNull(range, "range");
         Pre.condition.assertNotUndefinedAndNotNull(expected, "expected");
         Pre.condition.assertNotUndefinedAndNotNull(actual, "actual");
 
@@ -84,7 +101,7 @@ export class WrongValueParseError extends ParseError
             expected = [expected];
         }
 
-        super(`Expected ${orList(expected)}, but found ${actual} instead.`);
+        super(range, `Expected ${orList(expected)}, but found ${actual} instead.`);
 
         this.expected = expected;
         this.actual = actual;
@@ -104,42 +121,5 @@ export class WrongValueParseError extends ParseError
     public getActual(): string
     {
         return this.actual;
-    }
-}
-
-/**
- * A {@link ParseError} that is thrown when a value is read when no value is expected.
- */
-export class UnexpectedValueParseError extends ParseError
-{
-    private readonly unexpectedValue: string;
-
-    public constructor(unexpectedValue: string);
-    public constructor(parameters: { unexpectedValue: string });
-    constructor(unexpectedValueOrParameters: string | { unexpectedValue: string })
-    {
-        let unexpectedValue: string;
-        if (isString(unexpectedValueOrParameters))
-        {
-            unexpectedValue = unexpectedValueOrParameters;
-        }
-        else
-        {
-            unexpectedValue = unexpectedValueOrParameters.unexpectedValue;
-        }
-
-        Pre.condition.assertNotEmpty(unexpectedValue, "unexpectedValue");
-
-        super(`Unexpected value: ${unexpectedValue}`);
-
-        this.unexpectedValue = unexpectedValue;
-    }
-
-    /**
-     * Get the unexpected value.
-     */
-    public getUnexpectedValue(): string
-    {
-        return this.unexpectedValue;
     }
 }

@@ -13,7 +13,7 @@ export function test(runner: TestRunner): void
             {
                 function createErrorTest(start: DocumentPosition, expected: Error): void
                 {
-                    runner.test(`with ${runner.toString(start)} and no end argument`, (test: Test) =>
+                    runner.test(`with ${runner.toString(start)} and no afterEnd argument`, (test: Test) =>
                     {
                         test.assertThrows(() => DocumentRange.create(start), expected);
                     });
@@ -32,13 +32,13 @@ export function test(runner: TestRunner): void
 
                 function createTest(start: DocumentPosition): void
                 {
-                    runner.test(`with ${runner.toString(start)} and no end argument`, (test: Test) =>
+                    runner.test(`with ${runner.toString(start)} and no afterEnd argument`, (test: Test) =>
                     {
                         const range: DocumentRange = DocumentRange.create(start);
                         test.assertNotUndefinedAndNotNull(range);
                         test.assertSame(start, range.getStart());
-                        test.assertSame(start, range.getEnd());
-                        test.assertTrue(range.contains(start));
+                        test.assertSame(start, range.getAfterEnd());
+                        test.assertFalse(range.contains(start));
                     });
                 }
 
