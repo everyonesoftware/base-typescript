@@ -1,49 +1,35 @@
-// import { DocumentRange } from "./documentRange";
-// import { JsonIssueType } from "./jsonIssueType"
-// import { Pre } from "./pre";
+import { DocumentRange } from "./documentRange";
+import { Pre } from "./pre";
 
-// /**
-//  * An issue that can be reported while tokenizing or parsing a JSON document.
-//  */
-// export class JsonIssue
-// {
-//     private readonly type: JsonIssueType;
-//     private readonly message: string;
-//     private readonly range: DocumentRange;
+/**
+ * An issue that can be reported while tokenizing or parsing a JSON document.
+ */
+export class JsonIssue
+{
+    private readonly message: string;
+    private readonly range: DocumentRange;
 
-//     protected constructor(type: JsonIssueType, message: string, range: DocumentRange)
-//     {
-//         Pre.condition.assertNotUndefinedAndNotNull(type, "type");
-//         Pre.condition.assertNotEmpty(message, "message");
-//         Pre.condition.assertNotUndefinedAndNotNull(range, "range");
+    protected constructor(message: string, range: DocumentRange)
+    {
+        Pre.condition.assertNotEmpty(message, "message");
+        Pre.condition.assertNotUndefinedAndNotNull(range, "range");
 
-//         this.type = type;
-//         this.message = message;
-//         this.range = range;
-//     }
+        this.message = message;
+        this.range = range;
+    }
 
-//     public static create(type: JsonIssueType, message: string, range: DocumentRange): JsonIssue
-//     {
-//         return new JsonIssue(type, message, range);
-//     }
+    public static create(message: string, range: DocumentRange): JsonIssue
+    {
+        return new JsonIssue(message, range);
+    }
 
-//     public static error(message: string, range: DocumentRange): JsonIssue
-//     {
-//         return JsonIssue.create(JsonIssueType.Error, message, range);
-//     }
+    public getMessage(): string
+    {
+        return this.message;
+    }
 
-//     public getType(): JsonIssueType
-//     {
-//         return this.type;
-//     }
-
-//     public getMessage(): string
-//     {
-//         return this.message;
-//     }
-
-//     public getRange(): DocumentRange
-//     {
-//         return this.range;
-//     }
-// }
+    public getRange(): DocumentRange
+    {
+        return this.range;
+    }
+}

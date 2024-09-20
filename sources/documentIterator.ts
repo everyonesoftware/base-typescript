@@ -41,7 +41,7 @@ export class DocumentIterator extends IteratorDecorator<string>
     {
         Pre.condition.assertTrue(this.hasStarted(), "this.hasStarted()");
 
-        return this.position;
+        return this.position.clone();
     }
 
     /**

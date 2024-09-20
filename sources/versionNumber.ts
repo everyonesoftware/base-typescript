@@ -1,13 +1,14 @@
 import { Comparable } from "./comparable";
 import { Comparison } from "./comparison";
+import { DocumentIterator } from "./documentIterator";
+import { DocumentRange } from "./documentRange";
 import { NumberComparer } from "./numberComparer";
-import { readUnsignedInteger } from "./numbers";
-import { MissingValueParseError } from "./parseError";
+import { MissingValueParseError, WrongValueParseError } from "./parseError";
 import { Pre } from "./pre";
 import { Result } from "./result";
 import { StringComparer } from "./stringComparer";
 import { StringIterator } from "./stringIterator";
-import { getLength, isDigit, isWhitespace } from "./strings";
+import { escapeAndQuote, getLength, isDigit, isWhitespace } from "./strings";
 
 export class VersionNumber extends Comparable<VersionNumber>
 {
@@ -34,7 +35,7 @@ export class VersionNumber extends Comparable<VersionNumber>
         {
             const result: VersionNumber = VersionNumber.create();
 
-            const characters: StringIterator = StringIterator.create(text).start();
+            const characters: DocumentIterator = DocumentIterator.create(StringIterator.create(text)).start();
 
             while (characters.hasCurrent() && isWhitespace(characters.getCurrent()))
             {
@@ -43,13 +44,16 @@ export class VersionNumber extends Comparable<VersionNumber>
 
             if (!characters.hasCurrent())
             {
-                throw new MissingValueParseError("version number");
+                throw new MissingValueParseError(
+                    DocumentRange.create(characters.getPosition()),
+                    "version number",
+                );
             }
 
             let suffix: string = "";
             if (isDigit(characters.getCurrent()))
             {
-                result.addNumberSegment(readUnsignedInteger(characters).await());
+                result.addNumberSegment(VersionNumber.readUnsignedInteger(characters).await());
 
                 while (characters.hasCurrent() && characters.getCurrent() === ".")
                 {
@@ -61,7 +65,7 @@ export class VersionNumber extends Comparable<VersionNumber>
                         break;
                     }
 
-                    result.addNumberSegment(readUnsignedInteger(characters).await());
+                    result.addNumberSegment(VersionNumber.readUnsignedInteger(characters).await());
                 }
             }
 
@@ -75,6 +79,40 @@ export class VersionNumber extends Comparable<VersionNumber>
             }
 
             return result;
+        });
+    }
+
+    private static readUnsignedInteger(characters: DocumentIterator): Result<number>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(characters, "characters");
+
+        return Result.create(() =>
+        {
+            characters.start();
+
+            if (!characters.hasCurrent())
+            {
+                throw new MissingValueParseError(
+                    DocumentRange.create(characters.getPosition()),
+                    "unsigned integer.");
+            }
+            else if (!isDigit(characters.getCurrent()))
+            {
+                throw new WrongValueParseError(
+                    DocumentRange.create(characters.getPosition()),
+                    `unsigned integer`,
+                    escapeAndQuote(characters.getCurrent()),
+                );
+            }
+
+            let resultText: string = "";
+            do
+            {
+                resultText += characters.takeCurrent();
+            }
+            while (characters.hasCurrent() && isDigit(characters.getCurrent()));
+
+            return parseInt(resultText);
         });
     }
 

@@ -5,48 +5,50 @@ import { isNumber, isUndefinedOrNull } from "./types";
 export class DocumentRange
 {
     private readonly start: DocumentPosition;
-    private readonly end: DocumentPosition;
+    private readonly afterEnd: DocumentPosition;
 
-    protected constructor(start: DocumentPosition, end: DocumentPosition)
+    protected constructor(start: DocumentPosition, afterEnd: DocumentPosition)
     {
         Pre.condition.assertNotUndefinedAndNotNull(start, "start");
-        Pre.condition.assertNotUndefinedAndNotNull(end, "end");
+        Pre.condition.assertNotUndefinedAndNotNull(afterEnd, "afterEnd");
 
         this.start = start;
-        this.end = end;
+        this.afterEnd = afterEnd;
     }
 
     /**
-     * Create a new {@link DocumentRange} from the provided start and end (inclusive).
+     * Create a new {@link DocumentRange} from the provided start and afterEnd (exclusive).
      * @param start The first position of the {@link DocumentRange}.
-     * @param endOrColumns The last (inclusive) position of the {@link DocumentRange} or the number
-     * of columns wide that this range should be. If this is undefined, then the start position will
-     * be used as the last position.
+     * @param afterEndOrColumns The position directly after the end of the {@link DocumentRange} or
+     * the number of columns wide that this range should be. If this is undefined, then the start
+     * position will be used as the afterEnd position, making this an empty range.
      */
-    public static create(start: DocumentPosition, endOrColumns?: DocumentPosition | number): DocumentRange
+    public static create(start: DocumentPosition, afterEndOrColumns?: DocumentPosition | number): DocumentRange
     {
         Pre.condition.assertNotUndefinedAndNotNull(start, "start");
 
-        let end: DocumentPosition;
-        if (isUndefinedOrNull(endOrColumns))
+        let afterEnd: DocumentPosition;
+        if (isUndefinedOrNull(afterEndOrColumns) || afterEndOrColumns === 0)
         {
-            end = start;
+            afterEnd = start;
         }
-        else if (isNumber(endOrColumns))
+        else if (isNumber(afterEndOrColumns))
         {
-            end = start.plusColumns(endOrColumns);
-            if (endOrColumns < 0)
-            {
-                const temp: DocumentPosition = end;
-                end = start;
-                start = temp;
-            }
+            afterEnd = start.plusColumns(afterEndOrColumns);
         }
         else
         {
-            end = endOrColumns;
+            afterEnd = afterEndOrColumns;
         }
-        return new DocumentRange(start, end);
+
+        if (afterEnd.lessThan(start))
+        {
+            const temp: DocumentPosition = afterEnd;
+            afterEnd = start;
+            start = temp;
+        }
+
+        return new DocumentRange(start, afterEnd);
     }
 
     /**
@@ -58,11 +60,11 @@ export class DocumentRange
     }
 
     /**
-     * Get the last (inclusive) position of this {@link DocumentRange}.
+     * Get the position directly (exclusive) after the end of this {@link DocumentRange}.
      */
-    public getEnd(): DocumentPosition
+    public getAfterEnd(): DocumentPosition
     {
-        return this.end;
+        return this.afterEnd;
     }
 
     /**
@@ -74,6 +76,6 @@ export class DocumentRange
         Pre.condition.assertNotUndefinedAndNotNull(position, "position");
 
         return this.start.lessThanOrEqualTo(position) &&
-            position.lessThanOrEqualTo(this.end);
+            position.lessThan(this.afterEnd);
     }
 }

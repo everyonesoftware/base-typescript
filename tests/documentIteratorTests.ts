@@ -75,6 +75,30 @@ export function test(runner: TestRunner): void
                 createTest("abc");
                 createTest("a\nb\rc\nd\n");
             });
+
+            runner.testFunction("getPosition()", (test: Test) =>
+            {
+                const iterator: DocumentIterator = DocumentIterator.create(StringIterator.create("hello")).start();
+                const position1: DocumentPosition = iterator.getPosition();
+                test.assertNotUndefinedAndNotNull(position1);
+                test.assertEqual(0, position1.getCharacterIndex());
+                test.assertEqual(0, position1.getLineIndex());
+                test.assertEqual(0, position1.getColumnIndex());
+                test.assertNotSame(position1, iterator.getPosition());
+
+                test.assertTrue(iterator.next());
+
+                const position2: DocumentPosition = iterator.getPosition();
+                test.assertNotUndefinedAndNotNull(position2);
+                test.assertEqual(1, position2.getCharacterIndex());
+                test.assertEqual(0, position2.getLineIndex());
+                test.assertEqual(1, position2.getColumnIndex());
+                test.assertNotSame(position2, iterator.getPosition());
+                test.assertNotSame(position1, position2);
+                test.assertEqual(0, position1.getCharacterIndex());
+                test.assertEqual(0, position1.getLineIndex());
+                test.assertEqual(0, position1.getColumnIndex());
+            });
         });
     });
 }

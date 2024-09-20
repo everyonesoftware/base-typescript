@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Comparison, MissingValueParseError, PreConditionError, VersionNumber } from "../sources";
+import { Comparison, DocumentPosition, DocumentRange, MissingValueParseError, PreConditionError, VersionNumber } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -41,11 +41,17 @@ export function test(runner: TestRunner): void
                         "Actual: null"));
                 parseErrorTest(
                     "",
-                    new MissingValueParseError("version number"),
+                    new MissingValueParseError(
+                        DocumentRange.create(DocumentPosition.create()),
+                        "version number",
+                    ),
                 );
                 parseErrorTest(
                     "   ",
-                    new MissingValueParseError("version number"),
+                    new MissingValueParseError(
+                        DocumentRange.create(DocumentPosition.create(3, 0, 3)),
+                        "version number",
+                    ),
                 );
 
                 function parseTest(text: string, expected: VersionNumber): void
