@@ -1,5 +1,6 @@
 import { Iterator } from "./iterator";
 import { JavascriptMap } from "./javascript";
+import { MapEntry } from "./map";
 import { MapBase } from "./mapBase";
 import { NotFoundError } from "./notFoundError";
 import { Result } from "./result";
@@ -49,9 +50,18 @@ export class JavascriptMapMap<TKey,TValue> extends MapBase<TKey,TValue>
         return this;
     }
 
-    public override iterate(): Iterator<[TKey, TValue]>
+    public override remove(key: TKey): Result<TValue>
     {
-        return Iterator.create(this.javascriptMap.entries());
+        const value: TValue | undefined = this.javascriptMap.get(key);
+        return this.javascriptMap.delete(key)
+            ? Result.value(value!)
+            : Result.error(new NotFoundError(`The key ${JSON.stringify(key)} was not found in the map.`));
+    }
+
+    public override iterate(): Iterator<MapEntry<TKey,TValue>>
+    {
+        return Iterator.create(this.javascriptMap.entries())
+            .map((entry: [TKey,TValue]) => { return {key: entry[0], value: entry[1]}; });
     }
 
     public override iterateKeys(): Iterator<TKey>
@@ -63,5 +73,4 @@ export class JavascriptMapMap<TKey,TValue> extends MapBase<TKey,TValue>
     {
         return Iterator.create(this.javascriptMap.values());
     }
-    
 }

@@ -1,7 +1,7 @@
 import { Pre } from "./pre";
-import { TextToken } from "./textToken";
-import { TextTokenType } from "./textTokenType";
 import { TextTokenizer } from "./textTokenizer";
+import { Token } from "./token";
+import { TokenType } from "./tokenType";
 
 /**
  * Get the provided text where all letters have been converted to uppercase.
@@ -41,10 +41,10 @@ export function toCamelCase(text: string): string
     let whitespaceBuffer: string = "";
     while (tokenizer.hasCurrent())
     {
-        const current: TextToken = tokenizer.takeCurrent();
+        const current: Token = tokenizer.takeCurrent();
         switch (current.getType())
         {
-            case TextTokenType.Word:
+            case TokenType.Letters:
                 if (!insideWordSequence)
                 {
                     result += whitespaceBuffer;
@@ -63,21 +63,13 @@ export function toCamelCase(text: string): string
                 whitespaceBuffer = "";
                 break;
             
-            case TextTokenType.Digits:
+            case TokenType.Digits:
                 result += current.getText();
                 break;
 
-            case TextTokenType.Other:
-                result += whitespaceBuffer;
-                whitespaceBuffer = "";
-
-                result += current.getText();
-                insideWordSequence = false;
-                break;
-
-            case TextTokenType.Dash:
-            case TextTokenType.Underscore:
-            case TextTokenType.Whitespace:
+            case TokenType.Hyphen:
+            case TokenType.Underscore:
+            case TokenType.Whitespace:
                 if (insideWordSequence)
                 {
                     whitespaceBuffer += current.getText();
@@ -86,6 +78,14 @@ export function toCamelCase(text: string): string
                 {
                     result += current.getText();
                 }
+                break;
+
+            default:
+                result += whitespaceBuffer;
+                whitespaceBuffer = "";
+
+                result += current.getText();
+                insideWordSequence = false;
                 break;
         }
     }
@@ -106,10 +106,10 @@ export function toPascalCase(text: string): string
     let whitespaceBuffer: string = "";
     while (tokenizer.hasCurrent())
     {
-        const current: TextToken = tokenizer.takeCurrent();
+        const current: Token = tokenizer.takeCurrent();
         switch (current.getType())
         {
-            case TextTokenType.Word:
+            case TokenType.Letters:
                 if (!insideWordSequence)
                 {
                     result += whitespaceBuffer;
@@ -125,21 +125,13 @@ export function toPascalCase(text: string): string
                 whitespaceBuffer = "";
                 break;
             
-            case TextTokenType.Digits:
+            case TokenType.Digits:
                 result += current.getText();
                 break;
 
-            case TextTokenType.Other:
-                result += whitespaceBuffer;
-                whitespaceBuffer = "";
-
-                result += current.getText();
-                insideWordSequence = false;
-                break;
-
-            case TextTokenType.Dash:
-            case TextTokenType.Underscore:
-            case TextTokenType.Whitespace:
+            case TokenType.Hyphen:
+            case TokenType.Underscore:
+            case TokenType.Whitespace:
                 if (insideWordSequence)
                 {
                     whitespaceBuffer += current.getText();
@@ -148,6 +140,14 @@ export function toPascalCase(text: string): string
                 {
                     result += current.getText();
                 }
+                break;
+
+            default:
+                result += whitespaceBuffer;
+                whitespaceBuffer = "";
+
+                result += current.getText();
+                insideWordSequence = false;
                 break;
         }
     }
@@ -169,10 +169,10 @@ export function toSnakeCase(text: string): string
     let whitespaceBuffer: string = "";
     while (tokenizer.hasCurrent())
     {
-        const current: TextToken = tokenizer.takeCurrent();
+        const current: Token = tokenizer.takeCurrent();
         switch (current.getType())
         {
-            case TextTokenType.Word:
+            case TokenType.Letters:
                 if (!insideWordSequence)
                 {
                     result += whitespaceBuffer;
@@ -189,21 +189,13 @@ export function toSnakeCase(text: string): string
                 whitespaceBuffer = "";
                 break;
 
-            case TextTokenType.Digits:
+            case TokenType.Digits:
                 result += current.getText();
                 break;
 
-            case TextTokenType.Other:
-                result += whitespaceBuffer;
-                whitespaceBuffer = "";
-
-                result += current.getText();
-                insideWordSequence = false;
-                break;
-
-            case TextTokenType.Dash:
-            case TextTokenType.Underscore:
-            case TextTokenType.Whitespace:
+            case TokenType.Hyphen:
+            case TokenType.Underscore:
+            case TokenType.Whitespace:
                 if (insideWordSequence)
                 {
                     whitespaceBuffer += current.getText();
@@ -212,6 +204,14 @@ export function toSnakeCase(text: string): string
                 {
                     result += current.getText();
                 }
+                break;
+
+            default:
+                result += whitespaceBuffer;
+                whitespaceBuffer = "";
+
+                result += current.getText();
+                insideWordSequence = false;
                 break;
         }
     }
@@ -237,10 +237,10 @@ export function toUpperSnakeCase(text: string): string
     let whitespaceBuffer: string = "";
     while (tokenizer.hasCurrent())
     {
-        const current: TextToken = tokenizer.takeCurrent();
+        const current: Token = tokenizer.takeCurrent();
         switch (current.getType())
         {
-            case TextTokenType.Word:
+            case TokenType.Letters:
                 if (!insideWordSequence)
                 {
                     result += whitespaceBuffer;
@@ -257,21 +257,13 @@ export function toUpperSnakeCase(text: string): string
                 whitespaceBuffer = "";
                 break;
 
-            case TextTokenType.Digits:
+            case TokenType.Digits:
                 result += current.getText();
                 break;
 
-            case TextTokenType.Other:
-                result += whitespaceBuffer;
-                whitespaceBuffer = "";
-
-                result += current.getText();
-                insideWordSequence = false;
-                break;
-
-            case TextTokenType.Dash:
-            case TextTokenType.Underscore:
-            case TextTokenType.Whitespace:
+            case TokenType.Hyphen:
+            case TokenType.Underscore:
+            case TokenType.Whitespace:
                 if (insideWordSequence)
                 {
                     whitespaceBuffer += current.getText();
@@ -280,6 +272,14 @@ export function toUpperSnakeCase(text: string): string
                 {
                     result += current.getText();
                 }
+                break;
+
+            default:
+                result += whitespaceBuffer;
+                whitespaceBuffer = "";
+
+                result += current.getText();
+                insideWordSequence = false;
                 break;
         }
     }
@@ -305,10 +305,10 @@ export function toKebabCase(text: string): string
     let whitespaceBuffer: string = "";
     while (tokenizer.hasCurrent())
     {
-        const current: TextToken = tokenizer.takeCurrent();
+        const current: Token = tokenizer.takeCurrent();
         switch (current.getType())
         {
-            case TextTokenType.Word:
+            case TokenType.Letters:
                 if (!insideWordSequence)
                 {
                     result += whitespaceBuffer;
@@ -325,21 +325,13 @@ export function toKebabCase(text: string): string
                 whitespaceBuffer = "";
                 break;
 
-            case TextTokenType.Digits:
+            case TokenType.Digits:
                 result += current.getText();
                 break;
 
-            case TextTokenType.Other:
-                result += whitespaceBuffer;
-                whitespaceBuffer = "";
-
-                result += current.getText();
-                insideWordSequence = false;
-                break;
-
-            case TextTokenType.Dash:
-            case TextTokenType.Underscore:
-            case TextTokenType.Whitespace:
+            case TokenType.Hyphen:
+            case TokenType.Underscore:
+            case TokenType.Whitespace:
                 if (insideWordSequence)
                 {
                     whitespaceBuffer += current.getText();
@@ -348,6 +340,14 @@ export function toKebabCase(text: string): string
                 {
                     result += current.getText();
                 }
+                break;
+
+            default:
+                result += whitespaceBuffer;
+                whitespaceBuffer = "";
+
+                result += current.getText();
+                insideWordSequence = false;
                 break;
         }
     }
@@ -373,10 +373,10 @@ export function toUpperKebabCase(text: string): string
     let whitespaceBuffer: string = "";
     while (tokenizer.hasCurrent())
     {
-        const current: TextToken = tokenizer.takeCurrent();
+        const current: Token = tokenizer.takeCurrent();
         switch (current.getType())
         {
-            case TextTokenType.Word:
+            case TokenType.Letters:
                 if (!insideWordSequence)
                 {
                     result += whitespaceBuffer;
@@ -393,21 +393,13 @@ export function toUpperKebabCase(text: string): string
                 whitespaceBuffer = "";
                 break;
 
-            case TextTokenType.Digits:
+            case TokenType.Digits:
                 result += current.getText();
                 break;
 
-            case TextTokenType.Other:
-                result += whitespaceBuffer;
-                whitespaceBuffer = "";
-
-                result += current.getText();
-                insideWordSequence = false;
-                break;
-
-            case TextTokenType.Dash:
-            case TextTokenType.Underscore:
-            case TextTokenType.Whitespace:
+            case TokenType.Hyphen:
+            case TokenType.Underscore:
+            case TokenType.Whitespace:
                 if (insideWordSequence)
                 {
                     whitespaceBuffer += current.getText();
@@ -416,6 +408,14 @@ export function toUpperKebabCase(text: string): string
                 {
                     result += current.getText();
                 }
+                break;
+
+            default:
+                result += whitespaceBuffer;
+                whitespaceBuffer = "";
+
+                result += current.getText();
+                insideWordSequence = false;
                 break;
         }
     }
