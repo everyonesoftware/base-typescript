@@ -1,5 +1,5 @@
 import { Iterator } from "./iterator";
-import { Map } from "./map";
+import { Map, MapEntry } from "./map";
 import { MapBase } from "./mapBase";
 import { Pre } from "./pre";
 import { Result } from "./result";
@@ -46,7 +46,17 @@ export abstract class MapDecorator<TKey,TValue> extends MapBase<TKey,TValue>
         return this;
     }
 
-    public override iterate(): Iterator<[TKey, TValue]>
+    public override getOrSet(key: TKey, valueCreator: () => TValue): Result<TValue>
+    {
+        return this.innerMap.getOrSet(key, valueCreator);
+    }
+
+    public override remove(key: TKey): Result<TValue>
+    {
+        return this.innerMap.remove(key);
+    }
+
+    public override iterate(): Iterator<MapEntry<TKey,TValue>>
     {
         return this.innerMap.iterate();
     }

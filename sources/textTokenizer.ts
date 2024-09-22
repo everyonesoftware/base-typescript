@@ -3,19 +3,22 @@ import { IteratorBase } from "./iteratorBase";
 import { Pre } from "./pre";
 import { StringIterator } from "./stringIterator";
 import { isDigit, isLowercasedLetter, isUppercasedLetter, isWhitespace } from "./strings";
-import { TextToken } from "./textToken";
+import { Token } from "./token";
+import { TokenCreator } from "./tokenCreator";
 import { isString } from "./types";
 
-export class TextTokenizer extends IteratorBase<TextToken>
+export class TextTokenizer extends IteratorBase<Token>
 {
+    private readonly tokenCreator: TokenCreator;
     private readonly innerIterator: Iterator<string>;
-    private current: TextToken | undefined;
+    private current: Token | undefined;
     private started: boolean;
 
     private constructor(innerIterator: Iterator<string>)
     {
         super();
 
+        this.tokenCreator = TokenCreator.create();
         this.innerIterator = innerIterator;
         this.current = undefined;
         this.started = false;
@@ -60,7 +63,7 @@ export class TextTokenizer extends IteratorBase<TextToken>
             const currentCharacter: string = this.getCurrentCharacter();
             if (isLowercasedLetter(currentCharacter))
             {
-                this.current = TextToken.word(this.readWhile(isLowercasedLetter));
+                this.current = this.tokenCreator.letters(this.readWhile(isLowercasedLetter));
             }
             else if (isUppercasedLetter(currentCharacter))
             {
@@ -69,29 +72,29 @@ export class TextTokenizer extends IteratorBase<TextToken>
                 {
                     text += this.readWhile(isLowercasedLetter);
                 }
-                this.current = TextToken.word(text);
+                this.current = this.tokenCreator.letters(text);
             }
             else if (isWhitespace(currentCharacter))
             {
-                this.current = TextToken.whitespace(this.readWhile(isWhitespace));
+                this.current = this.tokenCreator.whitespace(this.readWhile(isWhitespace));
             }
             else if (isDigit(currentCharacter))
             {
-                this.current = TextToken.digits(this.readWhile(isDigit));
+                this.current = this.tokenCreator.digits(this.readWhile(isDigit));
             }
             else if (currentCharacter === "_")
             {
                 this.takeCurrentCharacter();
-                this.current = TextToken.underscore();
+                this.current = this.tokenCreator.underscore();
             }
             else if (currentCharacter === "-")
             {
                 this.takeCurrentCharacter();
-                this.current = TextToken.dash();
+                this.current = this.tokenCreator.hyphen();
             }
             else
             {
-                this.current = TextToken.other(this.takeCurrentCharacter());
+                this.current = this.tokenCreator.unknown(this.takeCurrentCharacter());
             }
         }
         return this.hasCurrent();
@@ -126,7 +129,7 @@ export class TextTokenizer extends IteratorBase<TextToken>
         return this.current !== undefined;
     }
 
-    public override getCurrent(): TextToken
+    public override getCurrent(): Token
     {
         Pre.condition.assertTrue(this.hasCurrent(), "this.hasCurrent()");
 

@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Iterable, List, Map, ToStringFunctions, isIterable, isMap } from "../sources";
+import { Iterable, List, Map, ToStringFunctions, TokenType, isIterable, isMap } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -42,6 +42,7 @@ export function test(runner: TestRunner): void
                     toStringTest(List.create([1, 2, 3]), `{"array":[1,2,3]}`);
                     toStringTest(Map.create(), `{"javascriptMap":{}}`);
                     toStringTest(Map.create<string,number>().set("a", 1), `{"javascriptMap":{}}`);
+                    toStringTest(TokenType.CarriageReturn, "1");
                 });
 
                 runner.testGroup("with Iterable.toString()", () =>
@@ -76,7 +77,8 @@ export function test(runner: TestRunner): void
                     toStringTest(List.create<string>(["abc"]), `["abc"]`);
                     toStringTest(List.create([1, 2, 3]), `[1,2,3]`);
                     toStringTest(Map.create(), `[]`);
-                    toStringTest(Map.create<string,number>().set("a", 1), `[["a",1]]`);
+                    toStringTest(Map.create<string,number>().set("a", 1), `[{"key":"a","value":1}]`);
+                    toStringTest(TokenType.CarriageReturn, "1");
                 });
 
                 runner.testGroup("with Map.toString()", () =>
@@ -113,6 +115,7 @@ export function test(runner: TestRunner): void
                     toStringTest(List.create([1, 2, 3]), `{"array":[1,2,3]}`);
                     toStringTest(Map.create(), `{}`);
                     toStringTest(Map.create<string,number>().set("a", 1), `{"a":1}`);
+                    toStringTest(TokenType.CarriageReturn, "1");
                 });
             });
         });
