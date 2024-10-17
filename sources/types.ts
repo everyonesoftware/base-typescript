@@ -1,4 +1,5 @@
 import { Iterable } from "./iterable";
+import { Iterator } from "./iterator";
 import { JavascriptIterable, JavascriptIterator } from "./javascript";
 
 /**
@@ -211,6 +212,15 @@ export function asObject(value: unknown): {} | undefined
 }
 
 /**
+ * Get an {@link Iterator} that can be used to iterate through the properties of the provided value.
+ * @param value The value to iterate over.
+ */
+export function getPropertyNames(value: {}): Iterable<string>
+{
+    return Iterable.create(Object.keys(value));
+}
+
+/**
  * Get whether the provided value has a property with the provided key.
  * @param value The value to check.
  * @param propertyKey The key of the property to look for.
@@ -264,7 +274,7 @@ export function isJavascriptIterable<T>(value: unknown): value is JavascriptIter
 export function isIterable<T>(value: unknown): value is Iterable<T>
 {
     return isJavascriptIterable(value) &&
-        hasFunction(value, "iterate");
+        hasFunction(value, "iterate", 0);
 }
 
 /**

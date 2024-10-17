@@ -32,6 +32,14 @@ export class Token
     }
 
     /**
+     * Get the number of characters in this {@link Token}.
+     */
+    public getLength(): number
+    {
+        return this.text.length;
+    }
+
+    /**
      * Get the {@link String} text of this {@link Token}.
      */
     public getText(): string

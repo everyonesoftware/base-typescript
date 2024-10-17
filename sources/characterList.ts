@@ -101,6 +101,11 @@ export class CharacterList implements List<string>
         return this.internalInsert(index, value);
     }
 
+    public equals(right: Iterable<string>): boolean
+    {
+        return Iterable.equals(this, right);
+    }
+
     public toString(): string
     {
         return this.characters;

@@ -62,6 +62,14 @@ export abstract class Comparer<TLeft, TRight = TLeft>
         return this.compare(left, right) === Comparison.GreaterThan;
     }
 
+    /**
+     * Attempt to compare the left and right values. The comparison will be done on whether they are
+     * the same value (left === right) or whether one is undefined or null. If they aren't the same
+     * value and neither is undefined or null, then this function can't compare them and will return
+     * undefined.
+     * @param left The left value of the comparison.
+     * @param right The right value of the comparison.
+     */
     public static compareSameUndefinedNull<TLeft, TRight>(left: TLeft | undefined | null, right: TRight | undefined | null): Comparison | undefined
     {
         let result: Comparison | undefined = undefined;
@@ -86,6 +94,20 @@ export abstract class Comparer<TLeft, TRight = TLeft>
             result = Comparison.GreaterThan;
         }
         return result;
+    }
+
+    /**
+     * Get whether the left and right values are equal. The comparison will be done on whether they
+     * are the same value (left === right) or whether one is undefined or null. If they aren't the
+     * same value and neither is undefined or null, then this function can't determine whether they
+     * are equal and will return undefined.
+     * @param left The left value of the comparison.
+     * @param right The right value of the comparison.
+     */
+    public static equalSameUndefinedNull<TLeft, TRight>(left: TLeft | undefined | null, right: TRight | undefined | null): boolean | undefined
+    {
+        let result: Comparison | undefined = Comparer.compareSameUndefinedNull(left, right);
+        return result === undefined ? undefined : result === Comparison.Equal;
     }
 
     public static compareNumbers(left: number | undefined | null, right: number | undefined | null): Comparison

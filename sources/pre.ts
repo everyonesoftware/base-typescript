@@ -9,8 +9,9 @@ export class Pre
     /**
      * The condition object that can be used to assert pre-conditions.
      */
-    public static readonly condition: Condition = Condition.create((message: string) =>
-    {
-        return new PreConditionError(message);
-    });
+    public static readonly condition: Condition = Condition.create()
+        .setCreateErrorFunction((message: string) =>
+        {
+            return new PreConditionError(message);
+        });
 }

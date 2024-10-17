@@ -1,138 +1,52 @@
+import { BasicTokenizer } from "./basicTokenizer";
 import { Iterator } from "./iterator";
-import { IteratorBase } from "./iteratorBase";
+import { Post } from "./post";
 import { Pre } from "./pre";
 import { StringIterator } from "./stringIterator";
-import { isDigit, isLowercasedLetter, isUppercasedLetter, isWhitespace } from "./strings";
-import { Token } from "./token";
+import { isLowercasedLetter, isUppercasedLetter } from "./strings";
 import { TokenCreator } from "./tokenCreator";
-import { isString } from "./types";
+import { isString, isUndefinedOrNull } from "./types";
 
-export class TextTokenizer extends IteratorBase<Token>
+export class TextTokenizer extends BasicTokenizer
 {
-    private readonly tokenCreator: TokenCreator;
-    private readonly innerIterator: Iterator<string>;
-    private current: Token | undefined;
-    private started: boolean;
-
-    private constructor(innerIterator: Iterator<string>)
+    protected constructor(innerIterator: Iterator<string>, tokenCreator: TokenCreator)
     {
-        super();
-
-        this.tokenCreator = TokenCreator.create();
-        this.innerIterator = innerIterator;
-        this.current = undefined;
-        this.started = false;
+        super(innerIterator, tokenCreator);
     }
 
-    public static create(text: string | Iterator<string>): TextTokenizer
+    public static override create(text: string | Iterator<string>, tokenCreator?: TokenCreator): TextTokenizer
     {
+        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
+
         if (isString(text))
         {
             text = StringIterator.create(text);
         }
-        return new TextTokenizer(text);
+        if (isUndefinedOrNull(tokenCreator))
+        {
+            tokenCreator = TokenCreator.create();
+        }
+        return new TextTokenizer(text, tokenCreator);
     }
 
-    private readWhile(condition: (c: string) => boolean): string
+    protected override readLetters(): string
     {
-        Pre.condition.assertTrue(this.hasCurrentCharacter(), "this.hasCurrentCharacter()");
-        Pre.condition.assertTrue(condition(this.getCurrentCharacter()), "condition(this.getCurrentCharacter())");
+        Pre.condition.assertTrue(this.isLetter(this.getCurrentCharacter()), "this.isLetter(this.getCurrentCharacter())");
 
-        let result: string = this.takeCurrentCharacter();
-        while (this.hasCurrentCharacter() && condition(this.getCurrentCharacter()))
+        let result: string = "";
+
+        if (isUppercasedLetter(this.getCurrentCharacter()))
         {
-            result += this.takeCurrentCharacter();
+            result += this.readWhile(isUppercasedLetter);
         }
+
+        if (this.hasCurrentCharacter() && isLowercasedLetter(this.getCurrentCharacter()))
+        {
+            result += this.readWhile(isLowercasedLetter);
+        }
+
+        Post.condition.assertNotEmpty(result, "result");
+
         return result;
-    }
-
-    public override next(): boolean
-    {
-        if (!this.hasStarted())
-        {
-            this.started = true;
-            this.innerIterator.start();
-        }
-
-        if (!this.hasCurrentCharacter())
-        {
-            this.current = undefined;
-        }
-        else
-        {
-            const currentCharacter: string = this.getCurrentCharacter();
-            if (isLowercasedLetter(currentCharacter))
-            {
-                this.current = this.tokenCreator.letters(this.readWhile(isLowercasedLetter));
-            }
-            else if (isUppercasedLetter(currentCharacter))
-            {
-                let text: string = this.readWhile(isUppercasedLetter);
-                if (this.hasCurrentCharacter() && isLowercasedLetter(this.getCurrentCharacter()))
-                {
-                    text += this.readWhile(isLowercasedLetter);
-                }
-                this.current = this.tokenCreator.letters(text);
-            }
-            else if (isWhitespace(currentCharacter))
-            {
-                this.current = this.tokenCreator.whitespace(this.readWhile(isWhitespace));
-            }
-            else if (isDigit(currentCharacter))
-            {
-                this.current = this.tokenCreator.digits(this.readWhile(isDigit));
-            }
-            else if (currentCharacter === "_")
-            {
-                this.takeCurrentCharacter();
-                this.current = this.tokenCreator.underscore();
-            }
-            else if (currentCharacter === "-")
-            {
-                this.takeCurrentCharacter();
-                this.current = this.tokenCreator.hyphen();
-            }
-            else
-            {
-                this.current = this.tokenCreator.unknown(this.takeCurrentCharacter());
-            }
-        }
-        return this.hasCurrent();
-    }
-
-    private hasCurrentCharacter(): boolean
-    {
-        return this.innerIterator.hasCurrent();
-    }
-
-    private getCurrentCharacter(): string
-    {
-        Pre.condition.assertTrue(this.hasCurrentCharacter(), "this.hasCurrentCharacter()");
-
-        return this.innerIterator.getCurrent();
-    }
-
-    private takeCurrentCharacter(): string
-    {
-        Pre.condition.assertTrue(this.hasCurrentCharacter(), "this.hasCurrentCharacter()");
-
-        return this.innerIterator.takeCurrent();
-    }
-
-    public override hasStarted(): boolean
-    {
-        return this.started;
-    }
-
-    public override hasCurrent(): boolean
-    {
-        return this.current !== undefined;
-    }
-
-    public override getCurrent(): Token
-    {
-        Pre.condition.assertTrue(this.hasCurrent(), "this.hasCurrent()");
-
-        return this.current!;
     }
 }

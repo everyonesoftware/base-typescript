@@ -1,21 +1,20 @@
 import { Iterable } from "./iterable";
-import { List } from "./list";
-import { isMap, Map } from "./map";
-import { Pre } from "./pre";
+import { Iterator } from "./iterator";
+import { isMap, Map, MapEntry } from "./map";
 import { escapeAndQuote, join } from "./strings";
-import { isArray, isIterable, isObject, isString } from "./types";
+import { isArray, isIterable, isNumber, isObject, isString } from "./types";
 
 /**
  * A collection of {@link ToStringFunction}s.
  */
 export class ToStringFunctions
 {
-    private readonly functions: List<[(value: unknown) => boolean, (value: unknown) => string]>;
+    private readonly functions: {typeCheckFunction: (value: unknown) => boolean, toStringFunction: (value: unknown) => string}[];
     private defaultToStringFunction: (value: unknown) => string;
 
     private constructor()
     {
-        this.functions = List.create();
+        this.functions = [];
         this.defaultToStringFunction = (value: unknown) => this.defaultToString(value);
     }
 
@@ -27,7 +26,19 @@ export class ToStringFunctions
     private defaultToString(value: unknown): string
     {
         let result: string;
-        if (value === undefined)
+        if (isMap(value))
+        {
+            result = this.mapToString(value);
+        }
+        else if (isIterable(value))
+        {
+            result = this.iterableToString(value);
+        }
+        else if (isNumber(value))
+        {
+            result = value.toString();
+        }
+        else if (value === undefined)
         {
             result = "undefined";
         }
@@ -61,35 +72,67 @@ export class ToStringFunctions
      */
     public toString(value: unknown): string
     {
-        let toStringFunction: ((value: unknown) => string) = this.defaultToStringFunction;
-        for (const [match, toString] of this.functions)
+        let matchingToStringFunction: ((value: unknown) => string) = this.defaultToStringFunction;
+        for (const {typeCheckFunction, toStringFunction} of this.functions)
         {
-            if (match(value))
+            if (typeCheckFunction(value))
             {
-                toStringFunction = toString;
+                matchingToStringFunction = toStringFunction;
                 break;
             }
         }
-        return toStringFunction(value);
+        return matchingToStringFunction(value);
     }
 
-    public add<T>(matchFunction: (value: unknown) => value is T, toStringFunction: (value: T) => string): this
+    public add<T>(typeCheckFunction: (value: unknown) => value is T, toStringFunction: (value: T) => string): this
     {
-        Pre.condition.assertNotUndefinedAndNotNull(matchFunction, "matchFunction");
-        Pre.condition.assertNotUndefinedAndNotNull(toStringFunction, "toStringFunction");
-
-        this.functions.insert(0, [matchFunction, toStringFunction as (value: unknown) => string]);
+        const toAdd = {
+            typeCheckFunction: typeCheckFunction as (value: unknown) => boolean,
+            toStringFunction: toStringFunction as (value: unknown) => string,
+        };
+        this.functions.unshift(toAdd);
 
         return this;
     }
 
-    public addIterable(): this
+    private iterableToString(values: Iterable<unknown>): string
     {
-        return this.add(isIterable, (value: Iterable<unknown>) => value.toString(this));
+        let result: string = "";
+        result += "[";
+
+        const iterator: Iterator<unknown> = values.iterate().start();
+        if (iterator.hasCurrent())
+        {
+            result += this.toString(iterator.takeCurrent());
+            while (iterator.hasCurrent())
+            {
+                result += ",";
+                result += this.toString(iterator.takeCurrent());
+            }
+        }
+
+        result += "]";
+        return result;
     }
 
-    public addMap(): this
+    private mapToString(values: Map<unknown,unknown>): string
     {
-        return this.add(isMap, (value: Map<unknown,unknown>) => value.toString(this));
+        let result = "";
+        result += "{";
+
+        const iterator: Iterator<MapEntry<unknown,unknown>> = values.iterate().start();
+        if (iterator.hasCurrent())
+        {
+            let entry: MapEntry<unknown,unknown> = iterator.takeCurrent();
+            result += `${this.toString(entry.key)}:${this.toString(entry.value)}`;
+            while (iterator.hasCurrent())
+            {
+                result += ",";
+                result += `${this.toString(entry.key)}:${this.toString(entry.value)}`;
+            }
+        }
+
+        result += "}";
+        return result;
     }
 }

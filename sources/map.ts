@@ -1,3 +1,5 @@
+import { Comparer } from "./comparer";
+import { EqualFunctions } from "./equalFunctions";
 import { Iterable } from "./iterable";
 import { Iterator } from "./iterator";
 import { JavascriptIterator } from "./javascript";
@@ -8,7 +10,7 @@ import { Pre } from "./pre";
 import { Result } from "./result";
 import { join } from "./strings";
 import { ToStringFunctions } from "./toStringFunctions";
-import { hasFunction } from "./types";
+import { hasFunction, isUndefinedOrNull } from "./types";
 
 export function isMap(value: unknown): value is Map<unknown,unknown>
 {
@@ -49,6 +51,34 @@ export abstract class Map<TKey,TValue> implements Iterable<MapEntry<TKey,TValue>
     public abstract any(): boolean;
 
     public abstract toArray(): MapEntry<TKey,TValue>[];
+
+    public abstract equals(right: Iterable<MapEntry<TKey,TValue>>, equalFunctions?: EqualFunctions): boolean;
+
+    public static equals<TKey,TValue>(left: Map<TKey,TValue>, right: Iterable<MapEntry<TKey,TValue>>, equalFunctions?: EqualFunctions): boolean
+    {
+        if (isUndefinedOrNull(equalFunctions))
+        {
+            equalFunctions = EqualFunctions.create();
+        }
+
+        let result: boolean | undefined = Comparer.equalSameUndefinedNull(left, right);
+        if (result === undefined)
+        {
+            result = true;
+            for (const entry of right)
+            {
+                result = left.get(entry.key)
+                    .then((value: TValue) => equalFunctions.areEqual(value, entry.value))
+                    .catch(() => false)
+                    .await();
+                if (result === false)
+                {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 
     /**
      * Get the {@link String} representation of this {@link Map}.

@@ -25,6 +25,8 @@ export abstract class Indexable<T> implements Iterable<T>
 
     public abstract getCount(): number;
 
+    public abstract equals(right: Iterable<T>): boolean;
+
     public abstract toString(): string;
 
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterable<T, TOutput>;

@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Iterable, JavascriptIterable, List, PreConditionError } from "../sources/";
+import { isIterable, Iterable, JavascriptIterable, List, PreConditionError } from "../sources/";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -60,6 +60,7 @@ export function test(runner: TestRunner): void
                     const list: List<number> = List.create(List.create([1, 2, 3]));
                     test.assertNotUndefinedAndNotNull(list);
                     test.assertEqual(list.toArray(), [1, 2, 3]);
+                    test.assertTrue(isIterable(list));
                     test.assertSame(list.toString(), "[1,2,3]");
                     test.assertSame(list.getCount(), 3);
                 });

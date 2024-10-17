@@ -13,6 +13,11 @@ export abstract class IterableBase<T> implements Iterable<T>
         return Iterable.toArray(this);
     }
 
+    public equals(right: Iterable<T>): boolean
+    {
+        return Iterable.equals(this, right);
+    }
+
     public toString(): string
     {
         return Iterable.toString(this);

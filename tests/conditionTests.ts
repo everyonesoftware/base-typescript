@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { join, Condition, PostConditionError, JavascriptIterable, PreConditionError } from "../sources/";
+import { join, Condition, JavascriptIterable, PreConditionError, MutableCondition } from "../sources/";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -8,50 +8,22 @@ export function test(runner: TestRunner): void
     {
         runner.testType(Condition.name, () =>
         {
-            runner.testFunction("create((string) => Error)", () =>
+            runner.testFunction("create()", (test: Test) =>
             {
-                runner.test("with no arguments", (test: Test) =>
-                {
-                    const condition: Condition = Condition.create();
-                    test.assertNotUndefinedAndNotNull(condition);
-                    test.assertThrows(() => condition.assertFalse(true),
-                        new Error([
-                            "Expected: false",
-                            "Actual: true",
-                        ].join("\n")));
-                });
-
-                runner.test("with undefined", (test: Test) =>
-                {
-                    const condition: Condition = Condition.create(undefined);
-                    test.assertNotUndefinedAndNotNull(condition);
-                    test.assertThrows(() => condition.assertFalse(true),
-                        new Error([
-                            "Expected: false",
-                            "Actual: true",
-                        ].join("\n")));
-                });
-
-                runner.test("with defined", (test: Test) =>
-                {
-                    const condition: Condition = Condition.create((message: string) =>
-                    {
-                        return new PostConditionError(`aaa ${message} aaa`);
-                    });
-                    test.assertNotUndefinedAndNotNull(condition);
-                    test.assertThrows(() => condition.assertFalse(true),
-                        new PostConditionError([
-                            "aaa Expected: false",
-                            "Actual: true aaa",
-                        ].join("\n")));
-                });
+                const condition: MutableCondition = Condition.create();
+                test.assertNotUndefinedAndNotNull(condition);
+                test.assertThrows(() => condition.assertFalse(true),
+                    new Error([
+                        "Expected: false",
+                        "Actual: true",
+                    ].join("\n")));
             });
 
             runner.testFunction("assertUndefined(unknown,string?,string?)", () =>
             {
                 runner.test("with undefined", () =>
                 {
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     condition.assertUndefined(undefined, "fake-expression", "fake-message");
                 });
 
@@ -59,7 +31,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertUndefined(value), expected);
                     });
                 }
@@ -74,7 +46,7 @@ export function test(runner: TestRunner): void
                     "",
                     new Error(join("\n", [
                         "Expected: undefined",
-                        "Actual: ",
+                        "Actual: \"\"",
                     ])));
                 assertUndefinedErrorTest(
                     50,
@@ -88,7 +60,7 @@ export function test(runner: TestRunner): void
             {
                 runner.test("with undefined", (test: Test) =>
                 {
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     test.assertThrows(() => condition.assertNotUndefinedAndNotNull(undefined),
                         new Error([
                             "Expected: not undefined and not null",
@@ -98,7 +70,7 @@ export function test(runner: TestRunner): void
 
                 runner.test("with null", (test: Test) =>
                 {
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     test.assertThrows(() => condition.assertNotUndefinedAndNotNull(null),
                         new Error([
                             "Expected: not undefined and not null",
@@ -113,7 +85,7 @@ export function test(runner: TestRunner): void
                         return "hello";
                     }
 
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     const value: string | undefined = valueCreator();
                     condition.assertNotUndefinedAndNotNull(value);
                     test.assertEqual(value.substring(1, 3), "el");
@@ -121,7 +93,7 @@ export function test(runner: TestRunner): void
 
                 runner.test("with undefined and expression", (test: Test) =>
                 {
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     test.assertThrows(() => condition.assertNotUndefinedAndNotNull(undefined, "fake-expression"),
                         new Error([
                             "Expression: fake-expression",
@@ -132,7 +104,7 @@ export function test(runner: TestRunner): void
 
                 runner.test("with null, expression, and message", (test: Test) =>
                 {
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     test.assertThrows(() => condition.assertNotUndefinedAndNotNull(null, "fake-expression", "fake-message"),
                         new Error([
                             "Message: fake-message",
@@ -147,7 +119,7 @@ export function test(runner: TestRunner): void
             {
                 runner.test("with false", (test: Test) =>
                 {
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     test.assertThrows(() => condition.assertTrue(false),
                         new Error([
                             "Expected: true",
@@ -158,7 +130,7 @@ export function test(runner: TestRunner): void
                 runner.test("with true", (test: Test) =>
                 {
                     function valueCreator(): boolean { return true; }
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     const value: boolean = valueCreator();
                     condition.assertTrue(value);
                     test.assertTrue(value);
@@ -169,7 +141,7 @@ export function test(runner: TestRunner): void
             {
                 runner.test("with true", (test: Test) =>
                 {
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     test.assertThrows(() => condition.assertFalse(true),
                         new Error([
                             "Expected: false",
@@ -180,7 +152,7 @@ export function test(runner: TestRunner): void
                 runner.test("with false", (test: Test) =>
                 {
                     function valueCreator(): boolean { return false; }
-                    const condition: Condition = Condition.create();
+                    const condition: MutableCondition = Condition.create();
                     const value: boolean = valueCreator();
                     condition.assertFalse(value);
                     test.assertFalse(value);
@@ -193,7 +165,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([expected, actual, expression, message])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertSame(expected, actual, expression, message), expectedError);
                     });
                 }
@@ -258,7 +230,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([expected, actual, expression, message])}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertSame(expected, actual, expression, message);
                     });
                 }
@@ -280,7 +252,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([expected, actual, expression, message])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertNotSame(expected, actual, expression, message), expectedError);
                     });
                 }
@@ -369,7 +341,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([expected, actual, expression, message])}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertNotSame(expected, actual, expression, message);
                     });
                 }
@@ -388,7 +360,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, expression, message])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertNotEmpty(value, expression, message), expectedError);
                     });
                 }
@@ -416,7 +388,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, expression, message])}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertNotEmpty(value, expression, message);
                     });
                 }
@@ -431,7 +403,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, upperBound])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertLessThan(value, upperBound, expression, message), expectedError);
                     });
                 }
@@ -459,7 +431,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, upperBound])}`, () =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertLessThan(value, upperBound, expression, message);
                     });
                 }
@@ -476,7 +448,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, upperBound])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertLessThanOrEqualTo(value, upperBound, expression, message), expectedError);
                     });
                 }
@@ -496,7 +468,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, upperBound])}`, () =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertLessThanOrEqualTo(value, upperBound, expression, message);
                     });
                 }
@@ -516,7 +488,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, lowerBound])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertGreaterThanOrEqualTo(value, lowerBound, expression, message), expectedError);
                     });
                 }
@@ -536,7 +508,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, lowerBound])}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertGreaterThanOrEqualTo(value, lowerBound, expression, message);
                     });
                 }
@@ -556,7 +528,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, lowerBound])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertGreaterThan(value, lowerBound, expression, message), expectedError);
                     });
                 }
@@ -584,7 +556,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([value, lowerBound])}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertGreaterThan(value, lowerBound, expression, message);
                     });
                 }
@@ -601,7 +573,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([lowerBound, value, upperBound])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertBetween(lowerBound, value, upperBound, expression, message), expectedError);
                     });
                 }
@@ -632,7 +604,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([lowerBound, value, upperBound])}`, () =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertBetween(lowerBound, value, upperBound, expression, message);
                     });
                 }
@@ -651,7 +623,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([index, count])}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertAccessIndex(index, count, expression, message);
                     });
                 }
@@ -664,7 +636,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([index, count])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertAccessIndex(index, count, expression, message), expectedError);
                     });
                 }
@@ -716,7 +688,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([index, count])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertInsertIndex(index, count, expression, message), expectedError);
                     });
                 }
@@ -758,7 +730,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([index, count])}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertInsertIndex(index, count, expression, message);
                     });
                 }
@@ -777,7 +749,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([possibilities, value, expression, message])}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertOneOf(possibilities, value, expression, message), expectedError);
                     });
                 }
@@ -808,7 +780,7 @@ export function test(runner: TestRunner): void
                     undefined,
                     undefined,
                     new PreConditionError(
-                        "Expected: one of ",
+                        "Expected: one of []",
                         "Actual: 5",
                     ));
                 assertOneOfErrorTest(
@@ -819,7 +791,7 @@ export function test(runner: TestRunner): void
                     new PreConditionError(
                         "Message: fake-message",
                         "Expression: fake-expression",
-                        "Expected: one of ",
+                        "Expected: one of []",
                         "Actual: 5",
                     ));
                 assertOneOfErrorTest(
@@ -830,7 +802,7 @@ export function test(runner: TestRunner): void
                     new PreConditionError(
                         "Message: fake-message",
                         "Expression: fake-expression",
-                        "Expected: one of 1,2,3",
+                        "Expected: one of [1,2,3]",
                         "Actual: 5",
                     ));
 
@@ -838,7 +810,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${runner.andList([possibilities, value, expression, message])}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertOneOf(possibilities, value, expression, message);
                     });
                 }
@@ -851,9 +823,9 @@ export function test(runner: TestRunner): void
             {
                 function assertIntegerErrorTest(value: number, expected: Error): void
                 {
-                    runner.test(`with ${value}`, (test: Test) =>
+                    runner.test(`with ${runner.toString(value)}`, (test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         test.assertThrows(() => condition.assertInteger(value), expected);
                     });
                 }
@@ -887,7 +859,7 @@ export function test(runner: TestRunner): void
                 {
                     runner.test(`with ${value}`, (_test: Test) =>
                     {
-                        const condition: Condition = Condition.create();
+                        const condition: MutableCondition = Condition.create();
                         condition.assertInteger(value);
                     });
                 }

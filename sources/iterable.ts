@@ -1,4 +1,6 @@
 import { Comparable } from "./comparable";
+import { Comparer } from "./comparer";
+import { EqualFunctions } from "./equalFunctions";
 import { Indexable } from "./indexable";
 import { Iterator } from "./iterator";
 import { JavascriptIterable, JavascriptIterator } from "./javascript";
@@ -6,6 +8,7 @@ import { MapIterable } from "./mapIterable";
 import { Pre } from "./pre";
 import { Result } from "./result";
 import { ToStringFunctions } from "./toStringFunctions";
+import { isUndefinedOrNull } from "./types";
 
 /**
  * An object that can be iterated over.
@@ -75,6 +78,49 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     }
 
     /**
+     * Get whether this {@link Iterable} is equal to the provided {@link Iterable}.
+     * @param right The {@link Iterable} to compare against this {@link Iterable}.
+     * @param equalFunctions The optional {@link EqualFunctions} to use to determine if the two
+     * {@link Iterable}s are equal.
+     */
+    public abstract equals(right: Iterable<T>, equalFunctions?: EqualFunctions): boolean;
+
+    public static equals<T>(left: Iterable<T>, right: Iterable<T>, equalFunctions?: EqualFunctions): boolean
+    {
+        if (isUndefinedOrNull(equalFunctions))
+        {
+            equalFunctions = EqualFunctions.create();
+        }
+
+        let result: boolean | undefined = Comparer.equalSameUndefinedNull(left, right);
+        if (result === undefined)
+        {
+            result = true;
+
+            const leftIterator: Iterator<T> = left.iterate().start();
+            const rightIterator: Iterator<T> = right.iterate().start();
+            while (leftIterator.hasCurrent() && rightIterator.hasCurrent())
+            {
+                result = equalFunctions.areEqual(leftIterator.getCurrent(), rightIterator.getCurrent());
+                if (result === false)
+                {
+                    break;
+                }
+                else
+                {
+                    leftIterator.next();
+                    rightIterator.next();
+                }
+            }
+            if (result)
+            {
+                result = (leftIterator.hasCurrent() === rightIterator.hasCurrent());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Get the {@link String} representation of this {@link Iterable}.
      */
     public abstract toString(toStringFunctions?: ToStringFunctions): string;
@@ -86,10 +132,11 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     {
         Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
 
-        const iterableArray: T[] = iterable.toArray();
-        return toStringFunctions
-            ? toStringFunctions.toString(iterableArray)
-            : JSON.stringify(iterableArray);
+        if (isUndefinedOrNull(toStringFunctions))
+        {
+            toStringFunctions = ToStringFunctions.create();
+        }
+        return toStringFunctions.toString(iterable);
     }
 
     /**
