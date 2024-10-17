@@ -18,6 +18,8 @@ export abstract class List<T> implements MutableIndexable<T>
 
     public abstract toArray(): T[];
 
+    public abstract equals(right: Iterable<T>): boolean;
+
     public abstract toString(): string;
 
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterable<T, TOutput>;

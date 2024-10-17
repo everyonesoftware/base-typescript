@@ -1,82 +1,90 @@
-// import { DocumentPosition } from "./documentPosition";
-// import { DocumentRange } from "./documentRange";
-// import { JsonDocumentBoolean } from "./jsonDocumentBoolean";
-// import { JsonNull } from "./jsonNull";
-// import { JsonNumber } from "./jsonNumber";
-// import { JsonObject } from "./jsonObject";
-// import { JsonSegment } from "./jsonSegment";
-// import { JsonSegmentType } from "./jsonSegmentType";
-// import { JsonString } from "./jsonString";
-// import { Pre } from "./pre";
-// import { Result } from "./result";
-// import { Type } from "./types";
+import { DocumentIssue } from "./documentIssue";
+import { Result } from "./result";
+import { Iterator } from "./iterator";
+import { Token } from "./token";
+import { Tokenizer } from "./tokenizer";
+import { JsonDocumentParser } from "./jsonDocumentParser";
+import { Pre } from "./pre";
 
-// export abstract class JsonDocumentSegment implements JsonSegment
-// {
-//     protected constructor()
-//     {
-//     }
+/**
+ * An individual segment from a {@link JsonDocument} that is composed of one or more {@link Token}s.
+ */
+export abstract class JsonDocumentSegment
+{
+    protected constructor()
+    {
+    }
 
-//     public static boolean(text: string, start: DocumentPosition): JsonDocumentBoolean
-//     {
-//         return JsonDocumentBoolean.create(text, start);
-//     }
+    /**
+     * Parse a {@link JsonDocumentSegment} from the provided text.
+     * @param text The text to parse.
+     * @param onIssue The {@link Function} that will be invoked when an issue is encountered.
+     */
+    public static parse(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void): Result<JsonDocumentSegment | undefined>
+    {
+        return JsonDocumentParser.create().parseSegment(text, onIssue);
+    }
 
-//     public static number(value: number): JsonNumber
-//     {
-//         return JsonNumber.create(value);
-//     }
+    /**
+     * Get the number of characters in this {@link JsonDocumentSegment}.
+     */
+    public abstract getLength(): number;
 
-//     public static string(value: string, quote: string = `"`): JsonString
-//     {
-//         return JsonString.create(value, quote);
-//     }
+    /**
+     * Get the combined length of the provided {@link Token}s and {@link JsonDocumentSegment}s.
+     * @param tokensAndSegments The {@link Token}s and {@link JsonDocumentSegment}s to get the
+     * combined length of.
+     */
+    public static getLength(tokensAndSegments: Iterable<Token | JsonDocumentSegment>): number
+    {
+        Pre.condition.assertNotEmpty(tokensAndSegments, "tokensAndSegments");
 
-//     public static null(): JsonNull
-//     {
-//         return JsonNull.create();
-//     }
+        let length: number = 0;
+        for (const tokenOrSegment of tokensAndSegments)
+        {
+            length += tokenOrSegment.getLength();
+        }
+        return length;
+    }
 
-//     public static object(): JsonObject
-//     {
-//         return JsonObject.create();
-//     }
+    /**
+     * Get the text that this {@link JsonDocumentSegment} was parsed from.
+     */
+    public abstract getText(): string;
 
-//     public abstract getSegmentType(): JsonSegmentType;
+    /**
+     * Get the combined text of the provided {@link Token}s and {@link JsonDocumentSegment}s.
+     * @param tokensAndSegments The {@link Token}s and {@link JsonDocumentSegment}s to get the
+     * combined text of.
+     */
+    public static getText(tokensAndSegments: Iterable<Token | JsonDocumentSegment>): string
+    {
+        Pre.condition.assertNotEmpty(tokensAndSegments, "tokensAndSegments");
 
-//     public abstract toString(): string;
+        let text: string = "";
+        for (const tokenOrSegment of tokensAndSegments)
+        {
+            text += tokenOrSegment.getText();
+        }
+        return text;
+    }
 
-//     public as<T extends JsonSegment>(type: Type<T>): Result<T>
-//     {
-//         return JsonSegment.as(this, type);
-//     }
+    /**
+     * Get the {@link String} representation of this {@link JsonDocumentSegment}.
+     */
+    public toString(): string
+    {
+        return JsonDocumentSegment.toString(this);
+    }
 
-//     /**
-//      * Get the {@link DocumentRange} that contains this {@link JsonDocumentSegment}.
-//      */
-//     public abstract getRange(): DocumentRange;
+    /**
+     * Get the {@link String} representation of the provided {@link JsonDocumentSegment}.
+     * @param segment The {@link JsonDocumentSegment} to get the {@link String} representation of.
+     */
+    public static toString(segment: JsonDocumentSegment): string
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(segment, "segment");
 
-//     public getStart(): DocumentPosition
-//     {
-//         return JsonDocumentSegment.getStart(this);
-//     }
-
-//     public static getStart(segment: JsonDocumentSegment): DocumentPosition
-//     {
-//         Pre.condition.assertNotUndefinedAndNotNull(segment, "segment");
-
-//         return segment.getRange().getStart();
-//     }
-
-//     public getEnd(): DocumentPosition
-//     {
-//         return JsonDocumentSegment.getEnd(this);
-//     }
-
-//     public static getEnd(segment: JsonDocumentSegment): DocumentPosition
-//     {
-//         Pre.condition.assertNotUndefinedAndNotNull(segment, "segment");
-
-//         return segment.getRange().getEnd();
-//     }
-// }
+        return segment.getText();
+    }
+}

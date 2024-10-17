@@ -1,6 +1,5 @@
 import { JavascriptIterable } from "./javascript";
 import { Pre } from "./pre";
-import { Post } from "./post";
 import { isString } from "./types";
 
 export function getLength(value: string | undefined | null): number
@@ -23,8 +22,6 @@ export function toString(value: undefined | null | { toString(): string }): stri
     {
         result = value.toString();
     }
-
-    Post.condition.assertNotUndefinedAndNotNull(result, "result");
 
     return result;
 }

@@ -47,6 +47,7 @@ export function test(runner: TestRunner): void
             isNumberTest(false, false);
             isNumberTest(123, true);
             isNumberTest(Infinity, true);
+            isNumberTest(-Infinity, true);
             isNumberTest(NaN, true);
         });
 

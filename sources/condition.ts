@@ -1,78 +1,21 @@
-import { AssertMessageParameters } from "./assertMessageParameters";
-import { Bytes } from "./bytes";
-import { Comparer } from "./comparer";
-import { Comparison } from "./comparison";
 import { JavascriptIterable } from "./javascript";
-import { isUndefinedOrNull } from "./types";
+import { MutableCondition } from "./mutableCondition";
 
 /**
  * A collection of condition methods that can be used to assert the state of an application.
  */
-export class Condition
+export abstract class Condition
 {
-    private readonly createErrorFunction: (message: string) => Error;
-
-    protected constructor(createErrorFunction: (message: string) => Error)
+    protected constructor()
     {
-        this.createErrorFunction = createErrorFunction;
     }
 
     /**
-     * Create a new {@link Condition} object.
-     * @param createErrorFunction The function to use to create this {@link Condition}'s errors. If
-     * no function is provided, then a default function that creates an {@link Error} from the
-     * provided message will be used.
+     * Create a new {@link MutableCondition} object.
      */
-    public static create(createErrorFunction?: (message: string) => Error): Condition
+    public static create(): MutableCondition
     {
-        if (createErrorFunction === undefined)
-        {
-            createErrorFunction = (message: string) => new Error(message);
-        }
-        return new Condition(createErrorFunction);
-    }
-
-    /**
-     * Create an error message based on the provided parameters.
-     * @param parameters The parameters to use to create the error message.
-     */
-    private static createErrorMessage(parameters: AssertMessageParameters): string
-    {
-        let result: string = "";
-
-        if (parameters.message)
-        {
-            result += `Message: ${parameters.message}`;
-        }
-
-        if (parameters.expression)
-        {
-            if (result)
-            {
-                result += "\n";
-            }
-            result += `Expression: ${parameters.expression}`;
-        }
-
-        if (result)
-        {
-            result += "\n";
-        }
-        result += `Expected: ${parameters.expected}`;
-
-        if (result)
-        {
-            result += "\n";
-        }
-        result += `Actual: ${parameters.actual}`;
-
-        return result;
-    }
-
-    private createError(parameters: AssertMessageParameters): Error
-    {
-        const message: string = Condition.createErrorMessage(parameters);
-        return this.createErrorFunction(message);
+        return MutableCondition.create();
     }
 
     /**
@@ -81,18 +24,7 @@ export class Condition
      * @param expression The name of the expression that produced the value.
      * @param message An additional message that will be included with the error.
      */
-    public assertUndefined(value: unknown, expression?: string, message?: string): asserts value is undefined
-    {
-        if (value !== undefined)
-        {
-            throw this.createError({
-                expected: "undefined",
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertUndefined(value: unknown, expression?: string, message?: string): asserts value is undefined;
 
     /**
      * Assert that the provided value is not undefined and not null.
@@ -100,18 +32,7 @@ export class Condition
      * @param expression The name of the expression that produced the value.
      * @param message An additional message that will be included with the error.
      */
-    public assertNotUndefined<T>(value: T, expression?: string, message?: string): asserts value is NonNullable<T>
-    {
-        if (value === undefined)
-        {
-            throw this.createError({
-                expected: "not undefined",
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertNotUndefined<T>(value: T, expression?: string, message?: string): asserts value is NonNullable<T>;
 
     /**
      * Assert that the provided value is not undefined and not null.
@@ -119,18 +40,7 @@ export class Condition
      * @param expression The name of the expression that produced the value.
      * @param message An additional message that will be included with the error.
      */
-    public assertNotUndefinedAndNotNull<T>(value: T, expression?: string, message?: string): asserts value is NonNullable<T>
-    {
-        if (value === undefined || value === null)
-        {
-            throw this.createError({
-                expected: "not undefined and not null",
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertNotUndefinedAndNotNull<T>(value: T, expression?: string, message?: string): asserts value is NonNullable<T>;
 
     /**
      * Assert that the provided value is true.
@@ -138,18 +48,7 @@ export class Condition
      * @param expression The name of the expression that produced the value.
      * @param message An additional message that will be included with the error.
      */
-    public assertTrue(value: boolean, expression?: string, message?: string): asserts value is true
-    {
-        if (!value)
-        {
-            throw this.createError({
-                expected: `${true}`,
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertTrue(value: boolean, expression?: string, message?: string): asserts value is true;
 
     /**
      * Assert that the provided value is false.
@@ -157,18 +56,7 @@ export class Condition
      * @param expression The name of the expression that produced the value.
      * @param message An additional message that will be included with the error.
      */
-    public assertFalse(value: boolean, expression?: string, message?: string): asserts value is false
-    {
-        if (value)
-        {
-            throw this.createError({
-                expected: `${false}`,
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertFalse(value: boolean, expression?: string, message?: string): asserts value is false;
 
     /**
      * Assert that the provided actual value is the same as the provided expected value.
@@ -177,18 +65,7 @@ export class Condition
      * @param expression The expression that produced the actual value.
      * @param message An optional message that describes the scenario.
      */
-    public assertSame<T>(expected: T, actual: T, expression?: string, message?: string): void
-    {
-        if (expected !== actual)
-        {
-            throw this.createError({
-                expected: JSON.stringify(expected),
-                actual: JSON.stringify(actual),
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertSame<T>(expected: T, actual: T, expression?: string, message?: string): void;
 
     /**
      * Assert that the provided actual value is not the same as the provided expected value.
@@ -197,18 +74,7 @@ export class Condition
      * @param expression The expression that produced the actual value.
      * @param message An optional message that describes the scenario.
      */
-    public assertNotSame<T>(expected: T, actual: T, expression?: string, message?: string): void
-    {
-        if (expected === actual)
-        {
-            throw this.createError({
-                expected: `not ${JSON.stringify(expected)}`,
-                actual: JSON.stringify(actual),
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertNotSame<T>(expected: T, actual: T, expression?: string, message?: string): void;
 
     /**
      * Assert that the provided actual value is equal to the provided expected value.
@@ -217,19 +83,7 @@ export class Condition
      * @param expression  The expression that produced the actual value.
      * @param message An optional message that describes the scenario.
      */
-    public assertEqual<T>(expected: T, actual: T, expression?: string, message?: string): void
-    {
-        let comparison: Comparison | undefined = Comparer.compareSameUndefinedNull(expected, actual);
-        if (comparison !== Comparison.Equal)
-        {
-            throw this.createError({
-                expected: JSON.stringify(expected),
-                actual: JSON.stringify(actual),
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertEqual<T>(expected: T, actual: T, expression?: string, message?: string): void;
 
     /**
      * Assert that the provided actual value is not equal to the provided expected value.
@@ -238,111 +92,80 @@ export class Condition
      * @param expression  The expression that produced the actual value.
      * @param message An optional message that describes the scenario.
      */
-    public assertNotEqual<T>(notExpected: T, actual: T, expression?: string, message?: string): void
-    {
-        let comparison: Comparison | undefined = Comparer.compareSameUndefinedNull(notExpected, actual);
-        if (comparison === Comparison.Equal)
-        {
-            throw this.createError({
-                expected: `not ${JSON.stringify(notExpected)}`,
-                actual: JSON.stringify(actual),
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertNotEqual<T>(notExpected: T, actual: T, expression?: string, message?: string): void;
 
-    public assertNotEmpty(value: string | undefined | null, expression?: string, message?: string): asserts value is string
-    {
-        this.assertNotUndefinedAndNotNull(value, expression, message);
-        if (value.length === 0)
-        {
-            throw this.createError({
-                expected: "not empty",
-                actual: `""`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    /**
+     * Assert that the provided value is not empty.
+     * @param value The value to check.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public abstract assertNotEmpty(value: JavascriptIterable<unknown> | string | undefined | null, expression?: string, message?: string): asserts value is string;
 
-    public assertLessThan(value: number, upperBound: number, expression?: string, message?: string): void
-    {
-        if (!(value < upperBound))
-        {
-            throw this.createError({
-                expected: `less than ${upperBound}`,
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    /**
+     * Assert that the provided value is less than the provided upperBound.
+     * @param value The value to check.
+     * @param upperBound The upperBound that the value must be less than.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public abstract assertLessThan(value: number, upperBound: number, expression?: string, message?: string): void;
 
-    public assertLessThanOrEqualTo(value: number, upperBound: number, expression?: string, message?: string): void
-    {
-        if (!(value <= upperBound))
-        {
-            throw this.createError({
-                expected: `less than or equal to ${upperBound}`,
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    /**
+     * Assert that the provided value is less than or equal to the provided upperBound.
+     * @param value The value to check.
+     * @param upperBound The upperBound that the value must be less than.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public abstract assertLessThanOrEqualTo(value: number, upperBound: number, expression?: string, message?: string): void;
 
-    public assertGreaterThanOrEqualTo(value: number, lowerBound: number, expression?: string, message?: string): void
-    {
-        if (!(lowerBound <= value))
-        {
-            throw this.createError({
-                expected: `greater than or equal to ${lowerBound}`,
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    /**
+     * Assert that the provided value is greater than or equal to the provided lowerBound.
+     * @param value The value to check.
+     * @param lowerBound The lowerBound that the value must be greater than or equal to.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public abstract assertGreaterThanOrEqualTo(value: number, lowerBound: number, expression?: string, message?: string): void;
 
-    public assertGreaterThan(value: number, lowerBound: number, expression?: string, message?: string): void
-    {
-        if (!(lowerBound < value))
-        {
-            throw this.createError({
-                expected: `greater than ${lowerBound}`,
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    /**
+     * Assert that the provided value is greater than the provided lowerBound.
+     * @param value The value to check.
+     * @param lowerBound The lowerBound that the value must be greater than.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public abstract assertGreaterThan(value: number, lowerBound: number, expression?: string, message?: string): void;
 
-    public assertBetween(lowerBound: number, value: number, upperBound: number, expression?: string, message?: string): void
-    {
-        this.assertLessThanOrEqualTo(lowerBound, upperBound, "lowerBound");
-        if (isUndefinedOrNull(value) || !(lowerBound <= value && value <= upperBound))
-        {
-            throw this.createError({
-                expected: (lowerBound === upperBound ? `${lowerBound}` : `between ${lowerBound} and ${upperBound}`),
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    /**
+     * Assert that the value is greater than or equal to the lowerBound and less than or equal to
+     * the upperBound.
+     * @param lowerBound The lowerBound that the value must be greater than or equal to.
+     * @param value The value to check.
+     * @param upperBound The upperBound that the value must be less than or equal to.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public abstract assertBetween(lowerBound: number, value: number, upperBound: number, expression?: string, message?: string): void;
 
-    public assertAccessIndex(index: number, count: number, expression?: string, message?: string): void
-    {
-        this.assertGreaterThanOrEqualTo(count, 1, "count");
-        this.assertBetween(0, index, count - 1, expression, message);
-    }
+    /**
+     * Assert that the index is within the access bounds of an indexable with the provided count.
+     * @param index The index to check.
+     * @param count The number of elements in the indexable.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public abstract assertAccessIndex(index: number, count: number, expression?: string, message?: string): void;
 
-    public assertInsertIndex(index: number, count: number, expression?: string, message?: string): void
-    {
-        this.assertGreaterThanOrEqualTo(count, 0, "count");
-        this.assertBetween(0, index, count, expression, message);
-    }
+    /**
+     * Assert that the index is within the insertion bounds of a {@link List} with the provided count.
+     * @param index The index to check.
+     * @param count The number of elements in the indexable.
+     * @param expression  The expression that produced the actual value.
+     * @param message An optional message that describes the scenario.
+     */
+    public abstract assertInsertIndex(index: number, count: number, expression?: string, message?: string): void;
 
     /**
      * Assert that the value is one of the possibilities.
@@ -351,30 +174,7 @@ export class Condition
      * @param expression The expression that produced the value.
      * @param message An optional error message.
      */
-    public assertOneOf<T>(possibilities: JavascriptIterable<T>, value: T, expression?: string, message?: string): void
-    {
-        this.assertNotUndefinedAndNotNull(possibilities, "possibilities");
-
-        let found: boolean = false;
-        for (const possibility of possibilities)
-        {
-            if (possibility === value)
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            throw this.createError({
-                expected: `one of ${possibilities}`,
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    public abstract assertOneOf<T>(possibilities: JavascriptIterable<T>, value: T, expression?: string, message?: string): void;
 
     /**
      * Assert that the value is within the bounds of a byte.
@@ -382,22 +182,13 @@ export class Condition
      * @param expression The expression that produced the value.
      * @param message An optional error message.
      */
-    public assertByte(value: number, expression?: string, message?: string): void
-    {
-        this.assertBetween(Bytes.minimumValue, value, Bytes.maximumValue, expression, message);
-        this.assertInteger(value, "value");
-    }
+    public abstract assertByte(value: number, expression?: string, message?: string): void;
 
-    public assertInteger(value: number, expression?: string, message?: string): void
-    {
-        if (value % 1 !== 0)
-        {
-            throw this.createError({
-                expected: `integer`,
-                actual: `${value}`,
-                expression: expression,
-                message: message,
-            });
-        }
-    }
+    /**
+     * Assert that the value is an integer.
+     * @param value The value to check.
+     * @param expression The expression that produced the value.
+     * @param message An optional error message.
+     */
+    public abstract assertInteger(value: number, expression?: string, message?: string): void;
 }

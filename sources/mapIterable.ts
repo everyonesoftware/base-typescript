@@ -1,3 +1,4 @@
+import { EqualFunctions } from "./equalFunctions";
 import { Iterable } from "./iterable";
 import { Iterator } from "./iterator";
 import { JavascriptIterator } from "./javascript";
@@ -34,6 +35,11 @@ export class MapIterable<TInput,TOutput> implements Iterable<TOutput>
     public toArray(): TOutput[]
     {
         return Iterable.toArray(this);
+    }
+
+    public equals(right: Iterable<TOutput>, equalFunctions?: EqualFunctions): boolean
+    {
+        return Iterable.equals(this, right, equalFunctions);
     }
 
     public toString(): string

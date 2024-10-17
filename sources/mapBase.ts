@@ -1,3 +1,5 @@
+import { EqualFunctions } from "./equalFunctions";
+import { Iterable } from "./iterable";
 import { IterableBase } from "./iterableBase";
 import { Iterator } from "./iterator";
 import { Map, MapEntry } from "./map";
@@ -11,6 +13,11 @@ export abstract class MapBase<TKey,TValue> extends IterableBase<MapEntry<TKey,TV
     protected constructor()
     {
         super();
+    }
+
+    public override equals(right: Iterable<MapEntry<TKey,TValue>>, equalFunctions?: EqualFunctions): boolean
+    {
+        return Map.equals(this, right, equalFunctions);
     }
 
     public override toString(): string

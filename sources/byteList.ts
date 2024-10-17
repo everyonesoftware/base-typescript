@@ -123,6 +123,11 @@ export class ByteList implements List<number>
         return this.values.slice(0, this.getCount());
     }
 
+    public equals(right: Iterable<number>): boolean
+    {
+        return Iterable.equals(this, right);
+    }
+
     public toString(): string
     {
         return Iterable.toString(this);

@@ -1,4 +1,4 @@
-import { DocumentPosition } from "./documentPosition";
+import { DocumentPosition, isDocumentPosition } from "./documentPosition";
 import { Pre } from "./pre";
 import { isNumber, isUndefinedOrNull } from "./types";
 
@@ -23,9 +23,22 @@ export class DocumentRange
      * the number of columns wide that this range should be. If this is undefined, then the start
      * position will be used as the afterEnd position, making this an empty range.
      */
-    public static create(start: DocumentPosition, afterEndOrColumns?: DocumentPosition | number): DocumentRange
+    public static create(start: DocumentPosition, afterEndOrColumns?: DocumentPosition | number): DocumentRange;
+    public static create(parameters: { start: DocumentPosition, afterEndOrColumns?: DocumentPosition | number }): DocumentRange;
+    static create(startOrParameters: DocumentPosition | { start: DocumentPosition, afterEndOrColumns?: DocumentPosition | number }, afterEndOrColumns?: DocumentPosition | number): DocumentRange
     {
-        Pre.condition.assertNotUndefinedAndNotNull(start, "start");
+        let start: DocumentPosition | undefined;
+        if (isDocumentPosition(startOrParameters))
+        {
+            start = startOrParameters;
+        }
+        else
+        {
+            Pre.condition.assertNotUndefinedAndNotNull(startOrParameters, "start");
+
+            start = startOrParameters.start;
+            afterEndOrColumns = startOrParameters.afterEndOrColumns;
+        }
 
         let afterEnd: DocumentPosition;
         if (isUndefinedOrNull(afterEndOrColumns) || afterEndOrColumns === 0)

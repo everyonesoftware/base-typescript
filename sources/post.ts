@@ -9,8 +9,9 @@ export class Post
     /**
      * The condition object that can be used to assert post-conditions.
      */
-    public static readonly condition: Condition = Condition.create((message: string) =>
-    {
-        return new PostConditionError(message);
-    });
+    public static readonly condition: Condition = Condition.create()
+        .setCreateErrorFunction((message: string) =>
+        {
+            return new PostConditionError(message);
+        });
 }

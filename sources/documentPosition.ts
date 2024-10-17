@@ -5,6 +5,18 @@ import { DocumentRange } from "./documentRange";
 import { MutableDocumentPosition } from "./mutableDocumentPosition";
 import { Post } from "./post";
 import { Pre } from "./pre";
+import { hasFunction, isNumber, isUndefinedOrNull } from "./types";
+
+/**
+ * Get whether the provided value is a {@link DocumentPosition}.
+ * @param value The value to check.
+ */
+export function isDocumentPosition(value: unknown): value is DocumentPosition
+{
+    return hasFunction(value, "getCharacterIndex", 0) &&
+        hasFunction(value, "getLineIndex", 0) &&
+        hasFunction(value, "getColumnIndex", 0);
+}
 
 /**
  * A position within a document.
@@ -22,8 +34,24 @@ export abstract class DocumentPosition extends Comparable<DocumentPosition>
      * @param lineIndex The line index within the document. Defaults to 0.
      * @param columnIndex The column index within the current line. Defaults to 0.
      */
-    public static create(characterIndex?: number, lineIndex?: number, columnIndex?: number): MutableDocumentPosition
+    public static create(characterIndex?: number, lineIndex?: number, columnIndex?: number): MutableDocumentPosition;
+    public static create(parameters: { characterIndex?: number, lineIndex?: number, columnIndex?: number }): MutableDocumentPosition;
+    static create(characterIndexOrParameters?: number | { characterIndex?: number, lineIndex?: number, columnIndex?: number }, lineIndex?: number, columnIndex?: number): MutableDocumentPosition
     {
+        let characterIndex: number | undefined;
+        if (!isUndefinedOrNull(characterIndexOrParameters))
+        {
+            if (isNumber(characterIndexOrParameters))
+            {
+                characterIndex = characterIndexOrParameters;
+            }
+            else
+            {
+                lineIndex = characterIndexOrParameters.lineIndex;
+                columnIndex = characterIndexOrParameters.columnIndex;
+                characterIndex = characterIndexOrParameters.characterIndex;
+            }
+        }
         return MutableDocumentPosition.create(characterIndex, lineIndex, columnIndex);
     }
 
