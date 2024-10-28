@@ -131,6 +131,11 @@ export class CharacterList implements List<string>
         return Indexable.first(this);
     }
 
+    public last(): Result<string>
+    {
+        return Indexable.last(this);
+    }
+
     public add(value: string): this
     {
         return List.add(this, value);

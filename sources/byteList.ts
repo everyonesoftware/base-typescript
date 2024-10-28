@@ -147,6 +147,12 @@ export class ByteList implements List<number>
     {
         return Indexable.first(this);
     }
+
+    public last(): Result<number>
+    {
+        return Indexable.last(this);
+    }
+
     public add(value: number): this
     {
         return List.add(this, value);

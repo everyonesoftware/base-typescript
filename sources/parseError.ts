@@ -51,6 +51,7 @@ export class MissingValueParseError extends ParseError
         }
 
         Pre.condition.assertNotUndefinedAndNotNull(range, "range");
+        Pre.condition.assertNotUndefinedAndNotNull(missingValue, "missingValue");
         Pre.condition.assertNotEmpty(missingValue, "missingValue");
 
         super(range, `Missing ${missingValue}.`);

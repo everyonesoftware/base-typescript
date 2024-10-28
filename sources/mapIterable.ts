@@ -71,4 +71,9 @@ export class MapIterable<TInput,TOutput> implements Iterable<TOutput>
     {
         return Iterable.first(this);
     }
+
+    public last(): Result<TOutput>
+    {
+        return Iterable.last(this);
+    }
 }

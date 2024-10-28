@@ -47,12 +47,35 @@ export abstract class Indexable<T> implements Iterable<T>
         return Indexable.first(this);
     }
 
+    /**
+     * Get the first value in the provided {@link Indexable}.
+     */
     public static first<T>(indexable: Indexable<T>): Result<T>
     {
         Pre.condition.assertNotUndefinedAndNotNull(indexable, "indexable");
 
         return indexable.any()
             ? Result.value(indexable.get(0))
+            : Result.error(new EmptyError());
+    }
+
+    /**
+     * Get the last value in this {@link Indexable}.
+     */
+    public last(): Result<T>
+    {
+        return Indexable.first(this);
+    }
+
+    /**
+     * Get the last value in the provided {@link Indexable}.
+     */
+    public static last<T>(indexable: Indexable<T>): Result<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(indexable, "indexable");
+
+        return indexable.any()
+            ? Result.value(indexable.get(indexable.getCount() - 1))
             : Result.error(new EmptyError());
     }
 }

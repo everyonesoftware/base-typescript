@@ -7,13 +7,13 @@ import { TokenizerDecorator } from "./tokenizerDecorator";
 import { Token } from "./token";
 import { TokenType } from "./tokenType";
 import { MutableDocumentPosition } from "./mutableDocumentPosition";
-import { Iterator } from "./iterator";
+import { JavascriptIterable } from "./javascript";
 
 export class DocumentTokenizer extends TokenizerDecorator
 {
     private currentRange: DocumentRange;
 
-    protected constructor(tokenizer: string | Iterator<string> | Tokenizer, currentPosition?: DocumentPosition)
+    protected constructor(tokenizer: string | JavascriptIterable<string> | Tokenizer, currentPosition?: DocumentPosition)
     {
         Pre.condition.assertNotUndefinedAndNotNull(tokenizer, "tokenizer");
 
@@ -31,7 +31,7 @@ export class DocumentTokenizer extends TokenizerDecorator
         this.currentRange = DocumentRange.create(currentPosition);
     }
 
-    public static create(innerTokenizer: string | Iterator<string> | Tokenizer, currentPosition?: DocumentPosition): DocumentTokenizer
+    public static create(innerTokenizer: string | JavascriptIterable<string> | Tokenizer, currentPosition?: DocumentPosition): DocumentTokenizer
     {
         Pre.condition.assertNotUndefinedAndNotNull(innerTokenizer, "innerTokenizer");
 

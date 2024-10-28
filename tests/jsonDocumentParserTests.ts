@@ -1,8 +1,7 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { DocumentIssue, DocumentPosition, DocumentRange, isUndefinedOrNull, Iterable, Iterator, JsonDocumentBoolean, JsonDocumentNull, JsonDocumentNumber, JsonDocumentParser, JsonDocumentString, List, PreConditionError, Token, Tokenizer } from "../sources";
+import { DocumentIssue, DocumentPosition, DocumentRange, isUndefinedOrNull, Iterable, Iterator, JavascriptIterable, JsonDocumentArray, JsonDocumentBoolean, JsonDocumentNull, JsonDocumentNumber, JsonDocumentParser, JsonDocumentString, List, PreConditionError, Token, Tokenizer } from "../sources";
 import { createTestRunner } from "./tests";
-import { JsonDocumentSegment } from "../sources/jsonDocumentSegment";
-import { JsonDocumentWhitespace } from "../sources/jsonDocumentWhitespace";
+import { JsonDocumentValue as JsonDocumentValue } from "../sources/jsonDocumentValue";
 import { JsonDocumentUnknown } from "../sources/JsonDocumentUnknown";
 
 export function test(runner: TestRunner): void
@@ -17,38 +16,38 @@ export function test(runner: TestRunner): void
                 test.assertNotUndefinedAndNotNull(parser);
             });
 
-            runner.testFunction("parseSegment(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            runner.testFunction("parseValue(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
             {
-                function parseSegmentErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                function parseValueErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
                         const parser: JsonDocumentParser = JsonDocumentParser.create();
-                        test.assertThrows(() => parser.parseSegment(text, onIssue), expected);
+                        test.assertThrows(() => parser.parseValue(text, onIssue), expected);
                     });
                 }
 
-                parseSegmentErrorTest(undefined!, undefined, new PreConditionError(
+                parseValueErrorTest(undefined!, undefined, new PreConditionError(
                     "Expression: text",
                     "Expected: not undefined and not null",
                     "Actual: undefined",
                 ));
-                parseSegmentErrorTest(null!, undefined, new PreConditionError(
+                parseValueErrorTest(null!, undefined, new PreConditionError(
                     "Expression: text",
                     "Expected: not undefined and not null",
                     "Actual: null",
                 ));
 
-                function parseSegmentTest(text: string | Iterator<string> | Tokenizer, expectedSegment: JsonDocumentSegment | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>): void
+                function parseValueTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
                         const parser: JsonDocumentParser = JsonDocumentParser.create();
                         const issues: List<DocumentIssue> = List.create();
 
-                        const segment: JsonDocumentSegment | undefined = parser.parseSegment(text, (issue: DocumentIssue) => issues.add(issue)).await();
+                        const value: JsonDocumentValue | undefined = parser.parseValue(text, (issue: DocumentIssue) => issues.add(issue)).await();
 
-                        test.assertEqual(expectedSegment, segment);
+                        test.assertEqual(expectedValue, value);
                         if (isUndefinedOrNull(expectedIssues))
                         {
                             expectedIssues = Iterable.create();
@@ -61,23 +60,30 @@ export function test(runner: TestRunner): void
                     });
                 }
 
-                parseSegmentTest(
+                parseValueTest(
                     "",
                     undefined,
                     DocumentIssue.create(
                         DocumentRange.create(
                             DocumentPosition.create(0, 0, 0),
                         ),
-                        "Missing JSON segment.",
+                        "Missing JSON value.",
                     ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     "   ",
-                    JsonDocumentWhitespace.create(Iterable.create([Token.whitespace("   ")])),
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create(
+                            DocumentPosition.create(0, 0, 0),
+                            DocumentPosition.create(3, 0, 3),
+                        ),
+                        "Expected JSON value, but found \"   \" instead.",
+                    ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     "*",
-                    JsonDocumentUnknown.create(Token.asterisk()),
+                    undefined,
                     DocumentIssue.create(
                         DocumentRange.create({
                             start: DocumentPosition.create({
@@ -89,12 +95,12 @@ export function test(runner: TestRunner): void
                                 columnIndex: 1,
                             }),
                         }),
-                        "Expected JSON segment, but found \"*\" instead.",
+                        "Expected JSON value, but found \"*\" instead.",
                     ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     "flubber",
-                    JsonDocumentUnknown.create(Token.letters("flubber")),
+                    undefined,
                     DocumentIssue.create(
                         DocumentRange.create({
                             start: DocumentPosition.create({
@@ -106,12 +112,12 @@ export function test(runner: TestRunner): void
                                 columnIndex: 7,
                             }),
                         }),
-                        "Expected JSON segment, but found \"flubber\" instead.",
+                        "Expected JSON value, but found \"flubber\" instead.",
                     ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     "a b",
-                    JsonDocumentUnknown.create(Token.letters("a")),
+                    undefined,
                     DocumentIssue.create(
                         DocumentRange.create({
                             start: DocumentPosition.create({
@@ -123,14 +129,14 @@ export function test(runner: TestRunner): void
                                 columnIndex: 1,
                             }),
                         }),
-                        "Expected JSON segment, but found \"a\" instead.",
+                        "Expected JSON value, but found \"a\" instead.",
                     ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     "true",
                     JsonDocumentBoolean.create(Token.letters("true")),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     "TRUE",
                     JsonDocumentBoolean.create(Token.letters("TRUE")),
                     DocumentIssue.create(
@@ -147,7 +153,7 @@ export function test(runner: TestRunner): void
                         `Expected "true", but found "TRUE" instead.`,
                     ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     `"abc"`,
                     JsonDocumentString.create(
                         Iterable.create([
@@ -158,7 +164,7 @@ export function test(runner: TestRunner): void
                         true,
                     ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     `'abc'`,
                     JsonDocumentString.create(
                         Iterable.create([
@@ -169,7 +175,7 @@ export function test(runner: TestRunner): void
                         true,
                     ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     "`abc`",
                     JsonDocumentString.create(
                         Iterable.create([
@@ -180,103 +186,9 @@ export function test(runner: TestRunner): void
                         true,
                     ),
                 );
-                parseSegmentTest(
+                parseValueTest(
                     "123",
                     JsonDocumentNumber.create(Iterable.create([Token.digits("123")])),
-                );
-            });
-
-            runner.testFunction("parseWhitespace(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
-            {
-                function parseWhitespaceErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
-                {
-                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
-                    {
-                        const parser: JsonDocumentParser = JsonDocumentParser.create();
-                        test.assertThrows(() => parser.parseWhitespace(text, onIssue), expected);
-                    });
-                }
-
-                parseWhitespaceErrorTest(undefined!, undefined, new PreConditionError(
-                    "Expression: text",
-                    "Expected: not undefined and not null",
-                    "Actual: undefined",
-                ));
-                parseWhitespaceErrorTest(null!, undefined, new PreConditionError(
-                    "Expression: text",
-                    "Expected: not undefined and not null",
-                    "Actual: null",
-                ));
-
-                function parseWhitespaceTest(text: string | Iterator<string> | Tokenizer, expectedSegment: JsonDocumentSegment | undefined, expectedIssue?: DocumentIssue): void
-                {
-                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
-                    {
-                        const parser: JsonDocumentParser = JsonDocumentParser.create();
-                        const issues: List<DocumentIssue> = List.create();
-
-                        const segment: JsonDocumentSegment | undefined = parser.parseWhitespace(text, (issue: DocumentIssue) => issues.add(issue)).await();
-
-                        test.assertEqual(expectedSegment, segment);
-                        if (isUndefinedOrNull(expectedIssue))
-                        {
-                            test.assertEqual(Iterable.create<DocumentIssue>(), issues);
-                        }
-                        else
-                        {
-                            test.assertEqual(Iterable.create([expectedIssue]), issues);
-                        }
-                    });
-                }
-
-                parseWhitespaceTest(
-                    "",
-                    undefined,
-                    DocumentIssue.create(
-                        DocumentRange.create(
-                            DocumentPosition.create(0, 0, 0),
-                        ),
-                        "Missing whitespace.",
-                    ),
-                );
-                parseWhitespaceTest(
-                    "   ",
-                    JsonDocumentWhitespace.create(Iterable.create([Token.whitespace("   ")])),
-                );
-                parseWhitespaceTest(
-                    "\n",
-                    JsonDocumentWhitespace.create(Iterable.create([Token.newLine()])),
-                );
-                parseWhitespaceTest(
-                    "\r",
-                    JsonDocumentWhitespace.create(Iterable.create([Token.carriageReturn()])),
-                );
-                parseWhitespaceTest(
-                    "\r\n \r\n",
-                    JsonDocumentWhitespace.create(Iterable.create([
-                        Token.carriageReturn(),
-                        Token.newLine(),
-                        Token.whitespace(" "),
-                        Token.carriageReturn(),
-                        Token.newLine(),
-                    ])),
-                );
-                parseWhitespaceTest(
-                    "flubber",
-                    undefined,
-                    DocumentIssue.create(
-                        DocumentRange.create({
-                            start: DocumentPosition.create({
-                                characterIndex: 0,
-                                columnIndex: 0,
-                            }),
-                            afterEndOrColumns: DocumentPosition.create({
-                                characterIndex: 7,
-                                columnIndex: 7,
-                            }),
-                        }),
-                        "Expected whitespace, but found \"flubber\" instead.",
-                    ),
                 );
             });
 
@@ -302,16 +214,16 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function parseNullOrBooleanTest(text: string | Iterator<string> | Tokenizer, expectedSegment: JsonDocumentSegment | undefined, expectedIssue?: DocumentIssue): void
+                function parseNullOrBooleanTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssue?: DocumentIssue): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
                         const parser: JsonDocumentParser = JsonDocumentParser.create();
                         const issues: List<DocumentIssue> = List.create();
 
-                        const segment: JsonDocumentSegment | undefined = parser.parseNullOrBoolean(text, (issue: DocumentIssue) => issues.add(issue)).await();
+                        const value: JsonDocumentValue | undefined = parser.parseNullOrBoolean(text, (issue: DocumentIssue) => issues.add(issue)).await();
 
-                        test.assertEqual(expectedSegment, segment);
+                        test.assertEqual(expectedValue, value);
                         if (isUndefinedOrNull(expectedIssue))
                         {
                             test.assertEqual(Iterable.create<DocumentIssue>(), issues);
@@ -355,7 +267,7 @@ export function test(runner: TestRunner): void
                 );
                 parseNullOrBooleanTest(
                     "flubber",
-                    JsonDocumentUnknown.create(Token.letters("flubber")),
+                    undefined,
                     DocumentIssue.create(
                         DocumentRange.create({
                             start: DocumentPosition.create({
@@ -474,16 +386,16 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function parseStringTest(text: string | Iterator<string> | Tokenizer, expectedSegment: JsonDocumentSegment | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>): void
+                function parseStringTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
                         const parser: JsonDocumentParser = JsonDocumentParser.create();
                         const issues: List<DocumentIssue> = List.create();
 
-                        const segment: JsonDocumentSegment | undefined = parser.parseString(text, (issue: DocumentIssue) => issues.add(issue)).await();
+                        const value: JsonDocumentValue | undefined = parser.parseString(text, (issue: DocumentIssue) => issues.add(issue)).await();
 
-                        test.assertEqual(expectedSegment, segment);
+                        test.assertEqual(expectedValue, value);
                         if (isUndefinedOrNull(expectedIssues))
                         {
                             expectedIssues = Iterable.create();
@@ -811,16 +723,16 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function parseNumberTest(text: string | Iterator<string> | Tokenizer, expectedSegment: JsonDocumentSegment | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>, expectedValue?: number): void
+                function parseNumberTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>, expectedNumberValue?: number): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
                         const parser: JsonDocumentParser = JsonDocumentParser.create();
                         const issues: List<DocumentIssue> = List.create();
 
-                        const segment: JsonDocumentSegment | undefined = parser.parseNumber(text, (issue: DocumentIssue) => issues.add(issue)).await();
+                        const value: JsonDocumentValue | undefined = parser.parseNumber(text, (issue: DocumentIssue) => issues.add(issue)).await();
 
-                        test.assertEqual(expectedSegment, segment);
+                        test.assertEqual(expectedValue, value);
 
                         if (isUndefinedOrNull(expectedIssues))
                         {
@@ -832,10 +744,11 @@ export function test(runner: TestRunner): void
                         }
                         test.assertEqual(expectedIssues, issues);
 
-                        test.assertEqual(expectedSegment instanceof JsonDocumentNumber, !isUndefinedOrNull(expectedValue));
-                        if (!isUndefinedOrNull(expectedValue))
+                        test.assertEqual(expectedValue, value);
+                        if (!isUndefinedOrNull(expectedNumberValue))
                         {
-                            test.assertEqual(expectedValue, (expectedSegment as JsonDocumentNumber).getValue());
+                            test.assertInstanceOf(value, JsonDocumentNumber);
+                            test.assertEqual(expectedNumberValue, value.getValue());
                         }
                     });
                 }
@@ -1096,6 +1009,292 @@ export function test(runner: TestRunner): void
                     ])),
                     undefined,
                     1.2e-3,
+                );
+            });
+
+            runner.testFunction("parseArray(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            {
+                function parseArrayErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                {
+                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
+                    {
+                        const parser: JsonDocumentParser = JsonDocumentParser.create();
+                        test.assertThrows(() => parser.parseArray(text, onIssue), expected);
+                    });
+                }
+
+                parseArrayErrorTest(undefined!, undefined, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                parseArrayErrorTest(null!, undefined, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
+
+                function parseArrayTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | JavascriptIterable<DocumentIssue>): void
+                {
+                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
+                    {
+                        const parser: JsonDocumentParser = JsonDocumentParser.create();
+                        const issues: List<DocumentIssue> = List.create();
+
+                        const value: JsonDocumentValue | undefined = parser.parseArray(text, (issue: DocumentIssue) => issues.add(issue)).await();
+
+                        test.assertEqual(expectedValue, value);
+
+                        if (isUndefinedOrNull(expectedIssues))
+                        {
+                            expectedIssues = Iterable.create();
+                        }
+                        else if (expectedIssues instanceof DocumentIssue)
+                        {
+                            expectedIssues = Iterable.create([expectedIssues]);
+                        }
+                        test.assertEqual(expectedIssues, issues);
+                    });
+                }
+
+                parseArrayTest(
+                    "",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                        }),
+                        "Missing JSON array.",
+                    ),
+                );
+                parseArrayTest(
+                    "   ",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 3,
+                                columnIndex: 3,
+                            })
+                        }),
+                        "Expected JSON array, but found \"   \" instead.",
+                    ),
+                );
+                parseArrayTest(
+                    "flubber",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 7,
+                                columnIndex: 7,
+                            })
+                        }),
+                        "Expected JSON array, but found \"flubber\" instead.",
+                    ),
+                );
+                parseArrayTest(
+                    "*",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 1,
+                                columnIndex: 1,
+                            })
+                        }),
+                        "Expected JSON array, but found \"*\" instead.",
+                    ),
+                );
+                parseArrayTest(
+                    "[",
+                    JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
+                        Token.leftSquareBrace(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 1,
+                                columnIndex: 1,
+                            })
+                        }),
+                        "Missing array closing brace (']').",
+                    ),
+                );
+                parseArrayTest(
+                    "[]",
+                    JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
+                        Token.leftSquareBrace(),
+                        Token.rightSquareBrace(),
+                    ])),
+                );
+                parseArrayTest(
+                    "[   ",
+                    JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
+                        Token.leftSquareBrace(),
+                        Token.whitespace("   "),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 4,
+                                columnIndex: 4,
+                            })
+                        }),
+                        "Missing array closing brace (']').",
+                    ),
+                );
+                parseArrayTest(
+                    "[ ]",
+                    JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
+                        Token.leftSquareBrace(),
+                        Token.whitespace(" "),
+                        Token.rightSquareBrace(),
+                    ])),
+                );
+                parseArrayTest(
+                    "[ false ]",
+                    JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
+                        Token.leftSquareBrace(),
+                        Token.whitespace(" "),
+                        JsonDocumentBoolean.create(Token.letters("false")),
+                        Token.whitespace(" "),
+                        Token.rightSquareBrace(),
+                    ])),
+                );
+                parseArrayTest(
+                    "[ [] ]",
+                    JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
+                        Token.leftSquareBrace(),
+                        Token.whitespace(" "),
+                        JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
+                            Token.leftSquareBrace(),
+                            Token.rightSquareBrace(),
+                        ])),
+                        Token.whitespace(" "),
+                        Token.rightSquareBrace(),
+                    ])),
+                );
+                parseArrayTest(
+                    "[1,2]",
+                    JsonDocumentArray.create(Iterable.create([
+                        Token.leftSquareBrace(),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("1")])),
+                        Token.comma(),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("2")])),
+                        Token.rightSquareBrace(),
+                    ])),
+                );
+                parseArrayTest(
+                    "[1 , 2]",
+                    JsonDocumentArray.create(Iterable.create([
+                        Token.leftSquareBrace(),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("1")])),
+                        Token.whitespace(" "),
+                        Token.comma(),
+                        Token.whitespace(" "),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("2")])),
+                        Token.rightSquareBrace(),
+                    ])),
+                );
+                parseArrayTest(
+                    "[1 2]",
+                    JsonDocumentArray.create(Iterable.create([
+                        Token.leftSquareBrace(),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("1")])),
+                        Token.whitespace(" "),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("2")])),
+                        Token.rightSquareBrace(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create(3, 0, 3),
+                            afterEndOrColumns: 1,
+                        }),
+                        "Expected array element separator (','), but found \"2\" instead.",
+                    ),
+                );
+                parseArrayTest(
+                    "[1,2,3]",
+                    JsonDocumentArray.create(Iterable.create([
+                        Token.leftSquareBrace(),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("1")])),
+                        Token.comma(),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("2")])),
+                        Token.comma(),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("3")])),
+                        Token.rightSquareBrace(),
+                    ])),
+                );
+                parseArrayTest(
+                    "[1 2 3]",
+                    JsonDocumentArray.create(Iterable.create([
+                        Token.leftSquareBrace(),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("1")])),
+                        Token.whitespace(" "),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("2")])),
+                        Token.whitespace(" "),
+                        JsonDocumentNumber.create(Iterable.create([Token.digits("3")])),
+                        Token.rightSquareBrace(),
+                    ])),
+                    Iterable.create([
+                        DocumentIssue.create(
+                            DocumentRange.create({
+                                start: DocumentPosition.create(3, 0, 3),
+                                afterEndOrColumns: 1,
+                            }),
+                            "Expected array element separator (','), but found \"2\" instead.",
+                        ),
+                        DocumentIssue.create(
+                            DocumentRange.create({
+                                start: DocumentPosition.create(5, 0, 5),
+                                afterEndOrColumns: 1,
+                            }),
+                            "Expected array element separator (','), but found \"3\" instead.",
+                        ),
+                    ]),
+                );
+                parseArrayTest(
+                    "[[[[]]]]",
+                    JsonDocumentArray.create(Iterable.create([
+                        Token.leftSquareBrace(),
+                        JsonDocumentArray.create(Iterable.create([
+                            Token.leftSquareBrace(),
+                            JsonDocumentArray.create(Iterable.create([
+                                Token.leftSquareBrace(),
+                                JsonDocumentArray.create(Iterable.create([
+                                    Token.leftSquareBrace(),
+                                    Token.rightSquareBrace(),
+                                ])),
+                                Token.rightSquareBrace(),
+                            ])),
+                            Token.rightSquareBrace(),
+                        ])),
+                        Token.rightSquareBrace(),
+                    ])),
                 );
             });
         });

@@ -1,36 +1,37 @@
-import { JsonDocumentSegment } from "./jsonDocumentSegment";
+import { JsonDocumentValue } from "./jsonDocumentValue";
 import { Pre } from "./pre";
 import { Token } from "./token";
+import { JavascriptIterable } from "./javascript";
 
-export class JsonDocumentNumber implements JsonDocumentSegment
+export class JsonDocumentNumber implements JsonDocumentValue
 {
-    private readonly tokens: Iterable<Token>;
+    private readonly tokens: JavascriptIterable<Token>;
     
-    private constructor(tokens: Iterable<Token>)
+    private constructor(tokens: JavascriptIterable<Token>)
     {
         Pre.condition.assertNotEmpty(tokens, "tokens");
 
         this.tokens = tokens;
     }
 
-    public static create(tokens: Iterable<Token>): JsonDocumentNumber
+    public static create(tokens: JavascriptIterable<Token>): JsonDocumentNumber
     {
         return new JsonDocumentNumber(tokens);
     }
 
     public getLength(): number
     {
-        return JsonDocumentSegment.getLength(this.tokens);
+        return JsonDocumentValue.getLength(this.tokens);
     }
 
     public getText(): string
     {
-        return JsonDocumentSegment.getText(this.tokens);
+        return JsonDocumentValue.getText(this.tokens);
     }
 
     public toString(): string
     {
-        return JsonDocumentSegment.toString(this);
+        return JsonDocumentValue.toString(this);
     }
 
     /**

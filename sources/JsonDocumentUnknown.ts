@@ -1,9 +1,9 @@
 import { Iterable } from "./iterable";
-import { JsonDocumentSegment } from "./jsonDocumentSegment";
+import { JsonDocumentValue } from "./jsonDocumentValue";
 import { Pre } from "./pre";
 import { Token } from "./token";
 
-export class JsonDocumentUnknown implements JsonDocumentSegment
+export class JsonDocumentUnknown implements JsonDocumentValue
 {
     private readonly tokens: Iterable<Token>;
     
@@ -25,16 +25,16 @@ export class JsonDocumentUnknown implements JsonDocumentSegment
 
     public getLength(): number
     {
-        return JsonDocumentSegment.getLength(this.tokens);
+        return JsonDocumentValue.getLength(this.tokens);
     }
 
     public getText(): string
     {
-        return JsonDocumentSegment.getText(this.tokens);
+        return JsonDocumentValue.getText(this.tokens);
     }
 
     public toString(): string
     {
-        return JsonDocumentSegment.toString(this);
+        return JsonDocumentValue.toString(this);
     }
 }

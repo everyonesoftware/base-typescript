@@ -264,6 +264,40 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
     }
 
     /**
+     * Get the last value in this {@link Iterator}.
+     */
+    public last(): Result<T>
+    {
+        return Iterator.first(this);
+    }
+
+    /**
+     * Get the last value from the provided {@link Iterator}.
+     * @param iterator The {@link Iterator} to get the last value from.
+     */
+    public static last<T>(iterator: Iterator<T>): Result<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
+
+        return Result.create(() =>
+        {
+            if (!iterator.start().hasCurrent())
+            {
+                throw new EmptyError();
+            }
+
+            let result: T;
+            do
+            {
+                result = iterator.takeCurrent();
+            }
+            while (iterator.hasCurrent());
+
+            return result;
+        });
+    }
+
+    /**
      * Find the maximum value in the provided {@link Iterator}.
      * @param iterator The values to find the maximum of.
      */

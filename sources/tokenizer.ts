@@ -6,10 +6,11 @@ import { IteratorToJavascriptIteratorAdapter } from "./iteratorToJavascriptItera
 import { MapIterator } from "./mapIterator";
 import { Result } from "./result";
 import { Type } from "./types";
+import { JavascriptIterable } from "./javascript";
 
 export abstract class Tokenizer implements Iterator<Token>
 {
-    public static create(characters: string | Iterator<string>, tokenCreator?: TokenCreator): BasicTokenizer
+    public static create(characters: string | JavascriptIterable<string>, tokenCreator?: TokenCreator): BasicTokenizer
     {
         return BasicTokenizer.create(characters, tokenCreator);
     }
@@ -65,6 +66,11 @@ export abstract class Tokenizer implements Iterator<Token>
     public first(): Result<Token>
     {
         return Iterator.first(this);
+    }
+
+    public last(): Result<Token>
+    {
+        return Iterator.last(this);
     }
 
     public take(maximumToTake: number): Iterator<Token>

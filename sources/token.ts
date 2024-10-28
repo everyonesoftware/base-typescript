@@ -12,6 +12,7 @@ export class Token
     protected constructor(type: TokenType, text: string)
     {
         Pre.condition.assertNotUndefinedAndNotNull(type, "type");
+        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
         Pre.condition.assertNotEmpty(text, "text");
 
         this.type = type;

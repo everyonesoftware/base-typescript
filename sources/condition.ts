@@ -1,5 +1,6 @@
 import { JavascriptIterable } from "./javascript";
 import { MutableCondition } from "./mutableCondition";
+import { Type } from "./types";
 
 /**
  * A collection of condition methods that can be used to assert the state of an application.
@@ -100,7 +101,7 @@ export abstract class Condition
      * @param expression  The expression that produced the actual value.
      * @param message An optional message that describes the scenario.
      */
-    public abstract assertNotEmpty(value: JavascriptIterable<unknown> | string | undefined | null, expression?: string, message?: string): asserts value is string;
+    public abstract assertNotEmpty(value: JavascriptIterable<unknown> | string | undefined | null, expression?: string, message?: string): void;
 
     /**
      * Assert that the provided value is less than the provided upperBound.
@@ -191,4 +192,13 @@ export abstract class Condition
      * @param message An optional error message.
      */
     public abstract assertInteger(value: number, expression?: string, message?: string): void;
+
+    /**
+     * Assert that the provided value is an instance of the provided {@link Type}.
+     * @param value The value to check.
+     * @param type The {@link Type} to check.
+     * @param expression The expression that produced the value.
+     * @param message An optional error message.
+     */
+    public abstract assertInstanceOf<T>(value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string): asserts value is T;
 }

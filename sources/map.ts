@@ -110,6 +110,8 @@ export abstract class Map<TKey,TValue> implements Iterable<MapEntry<TKey,TValue>
 
     public abstract first(): Result<MapEntry<TKey,TValue>>;
 
+    public abstract last(): Result<MapEntry<TKey,TValue>>;
+
     /**
      * Get whether this {@link Map} contains the provided key.
      * @param key The key to look for.

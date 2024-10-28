@@ -86,6 +86,11 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
         return Iterator.first(this);
     }
 
+    public last(): Result<TOutput>
+    {
+        return Iterator.last(this);
+    }
+
     public where(condition: (value: TOutput) => boolean): Iterator<TOutput>
     {
         return Iterator.where(this, condition);

@@ -5,7 +5,7 @@ import { Comparison } from "./comparison";
 import { Condition } from "./condition";
 import { Iterable } from "./iterable";
 import { JavascriptIterable } from "./javascript";
-import { isJavascriptIterable, isString, isUndefinedOrNull } from "./types";
+import { isJavascriptIterable, isString, isUndefinedOrNull, Type } from "./types";
 
 /**
  * A collection of condition methods that can be used to assert the state of an application.
@@ -201,7 +201,7 @@ export abstract class ConditionBase implements Condition
         }
     }
 
-    public assertNotEmpty(value: JavascriptIterable<unknown> | string | undefined | null, expression?: string, message?: string): asserts value is string
+    public assertNotEmpty<T extends JavascriptIterable<unknown> | string>(value: T, expression?: string, message?: string): asserts value is NonNullable<T>
     {
         this.assertNotUndefinedAndNotNull(value, expression, message);
         if ((isString(value) && value.length === 0) ||
@@ -333,6 +333,29 @@ export abstract class ConditionBase implements Condition
         {
             throw this.createError({
                 expected: `integer`,
+                actual: this.toString(value),
+                expression: expression,
+                message: message,
+            });
+        }
+    }
+
+    public assertInstanceOf<T>(value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string): asserts value is T
+    {
+        let valueIsT: boolean;
+        if (isUndefinedOrNull(typeCheck))
+        {
+            valueIsT = value instanceof type;
+        }
+        else
+        {
+            valueIsT = typeCheck(value);
+        }
+
+        if (!valueIsT)
+        {
+            throw this.createError({
+                expected: `instance of ${type.name}`,
                 actual: this.toString(value),
                 expression: expression,
                 message: message,

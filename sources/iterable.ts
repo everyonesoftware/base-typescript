@@ -167,14 +167,30 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     public abstract first(): Result<T>;
 
     /**
-     * Get the first value from the provided {@link Iterable}.
-     * @param iterable The {@link Iterable} to get the first value from.
+     * Get the first value from the provided {@link JavascriptIterable}.
+     * @param iterable The {@link JavascriptIterable} to get the first value from.
      */
-    public static first<T>(iterable: Iterable<T>): Result<T>
+    public static first<T>(iterable: JavascriptIterable<T>): Result<T>
     {
         Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
 
-        return iterable.iterate().first();
+        return Iterator.create(iterable).first();
+    }
+
+    /**
+     * Get the last value in this {@link Iterable}.
+     */
+    public abstract last(): Result<T>;
+
+    /**
+     * Get the last value from the provided {@link JavascriptIterable}.
+     * @param iterable The {@link JavascriptIterable} to get the last value from.
+     */
+    public static last<T>(iterable: JavascriptIterable<T>): Result<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
+
+        return Iterator.create(iterable).last();
     }
 
     /**
