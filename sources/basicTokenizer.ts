@@ -8,6 +8,7 @@ import { StringIterator } from "./stringIterator";
 import { isDigit, isLetter } from "./strings";
 import { Post } from "./post";
 import { Tokenizer } from "./tokenizer";
+import { JavascriptIterable } from "./javascript";
 
 export class BasicTokenizer extends IteratorBase<Token> implements Tokenizer
 {
@@ -16,7 +17,7 @@ export class BasicTokenizer extends IteratorBase<Token> implements Tokenizer
     private current: Token | undefined;
     private started: boolean;
 
-    protected constructor(characters: string | Iterator<string>, tokenCreator?: TokenCreator)
+    protected constructor(characters: string | JavascriptIterable<string>, tokenCreator?: TokenCreator)
     {
         Pre.condition.assertNotUndefinedAndNotNull(characters, "characters");
 
@@ -24,9 +25,12 @@ export class BasicTokenizer extends IteratorBase<Token> implements Tokenizer
 
         if (isString(characters))
         {
-            characters = StringIterator.create(characters);
+            this.innerIterator = StringIterator.create(characters);
         }
-        this.innerIterator = characters;
+        else
+        {
+            this.innerIterator = Iterator.create(characters);
+        }
 
         if (isUndefinedOrNull(tokenCreator))
         {
@@ -38,7 +42,7 @@ export class BasicTokenizer extends IteratorBase<Token> implements Tokenizer
         this.started = false;
     }
 
-    public static create(characters: string | Iterator<string>, tokenCreator?: TokenCreator): BasicTokenizer
+    public static create(characters: string | JavascriptIterable<string>, tokenCreator?: TokenCreator): BasicTokenizer
     {
         Pre.condition.assertNotUndefinedAndNotNull(characters, "characters");
 

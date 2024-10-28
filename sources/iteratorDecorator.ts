@@ -94,6 +94,11 @@ export abstract class IteratorDecorator<T> implements Iterator<T>
         return Iterator.first(this);
     }
 
+    public last(): Result<T>
+    {
+        return Iterator.last(this);
+    }
+
     public [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<T>
     {
         return Iterator[Symbol.iterator](this);

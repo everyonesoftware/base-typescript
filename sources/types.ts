@@ -8,15 +8,40 @@ import { JavascriptIterable, JavascriptIterator } from "./javascript";
 export type Type<T> = Function & { prototype: T };
 
 /**
- * If the provided {@link value} is of type {@link T} (according to the provided {@link typeCheck}),
- * then return the {@link value}. Otherwise return undefined.
- * @param typeCheck The function that will be used to determine if the {@link value} is of type
- * {@link T}.
+ * Get whether the provided value is an instance of {@link Type} {@link T}.
+ * @param typeOrTypeCheck The {@link Type} to look for or type check {@link Function} to determine
+ * if the provided value is a {@link T}.
  * @param value The value to check.
  */
-export function as<T>(typeCheck: (value: unknown) => value is T, value: unknown): T | undefined
+export function instanceOf<T>(typeOrTypeCheck: Type<T> | ((value: unknown) => value is T), value: unknown): value is T
 {
-    return typeCheck(value) ? value : undefined;
+    let valueIsT: boolean;
+    if (value instanceof typeOrTypeCheck)
+    {
+        valueIsT = true;
+    }
+    else if (isFunctionWithParameterCount(typeOrTypeCheck, 1))
+    {
+        const typeCheck: (value: unknown) => value is T = typeOrTypeCheck as (value: unknown) => value is T;
+        valueIsT = typeCheck(value);
+    }
+    else
+    {
+        valueIsT = false;
+    }
+    return valueIsT;
+}
+
+/**
+ * If the provided {@link value} is of type {@link T} (according to the provided {@link typeCheck}),
+ * then return the {@link value}. Otherwise return undefined.
+ * @param typeOrTypeCheck The {@link Type} to look for or type check {@link Function} to determine
+ * if the provided value is a {@link T}.
+ * @param value The value to check.
+ */
+export function as<T>(typeOrTypeCheck: Type<T> | ((value: unknown) => value is T), value: unknown): T | undefined
+{
+    return instanceOf(typeOrTypeCheck, value) ? value as T : undefined;
 }
 
 /**

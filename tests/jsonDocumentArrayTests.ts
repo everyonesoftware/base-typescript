@@ -1,7 +1,7 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { createTestRunner } from "./tests";
 import { Iterable, JsonDocumentArray, JsonDocumentBoolean, JsonDocumentNumber, PreConditionError, Token } from "../sources";
-import { JsonDocumentSegment } from "../sources/jsonDocumentSegment";
+import { JsonDocumentValue } from "../sources/jsonDocumentValue";
 
 export function test(runner: TestRunner): void
 {
@@ -11,7 +11,7 @@ export function test(runner: TestRunner): void
         {
             runner.testFunction("create(Iterable<Token|JsonDocumentSegment>)", () =>
             {
-                function createErrorTest(tokensAndSegments: Iterable<Token | JsonDocumentSegment>, expected: Error): void
+                function createErrorTest(tokensAndSegments: Iterable<Token | JsonDocumentValue>, expected: Error): void
                 {
                     runner.test(`with ${runner.toString(tokensAndSegments)}`, (test: Test) =>
                     {
@@ -35,7 +35,7 @@ export function test(runner: TestRunner): void
                     "Actual: []",
                 ));
 
-                function createTest(tokensAndSegments: Iterable<Token | JsonDocumentSegment>, expectedText: string): void
+                function createTest(tokensAndSegments: Iterable<Token | JsonDocumentValue>, expectedText: string): void
                 {
                     runner.test(`with ${runner.toString(tokensAndSegments)}`, (test: Test) =>
                     {
@@ -47,20 +47,20 @@ export function test(runner: TestRunner): void
                 }
 
                 createTest(
-                    Iterable.create<Token | JsonDocumentSegment>([
+                    Iterable.create<Token | JsonDocumentValue>([
                         Token.leftSquareBrace(),
                     ]),
                     `[`,
                 );
                 createTest(
-                    Iterable.create<Token | JsonDocumentSegment>([
+                    Iterable.create<Token | JsonDocumentValue>([
                         Token.leftSquareBrace(),
                         Token.rightSquareBrace(),
                     ]),
                     `[]`,
                 );
                 createTest(
-                    Iterable.create<Token | JsonDocumentSegment>([
+                    Iterable.create<Token | JsonDocumentValue>([
                         Token.leftSquareBrace(),
                         Token.comma(),
                         Token.rightSquareBrace(),
@@ -68,7 +68,7 @@ export function test(runner: TestRunner): void
                     `[,]`,
                 );
                 createTest(
-                    Iterable.create<Token | JsonDocumentSegment>([
+                    Iterable.create<Token | JsonDocumentValue>([
                         Token.leftSquareBrace(),
                         JsonDocumentBoolean.create(Token.letters("false")),
                         Token.rightSquareBrace(),
@@ -76,7 +76,7 @@ export function test(runner: TestRunner): void
                     `[false]`,
                 );
                 createTest(
-                    Iterable.create<Token | JsonDocumentSegment>([
+                    Iterable.create<Token | JsonDocumentValue>([
                         Token.leftSquareBrace(),
                         JsonDocumentBoolean.create(Token.letters("true")),
                         Token.comma(),

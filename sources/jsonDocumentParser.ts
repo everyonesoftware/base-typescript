@@ -1,5 +1,5 @@
 import { DocumentIssue } from "./documentIssue";
-import { JsonDocumentSegment } from "./jsonDocumentSegment";
+import { JsonDocumentValue as JsonDocumentValue } from "./jsonDocumentValue";
 import { Result } from "./result";
 import { Tokenizer } from "./tokenizer";
 import { Iterator } from "./iterator";
@@ -12,13 +12,15 @@ import { DocumentRange } from "./documentRange";
 import { TokenType } from "./tokenType";
 import { Post } from "./post";
 import { Token } from "./token";
-import { JsonDocumentWhitespace } from "./jsonDocumentWhitespace";
 import { List } from "./list";
-import { JsonDocumentUnknown } from "./JsonDocumentUnknown";
 import { JsonDocumentNull } from "./jsonDocumentNull";
 import { JsonDocumentBoolean } from "./jsonDocumentBoolean";
 import { JsonDocumentString } from "./jsonDocumentString";
 import { JsonDocumentNumber } from "./jsonDocumentNumber";
+import { JsonDocumentArray } from "./jsonDocumentArray";
+import { JsonDocumentUnknown } from "./JsonDocumentUnknown";
+import { JavascriptIterable } from "./javascript";
+import { DocumentPosition } from "./documentPosition";
 
 export class JsonDocumentParser
 {
@@ -31,7 +33,7 @@ export class JsonDocumentParser
         return new JsonDocumentParser();
     }
 
-    private static getTokenizer(text: string | Iterator<string> | Tokenizer): DocumentTokenizer
+    private static getTokenizer(text: string | JavascriptIterable<string> | Tokenizer): DocumentTokenizer
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
@@ -66,7 +68,7 @@ export class JsonDocumentParser
         return onIssue;
     }
 
-    public parseSegment(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void): Result<JsonDocumentSegment | undefined>
+    public parseValue(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void): Result<JsonDocumentValue | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
@@ -75,15 +77,19 @@ export class JsonDocumentParser
             const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
             onIssue = JsonDocumentParser.getOnIssue(onIssue);
 
-            let result: JsonDocumentSegment | undefined;
+            let result: JsonDocumentValue | undefined;
 
-            while (result === undefined && tokenizer.hasCurrent())
+            if (!tokenizer.hasCurrent())
+            {
+                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), "Missing JSON value."));
+            }
+            else
             {
                 switch (tokenizer.getCurrent().getType())
                 {
-                    // case TokenType.LeftSquareBrace:
-                    //     result = this.parseArray(tokenizer, onIssue).await();
-                    //     break;
+                    case TokenType.LeftSquareBrace:
+                        result = this.parseArray(tokenizer, onIssue).await();
+                        break;
 
                     // case TokenType.LeftCurlyBracket:
                     //     result = this.parseObject(tokenizer, onIssue).await();
@@ -96,7 +102,7 @@ export class JsonDocumentParser
                         break;
 
                     case TokenType.Letters:
-                        result = this.parseNullOrBoolean(tokenizer, onIssue, "JSON segment").await();
+                        result = this.parseNullOrBoolean(tokenizer, onIssue, "JSON value").await();
                         break;
                     
                     case TokenType.Digits:
@@ -105,33 +111,30 @@ export class JsonDocumentParser
                         result = this.parseNumber(tokenizer, onIssue).await();
                         break;
 
-                    case TokenType.Whitespace:
                     case TokenType.NewLine:
                     case TokenType.CarriageReturn:
-                        result = this.parseWhitespace(tokenizer, onIssue).await();
+                    case TokenType.Whitespace:
+                        // Expect that whitespace has been previously skipped.
+                        onIssue(DocumentIssue.create(
+                            tokenizer.getCurrentRange(),
+                            `Expected JSON value, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`,
+                        ));
                         break;
 
                     default:
-                        const issueRange: DocumentRange = tokenizer.getCurrentRange();
-                        const token: Token = tokenizer.getCurrent();
-                        const issueMessage: string = `Expected JSON segment, but found ${escapeAndQuote(token.getText())} instead.`;
-                        onIssue(DocumentIssue.create(issueRange, issueMessage));
-                        tokenizer.next();
-                        result = JsonDocumentUnknown.create(token);
+                        onIssue(DocumentIssue.create(
+                            tokenizer.getCurrentRange(),
+                            `Expected JSON value, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`,
+                        ));
                         break;
                 }
-            }
-
-            if (result === undefined)
-            {
-                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), "Missing JSON segment."));
             }
 
             return result;
         });
     }
 
-    public parseWhitespace(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void): Result<JsonDocumentWhitespace | undefined>
+    public parseNullOrBoolean(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON null or boolean"): Result<JsonDocumentValue | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
@@ -140,61 +143,7 @@ export class JsonDocumentParser
             const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
             onIssue = JsonDocumentParser.getOnIssue(onIssue);
 
-            let done: boolean = false;
-            const tokens: List<Token> = List.create();
-            while (tokenizer.hasCurrent() && !done)
-            {
-                switch (tokenizer.getCurrent().getType())
-                {
-                    case TokenType.Whitespace:
-                    case TokenType.NewLine:
-                    case TokenType.CarriageReturn:
-                        tokens.add(tokenizer.takeCurrent());
-                        break;
-
-                    default:
-                        done = true;
-                        break;
-                }
-            }
-
-            let result: JsonDocumentWhitespace | undefined;
-            if (!tokens.any())
-            {
-                if (!tokenizer.hasCurrent())
-                {
-                    onIssue(DocumentIssue.create(
-                        tokenizer.getCurrentRange(),
-                        "Missing whitespace.",
-                    ));
-                }
-                else
-                {
-                    onIssue(DocumentIssue.create(
-                        tokenizer.getCurrentRange(),
-                        `Expected whitespace, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`),
-                    );
-                }
-            }
-            else
-            {
-                result = JsonDocumentWhitespace.create(tokens);
-            }
-
-            return result;
-        });
-    }
-
-    public parseNullOrBoolean(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON null or boolean"): Result<JsonDocumentSegment | undefined>
-    {
-        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
-
-        return Result.create(() =>
-        {
-            const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
-            onIssue = JsonDocumentParser.getOnIssue(onIssue);
-
-            let result: JsonDocumentSegment | undefined;
+            let result: JsonDocumentValue | undefined;
             if (!tokenizer.hasCurrent())
             {
                 onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Missing ${expected}.`));
@@ -212,6 +161,7 @@ export class JsonDocumentParser
                         {
                             onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Expected ${quote(lowerTokenText)}, but found ${quote(tokenText)} instead.`));
                         }
+                        tokenizer.next();
                         break;
 
                     case "true":
@@ -221,14 +171,13 @@ export class JsonDocumentParser
                         {
                             onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Expected ${quote(lowerTokenText)}, but found ${quote(tokenText)} instead.`));
                         }
+                        tokenizer.next();
                         break;
 
                     default:
-                        result = JsonDocumentUnknown.create(token);
                         onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Expected ${expected}, but found ${quote(tokenText)} instead.`));
                         break;
                 }
-                tokenizer.next();
             }
             else
             {
@@ -284,7 +233,7 @@ export class JsonDocumentParser
                                 DocumentIssue.create(
                                     DocumentRange.create(
                                         startQuoteRange.getStart(),
-                                        tokenizer.getCurrentRange().getStart(),
+                                        tokenizer.getCurrentRange().getAfterEnd(),
                                     ),
                                     `Missing JSON string end quote (${startQuote.getText()}).`,
                                 ),
@@ -371,7 +320,7 @@ export class JsonDocumentParser
      * @param onIssue The function that will be invoked if any issues are encountered.
      * @param expected A description of what is expected.
      */
-    public parseNumber(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON number"): Result<JsonDocumentSegment | undefined>
+    public parseNumber(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON number"): Result<JsonDocumentValue | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
@@ -380,7 +329,7 @@ export class JsonDocumentParser
             const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
             onIssue = JsonDocumentParser.getOnIssue(onIssue);
 
-            let result: JsonDocumentSegment | undefined;
+            let result: JsonDocumentValue | undefined;
             if (!tokenizer.hasCurrent())
             {
                 onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Missing ${expected}.`));
@@ -476,5 +425,139 @@ export class JsonDocumentParser
 
             return result;
         });
+    }
+
+    /**
+     * Parse a {@link JsonDocumentArray} from the provided text. If an array can't be parsed, then
+     * undefined will be returned.
+     * @param text The text to parse.
+     * @param onIssue The function that will be invoked if any issues are encountered.
+     * @param expected A description of what is expected.
+     */
+    public parseArray(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON array"): Result<JsonDocumentArray | undefined>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
+
+        return Result.create(() =>
+        {
+            const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
+            onIssue = JsonDocumentParser.getOnIssue(onIssue);
+
+            let result: JsonDocumentArray | undefined;
+
+            if (!tokenizer.hasCurrent())
+            {
+                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Missing ${expected}.`));
+            }
+            else if (tokenizer.getCurrent().getType() !== TokenType.LeftSquareBrace)
+            {
+                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Expected ${expected}, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`));
+            }
+            else
+            {
+                const startTokenRange: DocumentRange = tokenizer.getCurrentRange();
+                const tokensAndValues: List<Token | JsonDocumentValue> = List.create<Token | JsonDocumentValue>([tokenizer.takeCurrent()]);
+
+                JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+
+                let expectComma: boolean = false;
+                while (tokenizer.hasCurrent() && tokenizer.getCurrent().getType() !== TokenType.RightSquareBrace)
+                {
+                    if (expectComma && tokenizer.getCurrent().getType() === TokenType.Comma)
+                    {
+                        expectComma = false;
+                        tokensAndValues.add(tokenizer.takeCurrent());
+                        JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+                    }
+
+                    if (!tokenizer.hasCurrent())
+                    {
+                        onIssue(DocumentIssue.create(
+                            tokenizer.getCurrentRange(),
+                            `Missing array element.`,
+                        ));
+                    }
+                    else
+                    {
+                        const elementValueStart: DocumentPosition = tokenizer.getCurrentRange().getStart();
+                        const elementValue: JsonDocumentValue | undefined = this.parseValue(tokenizer, onIssue).await();
+                        if (isUndefinedOrNull(elementValue))
+                        {
+                            tokensAndValues.add(tokenizer.takeCurrent());
+                        }
+                        else
+                        {
+                            tokensAndValues.add(elementValue);
+                        }
+
+                        if (expectComma)
+                        {
+                            onIssue(DocumentIssue.create(
+                                DocumentRange.create(elementValueStart, tokenizer.getCurrentRange().getStart()),
+                                `Expected array element separator (','), but found ${escapeAndQuote(tokensAndValues.last().await().getText())} instead.`,
+                            ));
+                        }
+                        expectComma = true;
+
+                        JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+                    }
+                }
+
+                if (!tokenizer.hasCurrent())
+                {
+                    onIssue(DocumentIssue.create(
+                        DocumentRange.create(startTokenRange.getStart(), tokenizer.getCurrentRange().getAfterEnd()),
+                        "Missing array closing brace (']').",
+                    ));
+                }
+                else if (tokenizer.getCurrent().getType() !== TokenType.RightSquareBrace)
+                {
+                    onIssue(DocumentIssue.create(
+                        DocumentRange.create(startTokenRange.getStart(), tokenizer.getCurrentRange().getAfterEnd()),
+                        `Expected array closing brace (']'), but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`,
+                    ));
+                }
+                else
+                {
+                    tokensAndValues.add(tokenizer.takeCurrent());
+                }
+
+                result = JsonDocumentArray.create(tokensAndValues);
+            }
+
+            return result;
+        });
+    }
+
+    private static skipWhitespace(tokenizer: DocumentTokenizer, tokensAndValues: List<Token | JsonDocumentValue>): void
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(tokenizer, "tokenizer");
+        Pre.condition.assertTrue(tokenizer.hasStarted(), "tokenizer.hasStarted()");
+        Pre.condition.assertNotUndefinedAndNotNull(tokensAndValues, "tokensAndValues");
+
+        let done: boolean = false;
+        while (!done)
+        {
+            if (!tokenizer.hasCurrent())
+            {
+                done = true;
+            }
+            else
+            {
+                
+                switch (tokenizer.getCurrent().getType())
+                {
+                    case TokenType.NewLine:
+                    case TokenType.CarriageReturn:
+                    case TokenType.Whitespace:
+                        tokensAndValues.add(tokenizer.takeCurrent());
+                        break;
+
+                    default:
+                        done = true;
+                        break;
+                }
+            }
+        }
     }
 }

@@ -36,6 +36,11 @@ export abstract class MutableIndexable<T> implements Indexable<T>
         return Indexable.first(this);
     }
 
+    public last(): Result<T>
+    {
+        return Indexable.last(this);
+    }
+
     public abstract get(index: number): T;
 
     /**

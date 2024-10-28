@@ -41,4 +41,9 @@ export abstract class IterableBase<T> implements Iterable<T>
     {
         return Iterable.first(this);
     }
+
+    public last(): Result<T>
+    {
+        return Iterable.last(this);
+    }
 }

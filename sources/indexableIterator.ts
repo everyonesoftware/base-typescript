@@ -50,6 +50,8 @@ export abstract class IndexableIterator<T> implements Iterator<T>
 
     public abstract first(): Result<T>;
 
+    public abstract last(): Result<T>;
+
     public abstract where(condition: (value: T) => boolean): Iterator<T>;
 
     public abstract instanceOf<U extends T>(type: Type<U>): Iterator<U>;

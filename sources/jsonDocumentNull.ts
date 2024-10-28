@@ -1,9 +1,9 @@
-import { JsonDocumentSegment } from "./jsonDocumentSegment";
+import { JsonDocumentValue } from "./jsonDocumentValue";
 import { Pre } from "./pre";
 import { Token } from "./token";
 import { TokenType } from "./tokenType";
 
-export class JsonDocumentNull implements JsonDocumentSegment
+export class JsonDocumentNull implements JsonDocumentValue
 {
     private readonly token: Token;
     
@@ -33,7 +33,7 @@ export class JsonDocumentNull implements JsonDocumentSegment
 
     public toString(): string
     {
-        return JsonDocumentSegment.toString(this);
+        return JsonDocumentValue.toString(this);
     }
 
     public getValue(): null

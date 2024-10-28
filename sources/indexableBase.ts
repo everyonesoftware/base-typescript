@@ -20,4 +20,9 @@ export abstract class IndexableBase<T> extends IterableBase<T> implements Indexa
     {
         return Indexable.first(this);
     }
+
+    public override last(): Result<T>
+    {
+        return Indexable.last(this);
+    }
 }

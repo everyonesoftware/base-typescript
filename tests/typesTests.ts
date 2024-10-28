@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Indexable, Iterable, List, MutableIndexable, hasFunction, hasProperty, isArray, isBoolean, isFunction, isNumber, isObject, isObjectOrArrayOrNull as isObjectArrayOrNull, isString } from "../sources/";
+import { Indexable, Iterable, List, MutableIndexable, asBoolean, hasFunction, hasProperty, isArray, isBoolean, isFunction, isNumber, isObject, isObjectOrArrayOrNull as isObjectArrayOrNull, isString } from "../sources/";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -25,6 +25,29 @@ export function test(runner: TestRunner): void
             isBooleanTest([], false);
             isBooleanTest(true, true);
             isBooleanTest(false, true);
+        });
+
+        runner.testFunction("asBoolean(unknown)", () =>
+        {
+            function asBooleanTest(value: unknown, expected: boolean | undefined): void
+            {
+                runner.test(`with ${runner.toString(value)}`, (test: Test) =>
+                {
+                    test.assertEqual(asBoolean(value), expected);
+                });
+            }
+
+            asBooleanTest(undefined, undefined);
+            asBooleanTest(null, undefined);
+            asBooleanTest("", undefined);
+            asBooleanTest("true", undefined);
+            asBooleanTest(123, undefined);
+            asBooleanTest({}, undefined);
+            asBooleanTest([], undefined);
+            asBooleanTest(true, true);
+            asBooleanTest(false, false);
+            asBooleanTest(() => false, undefined);
+            asBooleanTest(() => true, undefined);
         });
 
         runner.testFunction("isNumber(unknown)", () =>
