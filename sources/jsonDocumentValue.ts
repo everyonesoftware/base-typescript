@@ -5,6 +5,7 @@ import { Tokenizer } from "./tokenizer";
 import { JsonDocumentParser } from "./jsonDocumentParser";
 import { Pre } from "./pre";
 import { JavascriptIterable } from "./javascript";
+import { JsonDocumentProperty } from "./jsonDocumentProperty";
 
 /**
  * An individual value from a {@link JsonDocument} that is composed of one or more {@link Token}s.
@@ -31,18 +32,19 @@ export abstract class JsonDocumentValue
     public abstract getLength(): number;
 
     /**
-     * Get the combined length of the provided {@link Token}s and {@link JsonDocumentValue}s.
-     * @param tokensAndSegments The {@link Token}s and {@link JsonDocumentValue}s to get the
-     * combined length of.
+     * Get the combined length of the provided {@link Token}s, {@link JsonDocumentValue}s, and
+     * {@link JsonDocumentProperty}s.
+     * @param tokensValuesAndProperties The {@link Token}s, {@link JsonDocumentValue}s, and
+     * {@link JsonDocumentProperty} to get the combined length of.
      */
-    public static getLength(tokensAndSegments: JavascriptIterable<Token | JsonDocumentValue>): number
+    public static getLength(tokensValuesAndProperties: JavascriptIterable<Token | JsonDocumentValue | JsonDocumentProperty>): number
     {
-        Pre.condition.assertNotEmpty(tokensAndSegments, "tokensAndSegments");
+        Pre.condition.assertNotEmpty(tokensValuesAndProperties, "tokensValuesAndProperties");
 
         let length: number = 0;
-        for (const tokenOrSegment of tokensAndSegments)
+        for (const tokenValueOrProperty of tokensValuesAndProperties)
         {
-            length += tokenOrSegment.getLength();
+            length += tokenValueOrProperty.getLength();
         }
         return length;
     }
@@ -53,18 +55,19 @@ export abstract class JsonDocumentValue
     public abstract getText(): string;
 
     /**
-     * Get the combined text of the provided {@link Token}s and {@link JsonDocumentValue}s.
-     * @param tokensAndValues The {@link Token}s and {@link JsonDocumentValue}s to get the
-     * combined text of.
+     * Get the combined text of the provided {@link Token}s, {@link JsonDocumentValue}s, and
+     * {@link JsonDocumentProperty}s.
+     * @param tokensValuesAndProperties The {@link Token}s, {@link JsonDocumentValue}s, and
+     * {@link JsonDocumentProperty}s to get the combined text of.
      */
-    public static getText(tokensAndValues: JavascriptIterable<Token | JsonDocumentValue>): string
+    public static getText(tokensValuesAndProperties: JavascriptIterable<Token | JsonDocumentValue | JsonDocumentProperty>): string
     {
-        Pre.condition.assertNotEmpty(tokensAndValues, "tokensAndValues");
+        Pre.condition.assertNotEmpty(tokensValuesAndProperties, "tokensValuesAndProperties");
 
         let text: string = "";
-        for (const tokenOrValue of tokensAndValues)
+        for (const tokenValueOrProperty of tokensValuesAndProperties)
         {
-            text += tokenOrValue.getText();
+            text += tokenValueOrProperty.getText();
         }
         return text;
     }

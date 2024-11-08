@@ -20,17 +20,17 @@ export function test(runner: TestRunner): void
                 }
 
                 createErrorTest(undefined!, new PreConditionError(
-                    "Expression: tokensAndSegments",
+                    "Expression: tokensAndValues",
                     "Expected: not undefined and not null",
                     "Actual: undefined",
                 ));
                 createErrorTest(null!, new PreConditionError(
-                    "Expression: tokensAndSegments",
+                    "Expression: tokensAndValues",
                     "Expected: not undefined and not null",
                     "Actual: null",
                 ));
                 createErrorTest(Iterable.create(), new PreConditionError(
-                    "Expression: tokensAndSegments",
+                    "Expression: tokensAndValues",
                     "Expected: not empty",
                     "Actual: []",
                 ));

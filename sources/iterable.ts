@@ -55,13 +55,13 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     public abstract any(): boolean;
 
     /**
-     * Get whether the provided {@link Iterable} contains any values.
+     * Get whether the provided {@link JavascriptIterable} contains any values.
      */
-    public static any<T>(iterable: Iterable<T>): boolean
+    public static any<T>(iterable: JavascriptIterable<T>): boolean
     {
         Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
 
-        return iterable.iterate().any();
+        return Iterator.create(iterable).any();
     }
 
     /**
@@ -83,9 +83,9 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
      * @param equalFunctions The optional {@link EqualFunctions} to use to determine if the two
      * {@link Iterable}s are equal.
      */
-    public abstract equals(right: Iterable<T>, equalFunctions?: EqualFunctions): boolean;
+    public abstract equals(right: JavascriptIterable<T>, equalFunctions?: EqualFunctions): boolean;
 
-    public static equals<T>(left: Iterable<T>, right: Iterable<T>, equalFunctions?: EqualFunctions): boolean
+    public static equals<T>(left: JavascriptIterable<T>, right: JavascriptIterable<T>, equalFunctions?: EqualFunctions): boolean
     {
         if (isUndefinedOrNull(equalFunctions))
         {
@@ -97,8 +97,8 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
         {
             result = true;
 
-            const leftIterator: Iterator<T> = left.iterate().start();
-            const rightIterator: Iterator<T> = right.iterate().start();
+            const leftIterator: Iterator<T> = Iterator.create(left).start();
+            const rightIterator: Iterator<T> = Iterator.create(right).start();
             while (leftIterator.hasCurrent() && rightIterator.hasCurrent())
             {
                 result = equalFunctions.areEqual(leftIterator.getCurrent(), rightIterator.getCurrent());

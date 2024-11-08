@@ -1,8 +1,10 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { DocumentIssue, DocumentPosition, DocumentRange, isUndefinedOrNull, Iterable, Iterator, JavascriptIterable, JsonDocumentArray, JsonDocumentBoolean, JsonDocumentNull, JsonDocumentNumber, JsonDocumentParser, JsonDocumentString, List, PreConditionError, Token, Tokenizer } from "../sources";
+import { DocumentIssue, DocumentPosition, DocumentRange, isUndefinedOrNull, Iterable, JavascriptIterable, JsonDocumentArray, JsonDocumentBoolean, JsonDocumentNull, JsonDocumentNumber, JsonDocumentParser, JsonDocumentString, List, PreConditionError, Token, Tokenizer } from "../sources";
 import { createTestRunner } from "./tests";
 import { JsonDocumentValue as JsonDocumentValue } from "../sources/jsonDocumentValue";
-import { JsonDocumentUnknown } from "../sources/JsonDocumentUnknown";
+import { JsonDocumentUnknown } from "../sources/jsonDocumentUnknown";
+import { JsonDocumentProperty } from "../sources/jsonDocumentProperty";
+import { JsonDocumentObject } from "../sources/jsonDocumentObject";
 
 export function test(runner: TestRunner): void
 {
@@ -16,9 +18,9 @@ export function test(runner: TestRunner): void
                 test.assertNotUndefinedAndNotNull(parser);
             });
 
-            runner.testFunction("parseValue(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            runner.testFunction("parseValue(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
             {
-                function parseValueErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                function parseValueErrorTest(text: string | JavascriptIterable<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -38,7 +40,7 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function parseValueTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>): void
+                function parseValueTest(text: string | JavascriptIterable<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -192,9 +194,9 @@ export function test(runner: TestRunner): void
                 );
             });
 
-            runner.testFunction("parseNullOrBoolean(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            runner.testFunction("parseNullOrBoolean(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
             {
-                function parseNullOrBooleanErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                function parseNullOrBooleanErrorTest(text: string | JavascriptIterable<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -214,7 +216,7 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function parseNullOrBooleanTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssue?: DocumentIssue): void
+                function parseNullOrBooleanTest(text: string | JavascriptIterable<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssue?: DocumentIssue): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -364,9 +366,9 @@ export function test(runner: TestRunner): void
                 );
             });
 
-            runner.testFunction("parseString(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            runner.testFunction("parseString(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
             {
-                function parseStringErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                function parseStringErrorTest(text: string | JavascriptIterable<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -386,7 +388,7 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function parseStringTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>): void
+                function parseStringTest(text: string | JavascriptIterable<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -701,9 +703,9 @@ export function test(runner: TestRunner): void
                 );
             });
 
-            runner.testFunction("parseNumber(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            runner.testFunction("parseNumber(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
             {
-                function parseNumberErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                function parseNumberErrorTest(text: string | JavascriptIterable<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -723,7 +725,7 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function parseNumberTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>, expectedNumberValue?: number): void
+                function parseNumberTest(text: string | JavascriptIterable<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | Iterable<DocumentIssue>, expectedNumberValue?: number): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -1012,9 +1014,9 @@ export function test(runner: TestRunner): void
                 );
             });
 
-            runner.testFunction("parseArray(string|Iterator<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            runner.testFunction("parseArray(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
             {
-                function parseArrayErrorTest(text: string | Iterator<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                function parseArrayErrorTest(text: string | JavascriptIterable<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
@@ -1034,14 +1036,14 @@ export function test(runner: TestRunner): void
                     "Actual: null",
                 ));
 
-                function parseArrayTest(text: string | Iterator<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | JavascriptIterable<DocumentIssue>): void
+                function parseArrayTest(text: string | JavascriptIterable<string> | Tokenizer, expectedValue: JsonDocumentArray | undefined, expectedIssues?: DocumentIssue | JavascriptIterable<DocumentIssue>): void
                 {
                     runner.test(`with ${runner.toString(text)}`, (test: Test) =>
                     {
                         const parser: JsonDocumentParser = JsonDocumentParser.create();
                         const issues: List<DocumentIssue> = List.create();
 
-                        const value: JsonDocumentValue | undefined = parser.parseArray(text, (issue: DocumentIssue) => issues.add(issue)).await();
+                        const value: JsonDocumentArray | undefined = parser.parseArray(text, (issue: DocumentIssue) => issues.add(issue)).await();
 
                         test.assertEqual(expectedValue, value);
 
@@ -1186,6 +1188,27 @@ export function test(runner: TestRunner): void
                     ])),
                 );
                 parseArrayTest(
+                    "[ false, ]",
+                    JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
+                        Token.leftSquareBrace(),
+                        Token.whitespace(" "),
+                        JsonDocumentBoolean.create(Token.letters("false")),
+                        Token.comma(),
+                        Token.whitespace(" "),
+                        Token.rightSquareBrace(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 9,
+                                columnIndex: 9,
+                            }),
+                            afterEndOrColumns: 1
+                        }),
+                        "Expected JSON array element value, but found \"]\" instead.",
+                    ),
+                );
+                parseArrayTest(
                     "[ [] ]",
                     JsonDocumentArray.create(Iterable.create<Token | JsonDocumentValue>([
                         Token.leftSquareBrace(),
@@ -1294,6 +1317,593 @@ export function test(runner: TestRunner): void
                             Token.rightSquareBrace(),
                         ])),
                         Token.rightSquareBrace(),
+                    ])),
+                );
+                parseArrayTest(
+                    "[foo]",
+                    JsonDocumentArray.create(Iterable.create([
+                        Token.leftSquareBrace(),
+                        Token.letters("foo"),
+                        Token.rightSquareBrace(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create(
+                            DocumentPosition.create(1, 0, 1),
+                            3,
+                        ),
+                        "Expected JSON array element value, but found \"foo\" instead.",
+                    ),
+                );
+                parseArrayTest(
+                    "[*]",
+                    JsonDocumentArray.create(Iterable.create([
+                        Token.leftSquareBrace(),
+                        Token.asterisk(),
+                        Token.rightSquareBrace(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create(
+                            DocumentPosition.create(1, 0, 1),
+                            1,
+                        ),
+                        "Expected JSON array element value, but found \"*\" instead.",
+                    ),
+                );
+            });
+
+            runner.testFunction("parseObject(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            {
+                function parseObjectErrorTest(text: string | JavascriptIterable<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                {
+                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
+                    {
+                        const parser: JsonDocumentParser = JsonDocumentParser.create();
+                        test.assertThrows(() => parser.parseObject(text, onIssue), expected);
+                    });
+                }
+
+                parseObjectErrorTest(undefined!, undefined, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                parseObjectErrorTest(null!, undefined, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
+
+                function parseObjectTest(text: string | JavascriptIterable<string> | Tokenizer, expectedValue: JsonDocumentValue | undefined, expectedIssues?: DocumentIssue | JavascriptIterable<DocumentIssue>): void
+                {
+                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
+                    {
+                        const parser: JsonDocumentParser = JsonDocumentParser.create();
+                        const issues: List<DocumentIssue> = List.create();
+
+                        const value: JsonDocumentValue | undefined = parser.parseObject(text, (issue: DocumentIssue) => issues.add(issue)).await();
+
+                        test.assertEqual(expectedValue, value);
+
+                        if (isUndefinedOrNull(expectedIssues))
+                        {
+                            expectedIssues = Iterable.create();
+                        }
+                        else if (expectedIssues instanceof DocumentIssue)
+                        {
+                            expectedIssues = Iterable.create([expectedIssues]);
+                        }
+                        test.assertEqual(expectedIssues, issues);
+                    });
+                }
+
+                parseObjectTest(
+                    "",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                        }),
+                        "Missing JSON object.",
+                    ),
+                );
+                parseObjectTest(
+                    "   ",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 3,
+                                columnIndex: 3,
+                            })
+                        }),
+                        "Expected JSON object, but found \"   \" instead.",
+                    ),
+                );
+                parseObjectTest(
+                    "flubber",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 7,
+                                columnIndex: 7,
+                            })
+                        }),
+                        "Expected JSON object, but found \"flubber\" instead.",
+                    ),
+                );
+                parseObjectTest(
+                    "*",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 1,
+                                columnIndex: 1,
+                            })
+                        }),
+                        "Expected JSON object, but found \"*\" instead.",
+                    ),
+                );
+                parseObjectTest(
+                    "[",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 1,
+                                columnIndex: 1,
+                            })
+                        }),
+                        "Expected JSON object, but found \"[\" instead.",
+                    ),
+                );
+                parseObjectTest(
+                    "{",
+                    JsonDocumentObject.create(Iterable.create([
+                        Token.leftCurlyBracket(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 1,
+                                columnIndex: 1,
+                            })
+                        }),
+                        "Missing JSON object closing bracket ('}').",
+                    ),
+                );
+                parseObjectTest(
+                    "{}",
+                    JsonDocumentObject.create(Iterable.create([
+                        Token.leftCurlyBracket(),
+                        Token.rightCurlyBracket(),
+                    ])),
+                );
+                parseObjectTest(
+                    "{   ",
+                    JsonDocumentObject.create(Iterable.create([
+                        Token.leftCurlyBracket(),
+                        Token.whitespace("   "),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: DocumentPosition.create({
+                                characterIndex: 4,
+                                columnIndex: 4,
+                            })
+                        }),
+                        "Missing JSON object closing bracket ('}').",
+                    ),
+                );
+                parseObjectTest(
+                    "{ }",
+                    JsonDocumentObject.create(Iterable.create([
+                        Token.leftCurlyBracket(),
+                        Token.whitespace(" "),
+                        Token.rightCurlyBracket(),
+                    ])),
+                );
+                parseObjectTest(
+                    "{ false }",
+                    JsonDocumentObject.create(Iterable.create([
+                        Token.leftCurlyBracket(),
+                        Token.whitespace(" "),
+                        Token.letters("false"),
+                        Token.whitespace(" "),
+                        Token.rightCurlyBracket(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 2,
+                                columnIndex: 2,
+                            }),
+                            afterEndOrColumns: 5
+                        }),
+                        "Expected JSON object property name, but found \"false\" instead.",
+                    ),
+                );
+                parseObjectTest(
+                    "{ 'a': false }",
+                    JsonDocumentObject.create(Iterable.create([
+                        Token.leftCurlyBracket(),
+                        Token.whitespace(" "),
+                        JsonDocumentProperty.create(Iterable.create([
+                            JsonDocumentString.create(Iterable.create([
+                                Token.singleQuote(),
+                                Token.letters("a"),
+                                Token.singleQuote(),
+                            ]), true),
+                            Token.colon(),
+                            Token.whitespace(" "),
+                            JsonDocumentBoolean.create(Token.letters("false")),
+                        ])),
+                        Token.whitespace(" "),
+                        Token.rightCurlyBracket(),
+                    ])),
+                );
+                parseObjectTest(
+                    "{ 'a': false, }",
+                    JsonDocumentObject.create(Iterable.create([
+                        Token.leftCurlyBracket(),
+                        Token.whitespace(" "),
+                        JsonDocumentProperty.create(Iterable.create([
+                            JsonDocumentString.create(Iterable.create([
+                                Token.singleQuote(),
+                                Token.letters("a"),
+                                Token.singleQuote(),
+                            ]), true),
+                            Token.colon(),
+                            Token.whitespace(" "),
+                            JsonDocumentBoolean.create(Token.letters("false")),
+                        ])),
+                        Token.comma(),
+                        Token.whitespace(" "),
+                        Token.rightCurlyBracket(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 14,
+                                columnIndex: 14,
+                            }),
+                            afterEndOrColumns: 1
+                        }),
+                        "Expected JSON object property, but found \"}\" instead.",
+                    ),
+                );
+                parseObjectTest(
+                    "{ 'a': false, \"b\": 'c' }",
+                    JsonDocumentObject.create(Iterable.create([
+                        Token.leftCurlyBracket(),
+                        Token.whitespace(" "),
+                        JsonDocumentProperty.create(Iterable.create([
+                            JsonDocumentString.create(Iterable.create([
+                                Token.singleQuote(),
+                                Token.letters("a"),
+                                Token.singleQuote(),
+                            ]), true),
+                            Token.colon(),
+                            Token.whitespace(" "),
+                            JsonDocumentBoolean.create(Token.letters("false")),
+                        ])),
+                        Token.comma(),
+                        Token.whitespace(" "),
+                        JsonDocumentProperty.create(Iterable.create([
+                            JsonDocumentString.create(Iterable.create([
+                                Token.doubleQuote(),
+                                Token.letters("b"),
+                                Token.doubleQuote(),
+                            ]), true),
+                            Token.colon(),
+                            Token.whitespace(" "),
+                            JsonDocumentString.create(Iterable.create([
+                                Token.singleQuote(),
+                                Token.letters("c"),
+                                Token.singleQuote(),
+                            ]), true),
+                        ])),
+                        Token.whitespace(" "),
+                        Token.rightCurlyBracket(),
+                    ])),
+                );
+            });
+
+            runner.testFunction("parseProperty(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            {
+                function parsePropertyErrorTest(text: string | JavascriptIterable<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                {
+                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
+                    {
+                        const parser: JsonDocumentParser = JsonDocumentParser.create();
+                        test.assertThrows(() => parser.parseProperty(text, onIssue), expected);
+                    });
+                }
+
+                parsePropertyErrorTest(undefined!, undefined, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                parsePropertyErrorTest(null!, undefined, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
+
+                function parsePropertyTest(text: string | JavascriptIterable<string> | Tokenizer, expectedValue: JsonDocumentProperty | undefined, expectedIssues?: DocumentIssue | JavascriptIterable<DocumentIssue>): void
+                {
+                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
+                    {
+                        const parser: JsonDocumentParser = JsonDocumentParser.create();
+                        const issues: List<DocumentIssue> = List.create();
+
+                        const value: JsonDocumentProperty | undefined = parser.parseProperty(text, (issue: DocumentIssue) => issues.add(issue)).await();
+
+                        test.assertEqual(expectedValue, value);
+
+                        if (isUndefinedOrNull(expectedIssues))
+                        {
+                            expectedIssues = Iterable.create();
+                        }
+                        else if (expectedIssues instanceof DocumentIssue)
+                        {
+                            expectedIssues = Iterable.create([expectedIssues]);
+                        }
+                        test.assertEqual(expectedIssues, issues);
+                    });
+                }
+
+                parsePropertyTest(
+                    "",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                        }),
+                        "Missing JSON object property name.",
+                    ),
+                );
+                parsePropertyTest(
+                    "   ",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: 3,
+                        }),
+                        "Expected JSON object property name, but found \"   \" instead.",
+                    ),
+                );
+                parsePropertyTest(
+                    "flubber",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: 7,
+                        }),
+                        "Expected JSON object property name, but found \"flubber\" instead.",
+                    ),
+                );
+                parsePropertyTest(
+                    "*",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: 1
+                        }),
+                        "Expected JSON object property name, but found \"*\" instead.",
+                    ),
+                );
+                parsePropertyTest(
+                    "[",
+                    undefined,
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 0,
+                                columnIndex: 0,
+                            }),
+                            afterEndOrColumns: 1,
+                        }),
+                        "Expected JSON object property name, but found \"[\" instead.",
+                    ),
+                );
+                parsePropertyTest(
+                    "50",
+                    undefined,
+                    Iterable.create([
+                        DocumentIssue.create(
+                            DocumentRange.create({
+                                start: DocumentPosition.create({
+                                    characterIndex: 0,
+                                    columnIndex: 0,
+                                }),
+                                afterEndOrColumns: 2,
+                            }),
+                            "Expected JSON object property name, but found \"50\" instead.",
+                        ),
+                    ]),
+                );
+                parsePropertyTest(
+                    `"hello"`,
+                    JsonDocumentProperty.create(Iterable.create([
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("hello"),
+                            Token.doubleQuote(),
+                        ]), true),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 7,
+                                columnIndex: 7,
+                            }),
+                        }),
+                        "Missing JSON object property separator (':').",
+                    ),
+                );
+                parsePropertyTest(
+                    `"hello"   `,
+                    JsonDocumentProperty.create(Iterable.create([
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("hello"),
+                            Token.doubleQuote(),
+                        ]), true),
+                        Token.whitespace("   "),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 10,
+                                columnIndex: 10,
+                            }),
+                        }),
+                        "Missing JSON object property separator (':').",
+                    ),
+                );
+                parsePropertyTest(
+                    `"hello"*`,
+                    JsonDocumentProperty.create(Iterable.create([
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("hello"),
+                            Token.doubleQuote(),
+                        ]), true),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 7,
+                                columnIndex: 7,
+                            }),
+                            afterEndOrColumns: 1,
+                        }),
+                        "Expected JSON object property separator (':'), but found \"*\" instead.",
+                    ),
+                );
+                parsePropertyTest(
+                    `"hello":`,
+                    JsonDocumentProperty.create(Iterable.create([
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("hello"),
+                            Token.doubleQuote(),
+                        ]), true),
+                        Token.colon(),
+                    ])),
+                    DocumentIssue.create(
+                        DocumentRange.create({
+                            start: DocumentPosition.create({
+                                characterIndex: 8,
+                                columnIndex: 8,
+                            }),
+                        }),
+                        "Missing JSON object property value.",
+                    ),
+                );
+                parsePropertyTest(
+                    `"hello":"there"`,
+                    JsonDocumentProperty.create(Iterable.create([
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("hello"),
+                            Token.doubleQuote(),
+                        ]), true),
+                        Token.colon(),
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("there"),
+                            Token.doubleQuote(),
+                        ]), true),
+                    ])),
+                );
+                parsePropertyTest(
+                    `"hello" : "there"`,
+                    JsonDocumentProperty.create(Iterable.create([
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("hello"),
+                            Token.doubleQuote(),
+                        ]), true),
+                        Token.whitespace(" "),
+                        Token.colon(),
+                        Token.whitespace(" "),
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("there"),
+                            Token.doubleQuote(),
+                        ]), true),
+                    ])),
+                );
+                parsePropertyTest(
+                    `"hello":false`,
+                    JsonDocumentProperty.create(Iterable.create([
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("hello"),
+                            Token.doubleQuote(),
+                        ]), true),
+                        Token.colon(),
+                        JsonDocumentBoolean.create(Token.letters("false")),
+                    ])),
+                );
+                parsePropertyTest(
+                    `"hello":400`,
+                    JsonDocumentProperty.create(Iterable.create([
+                        JsonDocumentString.create(Iterable.create([
+                            Token.doubleQuote(),
+                            Token.letters("hello"),
+                            Token.doubleQuote(),
+                        ]), true),
+                        Token.colon(),
+                        JsonDocumentNumber.create(Iterable.create([
+                            Token.digits("400"),
+                        ])),
                     ])),
                 );
             });
