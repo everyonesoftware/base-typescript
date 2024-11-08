@@ -2,7 +2,6 @@ import { DocumentIssue } from "./documentIssue";
 import { JsonDocumentValue as JsonDocumentValue } from "./jsonDocumentValue";
 import { Result } from "./result";
 import { Tokenizer } from "./tokenizer";
-import { Iterator } from "./iterator";
 import { Pre } from "./pre";
 import { ParseError } from "./parseError";
 import { isUndefinedOrNull } from "./types";
@@ -18,9 +17,11 @@ import { JsonDocumentBoolean } from "./jsonDocumentBoolean";
 import { JsonDocumentString } from "./jsonDocumentString";
 import { JsonDocumentNumber } from "./jsonDocumentNumber";
 import { JsonDocumentArray } from "./jsonDocumentArray";
-import { JsonDocumentUnknown } from "./JsonDocumentUnknown";
+import { JsonDocumentUnknown } from "./jsonDocumentUnknown";
 import { JavascriptIterable } from "./javascript";
 import { DocumentPosition } from "./documentPosition";
+import { JsonDocumentObject } from "./jsonDocumentObject";
+import { JsonDocumentProperty } from "./jsonDocumentProperty";
 
 export class JsonDocumentParser
 {
@@ -68,12 +69,17 @@ export class JsonDocumentParser
         return onIssue;
     }
 
-    public parseValue(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void): Result<JsonDocumentValue | undefined>
+    public parseValue(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected?: string): Result<JsonDocumentValue | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
         return Result.create(() =>
         {
+            if (isUndefinedOrNull(expected))
+            {
+                expected = "JSON value";
+            }
+
             const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
             onIssue = JsonDocumentParser.getOnIssue(onIssue);
 
@@ -81,7 +87,7 @@ export class JsonDocumentParser
 
             if (!tokenizer.hasCurrent())
             {
-                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), "Missing JSON value."));
+                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Missing ${expected}.`));
             }
             else
             {
@@ -91,9 +97,9 @@ export class JsonDocumentParser
                         result = this.parseArray(tokenizer, onIssue).await();
                         break;
 
-                    // case TokenType.LeftCurlyBracket:
-                    //     result = this.parseObject(tokenizer, onIssue).await();
-                    //     break;
+                    case TokenType.LeftCurlyBracket:
+                        result = this.parseObject(tokenizer, onIssue).await();
+                        break;
 
                     case TokenType.SingleQuote:
                     case TokenType.DoubleQuote:
@@ -102,7 +108,7 @@ export class JsonDocumentParser
                         break;
 
                     case TokenType.Letters:
-                        result = this.parseNullOrBoolean(tokenizer, onIssue, "JSON value").await();
+                        result = this.parseNullOrBoolean(tokenizer, onIssue, expected).await();
                         break;
                     
                     case TokenType.Digits:
@@ -117,14 +123,14 @@ export class JsonDocumentParser
                         // Expect that whitespace has been previously skipped.
                         onIssue(DocumentIssue.create(
                             tokenizer.getCurrentRange(),
-                            `Expected JSON value, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`,
+                            `Expected ${expected}, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`,
                         ));
                         break;
 
                     default:
                         onIssue(DocumentIssue.create(
                             tokenizer.getCurrentRange(),
-                            `Expected JSON value, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`,
+                            `Expected ${expected}, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`,
                         ));
                         break;
                 }
@@ -134,7 +140,7 @@ export class JsonDocumentParser
         });
     }
 
-    public parseNullOrBoolean(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON null or boolean"): Result<JsonDocumentValue | undefined>
+    public parseNullOrBoolean(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON null or boolean"): Result<JsonDocumentValue | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
@@ -188,7 +194,7 @@ export class JsonDocumentParser
         });
     }
 
-    public parseString(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON string"): Result<JsonDocumentString | undefined>
+    public parseString(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON string"): Result<JsonDocumentString | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
@@ -320,7 +326,7 @@ export class JsonDocumentParser
      * @param onIssue The function that will be invoked if any issues are encountered.
      * @param expected A description of what is expected.
      */
-    public parseNumber(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON number"): Result<JsonDocumentValue | undefined>
+    public parseNumber(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON number"): Result<JsonDocumentValue | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
@@ -434,7 +440,7 @@ export class JsonDocumentParser
      * @param onIssue The function that will be invoked if any issues are encountered.
      * @param expected A description of what is expected.
      */
-    public parseArray(text: string | Iterator<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON array"): Result<JsonDocumentArray | undefined>
+    public parseArray(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON array"): Result<JsonDocumentArray | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
@@ -480,26 +486,29 @@ export class JsonDocumentParser
                     else
                     {
                         const elementValueStart: DocumentPosition = tokenizer.getCurrentRange().getStart();
-                        const elementValue: JsonDocumentValue | undefined = this.parseValue(tokenizer, onIssue).await();
+                        const elementValue: JsonDocumentValue | undefined = this.parseValue(tokenizer, onIssue, "JSON array element value").await();
                         if (isUndefinedOrNull(elementValue))
                         {
-                            tokensAndValues.add(tokenizer.takeCurrent());
+                            if (tokenizer.getCurrent().getType() !== TokenType.RightSquareBrace)
+                            {
+                                tokensAndValues.add(tokenizer.takeCurrent());
+                            }
                         }
                         else
                         {
                             tokensAndValues.add(elementValue);
-                        }
 
-                        if (expectComma)
-                        {
-                            onIssue(DocumentIssue.create(
-                                DocumentRange.create(elementValueStart, tokenizer.getCurrentRange().getStart()),
-                                `Expected array element separator (','), but found ${escapeAndQuote(tokensAndValues.last().await().getText())} instead.`,
-                            ));
-                        }
-                        expectComma = true;
+                            if (expectComma)
+                            {
+                                onIssue(DocumentIssue.create(
+                                    DocumentRange.create(elementValueStart, tokenizer.getCurrentRange().getStart()),
+                                    `Expected array element separator (','), but found ${escapeAndQuote(tokensAndValues.last().await().getText())} instead.`,
+                                ));
+                            }
+                            expectComma = true;
 
-                        JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+                            JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+                        }
                     }
                 }
 
@@ -523,6 +532,144 @@ export class JsonDocumentParser
                 }
 
                 result = JsonDocumentArray.create(tokensAndValues);
+            }
+
+            return result;
+        });
+    }
+
+    /**
+     * Parse a {@link JsonDocumentObject} from the provided text. If an object can't be parsed, then
+     * undefined will be returned.
+     * @param text The text to parse.
+     * @param onIssue The function that will be invoked if any issues are encountered.
+     * @param expected A description of what is expected.
+     */
+    public parseObject(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON object"): Result<JsonDocumentObject | undefined>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
+
+        return Result.create(() =>
+        {
+            const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
+            onIssue = JsonDocumentParser.getOnIssue(onIssue);
+
+            let result: JsonDocumentObject | undefined;
+
+            if (!tokenizer.hasCurrent())
+            {
+                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Missing ${expected}.`));
+            }
+            else if (tokenizer.getCurrent().getType() !== TokenType.LeftCurlyBracket)
+            {
+                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Expected ${expected}, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`));
+            }
+            else
+            {
+                const startTokenRange: DocumentRange = tokenizer.getCurrentRange();
+                const tokensValuesAndProperties: List<Token | JsonDocumentValue | JsonDocumentProperty> = List.create();
+                tokensValuesAndProperties.add(tokenizer.takeCurrent());
+
+                JsonDocumentParser.skipWhitespace(tokenizer, tokensValuesAndProperties);
+
+                while (tokenizer.hasCurrent() && tokenizer.getCurrent().getType() !== TokenType.RightCurlyBracket)
+                {
+                    const property: JsonDocumentProperty | undefined = this.parseProperty(tokenizer, onIssue).await();
+                    if (isUndefinedOrNull(property))
+                    {
+                        tokensValuesAndProperties.add(tokenizer.takeCurrent());
+                    }
+                    else
+                    {
+                        tokensValuesAndProperties.add(property);
+                    }
+
+                    JsonDocumentParser.skipWhitespace(tokenizer, tokensValuesAndProperties);
+
+                    if (tokenizer.hasCurrent() && tokenizer.getCurrent().getType() === TokenType.Comma)
+                    {
+                        tokensValuesAndProperties.add(tokenizer.takeCurrent());
+                        JsonDocumentParser.skipWhitespace(tokenizer, tokensValuesAndProperties);
+
+                        if (tokenizer.hasCurrent() && tokenizer.getCurrent().getType() === TokenType.RightCurlyBracket)
+                        {
+                            onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Expected JSON object property, but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`));
+                        }
+                    }
+                }
+
+                if (!tokenizer.hasCurrent())
+                {
+                    onIssue(DocumentIssue.create(
+                        DocumentRange.create(startTokenRange.getStart(), tokenizer.getCurrentRange().getAfterEnd()),
+                        "Missing JSON object closing bracket ('}').",
+                    ));
+                }
+                else
+                {
+                    tokensValuesAndProperties.add(tokenizer.takeCurrent());
+                }
+
+                result = JsonDocumentObject.create(tokensValuesAndProperties);
+            }
+
+            return result;
+        });
+    }
+
+    /**
+     * Parse a {@link JsonDocumentProperty} from the provided text. If a property can't be parsed,
+     * then undefined will be returned.
+     * @param text The text to parse.
+     * @param onIssue The function that will be invoked if any issues are encountered.
+     */
+    public parseProperty(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void): Result<JsonDocumentProperty | undefined>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
+
+        return Result.create(() =>
+        {
+            const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
+            onIssue = JsonDocumentParser.getOnIssue(onIssue);
+
+            let result: JsonDocumentProperty | undefined;
+
+            if (!tokenizer.hasCurrent())
+            {
+                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Missing JSON object property name.`));
+            }
+            else
+            {
+                const propertyName: Token | JsonDocumentValue | undefined = this.parseString(tokenizer, onIssue, "JSON object property name").await();
+                if (!isUndefinedOrNull(propertyName))
+                {
+                    const tokensAndValues: List<Token | JsonDocumentValue> = List.create();
+
+                    tokensAndValues.add(propertyName);
+                    JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+
+                    if (!tokenizer.hasCurrent())
+                    {
+                        onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), "Missing JSON object property separator (':')."));
+                    }
+                    else if (tokenizer.getCurrent().getType() !== TokenType.Colon)
+                    {
+                        onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), `Expected JSON object property separator (':'), but found ${escapeAndQuote(tokenizer.getCurrent().getText())} instead.`));
+                    }
+                    else
+                    {
+                        tokensAndValues.add(tokenizer.takeCurrent());
+                        JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+
+                        const propertyValue: JsonDocumentValue | undefined = this.parseValue(tokenizer, onIssue, "JSON object property value").await();
+                        if (!isUndefinedOrNull(propertyValue))
+                        {
+                            tokensAndValues.add(propertyValue);
+                        }
+                    }
+                    
+                    result = JsonDocumentProperty.create(tokensAndValues);
+                }
             }
 
             return result;

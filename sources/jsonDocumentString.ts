@@ -1,25 +1,26 @@
 import { JsonDocumentValue } from "./jsonDocumentValue";
 import { Pre } from "./pre";
 import { Token } from "./token";
-import { Iterable } from "./iterable";
 import { Post } from "./post";
+import { JavascriptIterable } from "./javascript";
+import { Iterable } from "./iterable";
 
 export class JsonDocumentString implements JsonDocumentValue
 {
-    private readonly tokens: Iterable<Token>;
+    private readonly tokens: JavascriptIterable<Token>;
     private readonly endQuote: boolean;
     
-    private constructor(tokens: Iterable<Token>, hasEndQuote: boolean)
+    private constructor(tokens: JavascriptIterable<Token>, hasEndQuote: boolean)
     {
         Pre.condition.assertNotEmpty(tokens, "tokens");
         Pre.condition.assertNotUndefinedAndNotNull(hasEndQuote, "endQuote");
-        Pre.condition.assertOneOf([Token.singleQuote(), Token.doubleQuote(), Token.backtick()], tokens.first().await(), "tokens.first().await()");
+        Pre.condition.assertOneOf([Token.singleQuote(), Token.doubleQuote(), Token.backtick()], Iterable.first(tokens).await(), "Iterable.first(tokens).await()");
 
         this.tokens = tokens;
         this.endQuote = hasEndQuote;
     }
 
-    public static create(tokens: Iterable<Token>, hasEndQuote: boolean): JsonDocumentString
+    public static create(tokens: JavascriptIterable<Token>, hasEndQuote: boolean): JsonDocumentString
     {
         return new JsonDocumentString(tokens, hasEndQuote);
     }

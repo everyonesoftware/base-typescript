@@ -1,24 +1,26 @@
 import { Iterable } from "./iterable";
 import { JavascriptIterable } from "./javascript";
+import { JsonDocumentString } from "./jsonDocumentString";
 import { JsonDocumentValue } from "./jsonDocumentValue";
 import { Pre } from "./pre";
 import { Token } from "./token";
 
-export class JsonDocumentArray implements JsonDocumentValue
+export class JsonDocumentProperty
 {
     private readonly tokensAndValues: JavascriptIterable<Token | JsonDocumentValue>;
     
     private constructor(tokensAndValues: JavascriptIterable<Token | JsonDocumentValue>)
     {
+        Pre.condition.assertNotUndefinedAndNotNull(tokensAndValues, "tokensAndValues");
         Pre.condition.assertNotEmpty(tokensAndValues, "tokensAndValues");
-        Pre.condition.assertEqual(Token.leftSquareBrace(), Iterable.first(tokensAndValues).await(), "Iterable.first(tokensAndValues).await()");
+        Pre.condition.assertInstanceOf(Iterable.first(tokensAndValues).await(), JsonDocumentString, undefined, "Iterable.first(tokensAndValues).await()");
 
         this.tokensAndValues = tokensAndValues;
     }
 
-    public static create(tokensAndValues: JavascriptIterable<Token | JsonDocumentValue>): JsonDocumentArray
+    public static create(tokensAndValues: JavascriptIterable<Token | JsonDocumentValue>): JsonDocumentProperty
     {
-        return new JsonDocumentArray(tokensAndValues);
+        return new JsonDocumentProperty(tokensAndValues);
     }
 
     public getLength(): number
@@ -29,5 +31,10 @@ export class JsonDocumentArray implements JsonDocumentValue
     public getText(): string
     {
         return JsonDocumentValue.getText(this.tokensAndValues);
+    }
+
+    public toString(): string
+    {
+        return JsonDocumentValue.toString(this);
     }
 }
