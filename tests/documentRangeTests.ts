@@ -1,7 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { createTestRunner } from "./tests";
-import { DocumentRange } from "../sources/documentRange";
-import { DocumentPosition, PreConditionError } from "../sources";
+import { DocumentPosition, DocumentRange, PreConditionError } from "../sources";
 
 export function test(runner: TestRunner): void
 {

@@ -1,7 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
 import { createTestRunner } from "./tests";
-import { Iterable, JsonDocumentArray, JsonDocumentBoolean, JsonDocumentNumber, PreConditionError, Token } from "../sources";
-import { JsonDocumentValue } from "../sources/jsonDocumentValue";
+import { Iterable, JsonDocumentArray, JsonDocumentBoolean, JsonDocumentNumber, JsonDocumentValue, PreConditionError, Token } from "../sources";
 
 export function test(runner: TestRunner): void
 {

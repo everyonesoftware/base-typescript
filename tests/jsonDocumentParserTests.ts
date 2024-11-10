@@ -1,10 +1,6 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { DocumentIssue, DocumentPosition, DocumentRange, isUndefinedOrNull, Iterable, JavascriptIterable, JsonDocumentArray, JsonDocumentBoolean, JsonDocumentNull, JsonDocumentNumber, JsonDocumentParser, JsonDocumentString, List, PreConditionError, Token, Tokenizer } from "../sources";
+import { DocumentIssue, DocumentPosition, DocumentRange, isUndefinedOrNull, Iterable, JavascriptIterable, JsonDocumentArray, JsonDocumentBoolean, JsonDocumentNull, JsonDocumentNumber, JsonDocumentObject, JsonDocumentParser, JsonDocumentProperty, JsonDocumentString, JsonDocumentUnknown, JsonDocumentValue, List, PreConditionError, Token, Tokenizer } from "../sources";
 import { createTestRunner } from "./tests";
-import { JsonDocumentValue as JsonDocumentValue } from "../sources/jsonDocumentValue";
-import { JsonDocumentUnknown } from "../sources/jsonDocumentUnknown";
-import { JsonDocumentProperty } from "../sources/jsonDocumentProperty";
-import { JsonDocumentObject } from "../sources/jsonDocumentObject";
 
 export function test(runner: TestRunner): void
 {
@@ -16,6 +12,29 @@ export function test(runner: TestRunner): void
             {
                 const parser: JsonDocumentParser = JsonDocumentParser.create();
                 test.assertNotUndefinedAndNotNull(parser);
+            });
+
+            runner.testFunction("parseDocument(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>
+            {
+                function parseDocumentErrorTest(text: string | JavascriptIterable<string> | Tokenizer, onIssue: ((issue: DocumentIssue) => void) | undefined, expected: Error): void
+                {
+                    runner.test(`with ${runner.toString(text)}`, (test: Test) =>
+                    {
+                        const parser: JsonDocumentParser = JsonDocumentParser.create();
+                        test.assertThrows(() => parser.parseValue(text, onIssue), expected);
+                    });
+                }
+
+                parseDocumentErrorTest(undefined!, undefined, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: undefined",
+                ));
+                parseDocumentErrorTest(null!, undefined, new PreConditionError(
+                    "Expression: text",
+                    "Expected: not undefined and not null",
+                    "Actual: null",
+                ));
             });
 
             runner.testFunction("parseValue(string|JavascriptIterable<string>|Tokenizer,((issue: DocumentIssue) => void)|undefined)", () =>

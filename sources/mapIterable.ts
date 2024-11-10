@@ -4,6 +4,7 @@ import { Iterator } from "./iterator";
 import { JavascriptIterator } from "./javascript";
 import { Pre } from "./pre";
 import { Result } from "./result";
+import { Type } from "./types";
 
 /**
  * An {@link Iterable} that converts {@link TInput} values to {@link TOutput} values.
@@ -50,6 +51,16 @@ export class MapIterable<TInput,TOutput> implements Iterable<TOutput>
     public map<TOutput2>(mapping: (value: TOutput) => TOutput2): MapIterable<TOutput, TOutput2>
     {
         return Iterable.map(this, mapping);
+    }
+
+    public where(condition: (value: TOutput) => boolean): Iterable<TOutput>
+    {
+        return Iterable.where(this, condition);
+    }
+
+    public instanceOf<TOutput2 extends TOutput>(typeOrTypeCheck: Type<TOutput2> | ((value: TOutput) => value is TOutput2)): Iterable<TOutput2>
+    {
+        return Iterable.instanceOf(this, typeOrTypeCheck);
     }
 
     public [Symbol.iterator](): JavascriptIterator<TOutput>

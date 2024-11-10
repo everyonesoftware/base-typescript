@@ -6,6 +6,8 @@ import { MutableIndexable } from "./mutableIndexable";
 import { Pre } from "./pre";
 import { Result } from "./result";
 import { Indexable } from "./indexable";
+import { Type } from "./types";
+import { Iterable } from "./iterable";
 
 export abstract class List<T> implements MutableIndexable<T>
 {
@@ -23,6 +25,10 @@ export abstract class List<T> implements MutableIndexable<T>
     public abstract toString(): string;
 
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterable<T, TOutput>;
+
+    public abstract where(condition: (value: T) => boolean): Iterable<T>;
+
+    public abstract instanceOf<TOutput extends T>(typeOrTypeCheck: Type<TOutput> | ((value: T) => value is TOutput)): Iterable<TOutput>;
 
     public abstract any(): boolean;
 

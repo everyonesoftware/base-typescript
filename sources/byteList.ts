@@ -7,7 +7,7 @@ import { List } from "./list";
 import { MapIterable } from "./mapIterable";
 import { Pre } from "./pre";
 import { Result } from "./result";
-import { isIterable } from "./types";
+import { isIterable, Type } from "./types";
 
 /**
  * An expandable {@link List} of bytes.
@@ -136,6 +136,16 @@ export class ByteList implements List<number>
     public map<TOutput>(mapping: (value: number) => TOutput): MapIterable<number, TOutput>
     {
         return Iterable.map(this, mapping);
+    }
+
+    public where(condition: (value: number) => boolean): Iterable<number>
+    {
+        return Iterable.where(this, condition);
+    }
+
+    public instanceOf<T extends number>(typeOrTypeCheck: Type<T> | ((value: number) => value is T)): Iterable<T>
+    {
+        return Iterable.instanceOf(this, typeOrTypeCheck);
     }
 
     public any(): boolean

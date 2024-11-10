@@ -8,7 +8,9 @@ import { MapIterable } from "./mapIterable";
 import { Pre } from "./pre";
 import { Result } from "./result";
 import { ToStringFunctions } from "./toStringFunctions";
-import { isUndefinedOrNull } from "./types";
+import { isUndefinedOrNull, Type } from "./types";
+import * as types from "./types";
+import { WhereIterable } from "./whereIterable";
 
 /**
  * An object that can be iterated over.
@@ -25,7 +27,10 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
      */
     public abstract iterate(): Iterator<T>;
 
-    public abstract [Symbol.iterator](): JavascriptIterator<T>;
+    public [Symbol.iterator](): JavascriptIterator<T>
+    {
+        return Iterable[Symbol.iterator](this);
+    }
 
     public static [Symbol.iterator]<T>(iterable: Iterable<T>): JavascriptIterator<T>
     {
@@ -162,9 +167,62 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     }
 
     /**
+     * Get an {@link Iterable} that contains values from this {@link Iterable} that match the
+     * provided condition.
+     * @param condition The condition to run against each of the values in this {@link Iterable}.
+     */
+    public abstract where(condition: (value: T) => boolean): Iterable<T>;
+
+    /**
+     * Get an {@link Iterable} that contains values from the provided {@link Iterable} that match
+     * the provided condition.
+     * @param iterable The {@link Iterable} to get values from.
+     * @param condition The condition that the values must match to be contained in the new
+     * {@link Iterable}.
+     */
+    public static where<T>(iterable: JavascriptIterable<T>, condition: (value: T) => boolean): Iterable<T>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
+        Pre.condition.assertNotUndefinedAndNotNull(condition, "condition");
+
+        if (!types.isIterable(iterable))
+        {
+            iterable = Iterable.create(iterable);
+        }
+        return WhereIterable.create(iterable as Iterable<T>, condition);
+    }
+
+    /**
+     * Get an {@link Iterable} that contains values from this {@link Iterable} that match the
+     * provided {@link Type} or type check function.
+     * @param typeOrTypeCheck The {@link Type} or type check function that returned values must
+     * match.
+     */
+    public abstract instanceOf<TOutput extends T>(typeOrTypeCheck: Type<TOutput> | ((value: T) => value is TOutput)): Iterable<TOutput>;
+
+    /**
+     * Get an {@link Iterable} that contains values from the provided {@link Iterable} that match
+     * the provided {@link Type} or type check function.
+     * @param iterable The {@link Iterable} to get values from.
+     * @param typeOrTypeCheck The {@link Type} or type check function that returned values must
+     * match.
+     */
+    public static instanceOf<TInput,TOutput extends TInput>(iterable: JavascriptIterable<TInput>, typeOrTypeCheck: Type<TOutput> | ((value: TInput) => value is TOutput)): Iterable<TOutput>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(iterable, "iterable");
+        Pre.condition.assertNotUndefinedAndNotNull(typeOrTypeCheck, "typeOrTypeCheck");
+
+        return Iterable.where(iterable, (value: TInput) => types.instanceOf(value, typeOrTypeCheck))
+            .map((value: TInput) => (value as unknown) as TOutput);
+    }
+
+    /**
      * Get the first value in this {@link Iterable}.
      */
-    public abstract first(): Result<T>;
+    public first(): Result<T>
+    {
+        return Iterable.first(this);
+    }
 
     /**
      * Get the first value from the provided {@link JavascriptIterable}.
@@ -180,7 +238,10 @@ export abstract class Iterable<T> implements JavascriptIterable<T>
     /**
      * Get the last value in this {@link Iterable}.
      */
-    public abstract last(): Result<T>;
+    public last(): Result<T>
+    {
+        return Iterable.last(this);
+    }
 
     /**
      * Get the last value from the provided {@link JavascriptIterable}.

@@ -3,6 +3,7 @@ import { Iterator } from "./iterator";
 import { JavascriptIterator } from "./javascript";
 import { MapIterable } from "./mapIterable";
 import { Result } from "./result";
+import { Type } from "./types";
 
 export abstract class IterableBase<T> implements Iterable<T>
 {
@@ -28,14 +29,31 @@ export abstract class IterableBase<T> implements Iterable<T>
         return Iterable.map(this, mapping);
     }
 
+    public where(condition: (value: T) => boolean): Iterable<T>
+    {
+        return Iterable.where(this, condition);
+    }
+
+    public instanceOf<TOutput extends T>(typeOrTypeCheck: Type<TOutput> | ((value: T) => value is TOutput)): Iterable<TOutput>
+    {
+        return Iterable.instanceOf(this, typeOrTypeCheck);
+    }
+
+
     public [Symbol.iterator](): JavascriptIterator<T>
     {
         return Iterable[Symbol.iterator](this);
     }
 
-    public abstract any(): boolean;
+    public any(): boolean
+    {
+        return Iterable.any(this);
+    }
 
-    public abstract getCount(): number;
+    public getCount(): number
+    {
+        return Iterable.getCount(this);
+    }
 
     public first(): Result<T>
     {
