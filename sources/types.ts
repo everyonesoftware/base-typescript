@@ -13,35 +13,47 @@ export type Type<T> = Function & { prototype: T };
  * if the provided value is a {@link T}.
  * @param value The value to check.
  */
-export function instanceOf<T>(typeOrTypeCheck: Type<T> | ((value: unknown) => value is T), value: unknown): value is T
+export function instanceOf<T>(value: unknown, typeCheck: (value: unknown) => value is T): value is T;
+/**
+ * Get whether the provided value is an instance of {@link Type} {@link T}.
+ * @param typeOrTypeCheck The {@link Type} to look for or type check {@link Function} to determine
+ * if the provided value is a {@link T}.
+ * @param value The value to check.
+ */
+export function instanceOf<T>(value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T): value is T;
+export function instanceOf<T>(value: unknown, typeOrTypeCheck: Type<T> | ((value: unknown) => value is T), typeCheck?: (value: unknown) => value is T): value is T
 {
-    let valueIsT: boolean;
-    if (value instanceof typeOrTypeCheck)
+    let result: boolean;
+    if (!isUndefinedOrNull(typeCheck))
     {
-        valueIsT = true;
+        result = typeCheck(value);
+    }
+    else if (value instanceof typeOrTypeCheck)
+    {
+        result = true;
     }
     else if (isFunctionWithParameterCount(typeOrTypeCheck, 1))
     {
-        const typeCheck: (value: unknown) => value is T = typeOrTypeCheck as (value: unknown) => value is T;
-        valueIsT = typeCheck(value);
+        typeCheck = typeOrTypeCheck as ((value: unknown) => value is T);
+        result = typeCheck(value);
     }
     else
     {
-        valueIsT = false;
+        result = false;
     }
-    return valueIsT;
+    return result;
 }
 
 /**
  * If the provided {@link value} is of type {@link T} (according to the provided {@link typeCheck}),
  * then return the {@link value}. Otherwise return undefined.
+ * @param value The value to check.
  * @param typeOrTypeCheck The {@link Type} to look for or type check {@link Function} to determine
  * if the provided value is a {@link T}.
- * @param value The value to check.
  */
-export function as<T>(typeOrTypeCheck: Type<T> | ((value: unknown) => value is T), value: unknown): T | undefined
+export function as<T>(value: unknown, typeOrTypeCheck: Type<T> | ((value: unknown) => value is T)): T | undefined
 {
-    return instanceOf(typeOrTypeCheck, value) ? value as T : undefined;
+    return instanceOf(value, typeOrTypeCheck) ? value as T : undefined;
 }
 
 /**
@@ -68,7 +80,7 @@ export function isNull(value: unknown): value is null
  */
 export function asNull(value: unknown): null | undefined
 {
-    return as(isNull, value);
+    return as(value, isNull);
 }
 
 /**
@@ -95,7 +107,7 @@ export function isBoolean(value: unknown): value is boolean
  */
 export function asBoolean(value: unknown): boolean | undefined
 {
-    return as(isBoolean, value);
+    return as(value, isBoolean);
 }
 
 /**
@@ -113,7 +125,7 @@ export function isNumber(value: unknown): value is number
  */
 export function asNumber(value: unknown): number | undefined
 {
-    return as(isNumber, value);
+    return as(value, isNumber);
 }
 
 /**
@@ -131,7 +143,7 @@ export function isString(value: unknown): value is string
  */
 export function asString(value: unknown): string | undefined
 {
-    return as(isString, value);
+    return as(value, isString);
 }
 
 /**
@@ -149,7 +161,7 @@ export function isFunction(value: unknown): value is Function
  */
 export function asFunction(value: unknown): Function | undefined
 {
-    return as(isFunction, value);
+    return as(value, isFunction);
 }
 
 /**
@@ -178,7 +190,7 @@ export function isFunctionWithParameterCount(value: unknown, parameterCount: num
  */
 export function asFunctionWithParameterCount(value: unknown, parameterCount: number): Function | undefined
 {
-    return as((v: unknown) => isFunctionWithParameterCount(v, parameterCount), value);
+    return as(value, (v: unknown) => isFunctionWithParameterCount(v, parameterCount));
 }
 
 /**
@@ -196,7 +208,7 @@ export function isArray(value: unknown): value is unknown[]
  */
 export function asArray(value: unknown): unknown[] | undefined
 {
-    return as(isArray, value);
+    return as(value, isArray);
 }
 
 /**
@@ -214,7 +226,7 @@ export function isObjectOrArrayOrNull(value: unknown): value is {} | unknown[] |
  */
 export function asObjectOrArrayOrNull(value: unknown): {} | unknown[] | null | undefined
 {
-    return as(isObjectOrArrayOrNull, value);
+    return as(value, isObjectOrArrayOrNull);
 }
 
 /**
@@ -233,7 +245,7 @@ export function isObject(value: unknown): value is {}
  */
 export function asObject(value: unknown): {} | undefined
 {
-    return as(isObject, value);
+    return as(value, isObject);
 }
 
 /**

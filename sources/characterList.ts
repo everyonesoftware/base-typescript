@@ -8,7 +8,7 @@ import { Post } from "./post";
 import { Pre } from "./pre";
 import { Result } from "./result";
 import { StringIterator } from "./stringIterator";
-import { isString } from "./types";
+import { isString, Type } from "./types";
 
 /**
  * An expandable {@link List} of characters.
@@ -119,6 +119,16 @@ export class CharacterList implements List<string>
     public map<TOutput>(mapping: (value: string) => TOutput): MapIterable<string, TOutput>
     {
         return Iterable.map(this, mapping);
+    }
+
+    public where(condition: (value: string) => boolean): Iterable<string>
+    {
+        return Iterable.where(this, condition);
+    }
+
+    public instanceOf<T extends string>(typeOrTypeCheck: Type<T> | ((value: string) => value is T)): Iterable<T>
+    {
+        return Iterable.instanceOf(this, typeOrTypeCheck);
     }
 
     public any(): boolean

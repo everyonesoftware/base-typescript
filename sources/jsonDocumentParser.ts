@@ -22,6 +22,7 @@ import { JavascriptIterable } from "./javascript";
 import { DocumentPosition } from "./documentPosition";
 import { JsonDocumentObject } from "./jsonDocumentObject";
 import { JsonDocumentProperty } from "./jsonDocumentProperty";
+import { JsonDocument } from "./jsonDocument";
 
 export class JsonDocumentParser
 {
@@ -69,6 +70,72 @@ export class JsonDocumentParser
         return onIssue;
     }
 
+    /**
+     * Parse a {@link JsonDocument} from the provided text.
+     * @param text The text to parse a {@link JsonDocument} from.
+     * @param onIssue The function that will be invoked if any issues are encountered.
+     */
+    public parseDocument(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void): Result<JsonDocument>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(text, "text");
+
+        return Result.create(() =>
+        {
+            const tokenizer: DocumentTokenizer = JsonDocumentParser.getTokenizer(text);
+            onIssue = JsonDocumentParser.getOnIssue(onIssue);
+
+            const tokensAndValues: List<Token | JsonDocumentValue> = List.create();
+            JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+
+            if (!tokenizer.hasCurrent())
+            {
+                onIssue(DocumentIssue.create(tokenizer.getCurrentRange(), "Missing JSON document root value."));
+            }
+            else
+            {
+                let alreadyFoundRootValue: boolean = false;
+                while (tokenizer.hasCurrent())
+                {
+                    const valueStartPosition: DocumentPosition = tokenizer.getCurrentRange().getStart();
+                    const value: JsonDocumentValue | undefined = this.parseValue(tokenizer, onIssue, "JSON document root value").await();
+                    if (isUndefinedOrNull(value))
+                    {
+                        tokensAndValues.add(tokenizer.takeCurrent());
+                    }
+                    else
+                    {
+                        tokensAndValues.add(value);
+                        if (alreadyFoundRootValue)
+                        {
+                            const valueAfterEndPosition: DocumentPosition = tokenizer.getCurrentRange().getStart();
+                            onIssue(
+                                DocumentIssue.create(
+                                    DocumentRange.create(valueStartPosition, valueAfterEndPosition),
+                                    "A JSON document can only have a single root value.",
+                                ),
+                            );
+                        }
+                        else
+                        {
+                            alreadyFoundRootValue = true;
+                        }
+                    }
+                    JsonDocumentParser.skipWhitespace(tokenizer, tokensAndValues);
+                }
+            }
+
+            return JsonDocument.create(tokensAndValues);
+        });
+    }
+
+    /**
+     * Parse a {@link JsonDocumentValue} from the provided text. If a {@link JsonDocumentValue}
+     * cannot be parsed, then undefined will be returned.
+     * @param text The text to parse a {@link JsonDocumentValue} from.
+     * @param onIssue The function that will be invoked if any issues are encountered.
+     * @param expected The text that describes the context that the {@link JsonDocumentValue} is
+     * attempting to be parsed under.
+     */
     public parseValue(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected?: string): Result<JsonDocumentValue | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");

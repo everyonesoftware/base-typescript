@@ -5,7 +5,7 @@ import { Comparison } from "./comparison";
 import { Condition } from "./condition";
 import { Iterable } from "./iterable";
 import { JavascriptIterable } from "./javascript";
-import { isJavascriptIterable, isString, isUndefinedOrNull, Type } from "./types";
+import { instanceOf, isJavascriptIterable, isString, isUndefinedOrNull, Type } from "./types";
 
 /**
  * A collection of condition methods that can be used to assert the state of an application.
@@ -342,17 +342,7 @@ export abstract class ConditionBase implements Condition
 
     public assertInstanceOf<T>(value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string): asserts value is T
     {
-        let valueIsT: boolean;
-        if (isUndefinedOrNull(typeCheck))
-        {
-            valueIsT = value instanceof type;
-        }
-        else
-        {
-            valueIsT = typeCheck(value);
-        }
-
-        if (!valueIsT)
+        if (!instanceOf(value, type, typeCheck))
         {
             throw this.createError({
                 expected: `instance of ${type.name}`,

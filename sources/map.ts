@@ -10,7 +10,7 @@ import { Pre } from "./pre";
 import { Result } from "./result";
 import { join } from "./strings";
 import { ToStringFunctions } from "./toStringFunctions";
-import { hasFunction, isUndefinedOrNull } from "./types";
+import { hasFunction, isUndefinedOrNull, Type } from "./types";
 
 export function isMap(value: unknown): value is Map<unknown,unknown>
 {
@@ -31,7 +31,7 @@ export interface MapEntry<TKey,TValue>
 }
 
 /**
- * A type that maps TKey values to TValue values.
+ * A type that maps {@link TKey} values to {@link TValue} values.
  */
 export abstract class Map<TKey,TValue> implements Iterable<MapEntry<TKey,TValue>>
 {
@@ -100,6 +100,10 @@ export abstract class Map<TKey,TValue> implements Iterable<MapEntry<TKey,TValue>
     }
 
     public abstract map<TOutput>(mapping: (value: MapEntry<TKey,TValue>) => TOutput): MapIterable<MapEntry<TKey,TValue>, TOutput>;
+
+    public abstract where(condition: (value: MapEntry<TKey,TValue>) => boolean): Iterable<MapEntry<TKey,TValue>>;
+
+    public abstract instanceOf<T extends MapEntry<TKey,TValue>>(typeOrTypeCheck: Type<T> | ((value: MapEntry<TKey,TValue>) => value is T)): Iterable<T>;
 
     public abstract [Symbol.iterator](): JavascriptIterator<MapEntry<TKey,TValue>>;
 

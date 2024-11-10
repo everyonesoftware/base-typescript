@@ -1,9 +1,11 @@
 import { Indexable } from "./indexable";
+import { Iterable } from "./iterable";
 import { IndexableIterator } from "./indexableIterator";
 import { JavascriptIterable, JavascriptIterator } from "./javascript";
 import { List } from "./list";
 import { MapIterable } from "./mapIterable";
 import { Result } from "./result";
+import { Type } from "./types";
 
 /**
  * An object that can modify its elements by index.
@@ -24,6 +26,10 @@ export abstract class MutableIndexable<T> implements Indexable<T>
     public abstract toString(): string;
 
     public abstract map<TOutput>(mapping: (value: T) => TOutput): MapIterable<T, TOutput>;
+
+    public abstract where(condition: (value: T) => boolean): Iterable<T>;
+
+    public abstract instanceOf<TOutput extends T>(typeOrTypeCheck: Type<TOutput> | ((value: T) => value is TOutput)): Iterable<TOutput>;
 
     public abstract [Symbol.iterator](): JavascriptIterator<T>;
 
