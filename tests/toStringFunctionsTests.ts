@@ -43,7 +43,7 @@ export function test(runner: TestRunner): void
                 toStringTest(List.create([1, 2, 3]), `[1,2,3]`);
                 toStringTest(Map.create(), `{}`);
                 toStringTest(Map.create<string,number>().set("a", 1), `{"a":1}`);
-                toStringTest(TokenType.CarriageReturn, "1");
+                toStringTest(TokenType.CarriageReturn, `"CarriageReturn"`);
             });
         });
     });

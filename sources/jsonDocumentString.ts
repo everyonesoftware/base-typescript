@@ -4,6 +4,10 @@ import { Token } from "./token";
 import { Post } from "./post";
 import { JavascriptIterable } from "./javascript";
 import { Iterable } from "./iterable";
+import { Tokenizer } from "./tokenizer";
+import { DocumentIssue } from "./documentIssue";
+import { JsonDocumentParser } from "./jsonDocumentParser";
+import { Result } from "./result";
 
 export class JsonDocumentString implements JsonDocumentValue
 {
@@ -23,6 +27,17 @@ export class JsonDocumentString implements JsonDocumentValue
     public static create(tokens: JavascriptIterable<Token>, hasEndQuote: boolean): JsonDocumentString
     {
         return new JsonDocumentString(tokens, hasEndQuote);
+    }
+
+    /**
+     * Parse a {@link JsonDocumentString} from the provided text.
+     * @param text The text to parse.
+     * @param onIssue The function that will be invoked when an issue is encountered.
+     * @param expected The context that describes what kind of JSON string is expected.
+     */
+    public static parse(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON string"): Result<JsonDocumentString | undefined>
+    {
+        return JsonDocumentParser.create().parseString(text, onIssue, expected);
     }
 
     public getLength(): number

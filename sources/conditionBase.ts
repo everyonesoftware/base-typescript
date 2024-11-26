@@ -5,7 +5,7 @@ import { Comparison } from "./comparison";
 import { Condition } from "./condition";
 import { Iterable } from "./iterable";
 import { JavascriptIterable } from "./javascript";
-import { instanceOf, isJavascriptIterable, isString, isUndefinedOrNull, Type } from "./types";
+import { hasFunction, hasProperty, instanceOf, isJavascriptIterable, isString, isUndefinedOrNull, Type } from "./types";
 
 /**
  * A collection of condition methods that can be used to assert the state of an application.
@@ -340,12 +340,38 @@ export abstract class ConditionBase implements Condition
         }
     }
 
-    public assertInstanceOf<T>(value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string): asserts value is T
+    public assertInstanceOf<T>(value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string): asserts value is T;
+    public assertInstanceOf<T>(parameters: { value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string }): void;
+    public assertInstanceOf<T>(parametersOrValue: unknown | { value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string }, type?: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string): void
     {
-        if (!instanceOf(value, type, typeCheck))
+        let value: unknown;
+        if (hasProperty(parametersOrValue, "value") &&
+            hasProperty(parametersOrValue, "type"))
+        {
+            value = parametersOrValue.value;
+            type = parametersOrValue.type as Type<T>;
+            if (hasFunction(parametersOrValue, "typeCheck"))
+            {
+                typeCheck = parametersOrValue.typeCheck as (value: unknown) => value is T;
+            }
+            if (hasProperty(parametersOrValue, "expression"))
+            {
+                expression = parametersOrValue.expression as string;
+            }
+            if (hasProperty(parametersOrValue, "message"))
+            {
+                message = parametersOrValue.message as string;
+            }
+        }
+        else
+        {
+            value = parametersOrValue;
+        }
+
+        if (!instanceOf(value, type!, typeCheck))
         {
             throw this.createError({
-                expected: `instance of ${type.name}`,
+                expected: `instance of ${type!.name}`,
                 actual: this.toString(value),
                 expression: expression,
                 message: message,

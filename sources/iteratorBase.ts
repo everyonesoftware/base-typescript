@@ -49,9 +49,9 @@ export abstract class IteratorBase<T> implements Iterator<T>
         return Iterator[Symbol.iterator](this);
     }
 
-    public first(): Result<T>
+    public first(condition?: (value: T) => boolean): Result<T>
     {
-        return Iterator.first(this);
+        return Iterator.first(this, condition);
     }
 
     public last(): Result<T>
@@ -64,9 +64,9 @@ export abstract class IteratorBase<T> implements Iterator<T>
         return Iterator.where(this, condition);
     }
 
-    public instanceOf<U extends T>(type: Type<U>): Iterator<U>
+    public whereInstanceOf<U extends T>(type: Type<U>): Iterator<U>
     {
-        return Iterator.instanceOf(this, type);
+        return Iterator.whereInstanceOf(this, type);
     }
 
     public take(maximumToTake: number): Iterator<T>

@@ -58,14 +58,14 @@ export abstract class Tokenizer implements Iterator<Token>
         return Iterator.map(this, mapping);
     }
 
-    public instanceOf<U extends Token>(type: Type<U>): Iterator<U>
+    public whereInstanceOf<U extends Token>(type: Type<U>): Iterator<U>
     {
-        return Iterator.instanceOf(this, type);
+        return Iterator.whereInstanceOf(this, type);
     }
 
-    public first(): Result<Token>
+    public first(condition?: (value: Token) => boolean): Result<Token>
     {
-        return Iterator.first(this);
+        return Iterator.first(this, condition);
     }
 
     public last(): Result<Token>
