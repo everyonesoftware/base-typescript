@@ -261,6 +261,12 @@ export class JsonDocumentParser
         });
     }
 
+    /**
+     * Parse a {@link JsonDocumentString} from the provided text.
+     * @param text The text to parse.
+     * @param onIssue The function that will be invoked when an issue is encountered.
+     * @param expected The context that describes what kind of JSON string is expected.
+     */
     public parseString(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON string"): Result<JsonDocumentString | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");

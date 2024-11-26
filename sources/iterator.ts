@@ -7,9 +7,10 @@ import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToItera
 import { Result } from "./result";
 import { EmptyError } from "./emptyError";
 import { WhereIterator } from "./whereIterator";
-import { Type, isJavascriptIterator } from "./types";
+import { Type, isJavascriptIterator, isUndefinedOrNull } from "./types";
 import { Comparable } from "./comparable";
 import { TakeIterator } from "./takeIterator";
+import { NotFoundError } from "./notFoundError";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -223,12 +224,12 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
      * instances of the provided {@link Type}.
      * @param type The type of values to return from the new {@link Iterator}.
      */
-    public instanceOf<U extends T>(type: Type<U>): Iterator<U>
+    public whereInstanceOf<U extends T>(type: Type<U>): Iterator<U>
     {
-        return Iterator.instanceOf(this, type);
+        return Iterator.whereInstanceOf(this, type);
     }
 
-    public static instanceOf<T,U extends T>(iterator: Iterator<T>, type: Type<U>): Iterator<U>
+    public static whereInstanceOf<T,U extends T>(iterator: Iterator<T>, type: Type<U>): Iterator<U>
     {
         Pre.condition.assertNotUndefinedAndNotNull(type, "type");
 
@@ -237,27 +238,46 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
     }
 
     /**
-     * Get the first value in this {@link Iterator}.
+     * Get the first value in this {@link Iterator}. If the condition function is undefined, then
+     * this function will return the first value in this {@link Iterator}. If this condition
+     * function is provided, then this function will return the first value that matches the
+     * provided condition.
+     * @param condition The condition that the returned value must satisfy.
      */
-    public first(): Result<T>
+    public first(condition?: (value: T) => boolean): Result<T>
     {
-        return Iterator.first(this);
+        return Iterator.first(this, condition);
     }
 
     /**
      * Get the first value from the provided {@link Iterator}.
      * @param iterator The {@link Iterator} to get the first value from.
      */
-    public static first<T>(iterator: Iterator<T>): Result<T>
+    public static first<T>(iterator: Iterator<T>, condition?: (value: T) => boolean): Result<T>
     {
         Pre.condition.assertNotUndefinedAndNotNull(iterator, "iterator");
 
         return Result.create(() =>
         {
             iterator.start();
-            if (!iterator.hasCurrent())
+            if (isUndefinedOrNull(condition))
             {
-                throw new EmptyError();
+                if (!iterator.hasCurrent())
+                {
+                    throw new NotFoundError("No value was found in the Iterator.");
+                }
+            }
+            else
+            {
+                while (iterator.hasCurrent() && !condition(iterator.getCurrent()))
+                {
+                    iterator.next();
+                }
+
+                if (!iterator.hasCurrent())
+                {
+                    throw new NotFoundError("No value was found in the Iterator that matched the provided condition.");
+                }
             }
             return iterator.getCurrent();
         });

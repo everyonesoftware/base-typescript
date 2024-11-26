@@ -63,7 +63,7 @@ export class JsonDocument
         return this.iterateRoots().first();
     }
 
-    private getRootAs<T extends JsonDocumentValue>(type: Type<T>): Result<T>
+    public getRootAs<T extends JsonDocumentValue>(type: Type<T>): Result<T>
     {
         Pre.condition.assertNotUndefinedAndNotNull(type, "type");
 

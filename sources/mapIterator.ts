@@ -81,9 +81,9 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
         return Iterator[Symbol.iterator](this);
     }
 
-    public first(): Result<TOutput>
+    public first(condition?: (value: TOutput) => boolean): Result<TOutput>
     {
-        return Iterator.first(this);
+        return Iterator.first(this, condition);
     }
 
     public last(): Result<TOutput>
@@ -96,9 +96,9 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
         return Iterator.where(this, condition);
     }
 
-    public instanceOf<U extends TOutput>(type: Type<U>): Iterator<U>
+    public whereInstanceOf<U extends TOutput>(type: Type<U>): Iterator<U>
     {
-        return Iterator.instanceOf(this, type);
+        return Iterator.whereInstanceOf(this, type);
     }
 
     public take(maximumToTake: number): Iterator<TOutput>

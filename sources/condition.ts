@@ -201,4 +201,12 @@ export abstract class Condition
      * @param message An optional error message.
      */
     public abstract assertInstanceOf<T>(value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string): asserts value is T;
+    /**
+     * Assert that the provided value is an instance of the provided {@link Type}.
+     * @param value The value to check.
+     * @param type The {@link Type} to check.
+     * @param expression The expression that produced the value.
+     * @param message An optional error message.
+     */
+    public abstract assertInstanceOf<T>(parameters: { value: unknown, type: Type<T>, typeCheck?: (value: unknown) => value is T, expression?: string, message?: string }): void;
 }

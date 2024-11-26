@@ -2,6 +2,10 @@ import { JsonDocumentValue } from "./jsonDocumentValue";
 import { Pre } from "./pre";
 import { Token } from "./token";
 import { JavascriptIterable } from "./javascript";
+import { Tokenizer } from "./tokenizer";
+import { DocumentIssue } from "./documentIssue";
+import { Result } from "./result";
+import { JsonDocumentParser } from "./jsonDocumentParser";
 
 export class JsonDocumentNumber implements JsonDocumentValue
 {
@@ -17,6 +21,18 @@ export class JsonDocumentNumber implements JsonDocumentValue
     public static create(tokens: JavascriptIterable<Token>): JsonDocumentNumber
     {
         return new JsonDocumentNumber(tokens);
+    }
+
+    /**
+     * Parse a {@link JsonDocumentNumber} from the provided text. If a number can't be parsed, then
+     * undefined will be returned.
+     * @param text The text to parse.
+     * @param onIssue The function that will be invoked if any issues are encountered.
+     * @param expected A description of what is expected.
+     */
+    public static parse(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void, expected: string = "JSON number"): Result<JsonDocumentValue | undefined>
+    {
+        return JsonDocumentParser.create().parseNumber(text, onIssue, expected);
     }
 
     public getLength(): number
