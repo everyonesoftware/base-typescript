@@ -44,6 +44,11 @@ export function instanceOf<T>(value: unknown, typeOrTypeCheck: Type<T> | ((value
     return result;
 }
 
+export function instanceOfType<T>(value: unknown, type: Type<T>): value is T
+{
+    return value instanceof type;
+}
+
 /**
  * If the provided {@link value} is of type {@link T} (according to the provided {@link typeCheck}),
  * then return the {@link value}. Otherwise return undefined.
