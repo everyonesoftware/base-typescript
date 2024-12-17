@@ -1,5 +1,5 @@
 import { Test, TestRunner } from "@everyonesoftware/test-typescript";
-import { Iterable, List, Map, ToStringFunctions, TokenType } from "../sources";
+import { Iterable, List, Map, TokenType, ToStringFunctions } from "../sources";
 import { createTestRunner } from "./tests";
 
 export function test(runner: TestRunner): void
@@ -43,6 +43,7 @@ export function test(runner: TestRunner): void
                 toStringTest(List.create([1, 2, 3]), `[1,2,3]`);
                 toStringTest(Map.create(), `{}`);
                 toStringTest(Map.create<string,number>().set("a", 1), `{"a":1}`);
+                toStringTest(Map.create<string,number>().set("a", 1).set("b", 2), `{"a":1,"b":2}`);
                 toStringTest(TokenType.CarriageReturn, `"CarriageReturn"`);
             });
         });
