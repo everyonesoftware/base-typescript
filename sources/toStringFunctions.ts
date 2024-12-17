@@ -120,14 +120,16 @@ export class ToStringFunctions
         let result = "";
         result += "{";
 
-        const iterator: Iterator<MapEntry<unknown,unknown>> = values.iterate().start();
-        if (iterator.hasCurrent())
+        const iterator: Iterator<MapEntry<unknown,unknown>> = values.iterate();
+        if (iterator.next())
         {
-            let entry: MapEntry<unknown,unknown> = iterator.takeCurrent();
+            let entry: MapEntry<unknown,unknown> = iterator.getCurrent();
             result += `${this.toString(entry.key)}:${this.toString(entry.value)}`;
-            while (iterator.hasCurrent())
+            while (iterator.next())
             {
                 result += ",";
+
+                entry = iterator.getCurrent();
                 result += `${this.toString(entry.key)}:${this.toString(entry.value)}`;
             }
         }
