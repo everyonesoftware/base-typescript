@@ -74,6 +74,7 @@ export * from "./postConditionError";
 export * from "./pre";
 export * from "./preConditionError";
 export * from "./result";
+export * from "./skipIterator";
 export * from "./stringComparer";
 export * from "./stringIterator";
 export * from "./strings";

@@ -365,5 +365,57 @@ export function iteratorTests<T>(runner: TestRunner, creator: () => Iterator<T>)
                 firstTest([4, 6, 7, 8], isOdd, 7);
             });
         });
+
+        runner.testFunction("skip(number)", () =>
+        {
+            function skipErrorTest(iterable: JavascriptIterable<string>, maximumToSkip: number, expected: Error): void
+            {
+                runner.test(`with ${runner.andList([iterable, maximumToSkip])}`, (test: Test) =>
+                {
+                    const iterator: Iterator<string> = Iterator.create(iterable);
+                    test.assertThrows(() => iterator.skip(maximumToSkip), expected);
+                });
+            }
+
+            skipErrorTest([], undefined!, new PreConditionError(
+                "Expression: maximumToSkip",
+                "Expected: not undefined and not null",
+                "Actual: undefined",
+            ));
+            skipErrorTest([], null!, new PreConditionError(
+                "Expression: maximumToSkip",
+                "Expected: not undefined and not null",
+                "Actual: null",
+            ));
+            skipErrorTest([], 0.5, new PreConditionError(
+                "Expression: maximumToSkip",
+                "Expected: integer",
+                "Actual: 0.5",
+            ));
+            skipErrorTest([], -1, new PreConditionError(
+                "Expression: maximumToSkip",
+                "Expected: greater than or equal to 0",
+                "Actual: -1",
+            ));
+
+            function skipTest(iterable: JavascriptIterable<string>, maximumToSkip: number, expected: JavascriptIterable<string>): void
+            {
+                runner.test(`with ${runner.andList([iterable, maximumToSkip])}`, (test: Test) =>
+                {
+                    const iterator: Iterator<string> = Iterator.create(iterable);
+                    const skipIterator: Iterator<string> = iterator.skip(maximumToSkip);
+                    test.assertEqual(expected, skipIterator.toArray());
+                });
+            }
+
+            skipTest([], 0, []);
+            skipTest([], 1, []);
+            skipTest([], 2, []);
+            skipTest(["a", "b", "c"], 0, ["a", "b", "c"]);
+            skipTest(["a", "b", "c"], 1, ["b", "c"]);
+            skipTest(["a", "b", "c"], 2, ["c"]);
+            skipTest(["a", "b", "c"], 3, []);
+            skipTest(["a", "b", "c"], 4, []);
+        });
     });
 }

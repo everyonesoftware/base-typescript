@@ -99,13 +99,23 @@ export class JavascriptIteratorToIteratorAdapter<T> implements Iterator<T>
         return Iterator.where(this, condition);
     }
 
-    public whereInstanceOf<U extends T>(type: Type<U>): Iterator<U>
+    public whereInstanceOf<U extends T>(typeCheck: (value: T) => value is U): Iterator<U>
     {
-        return Iterator.whereInstanceOf(this, type);
+        return Iterator.whereInstanceOf(this, typeCheck);
+    }
+
+    public whereInstanceOfType<U extends T>(type: Type<U>): Iterator<U>
+    {
+        return Iterator.whereInstanceOfType(this, type);
     }
 
     public take(maximumToTake: number): Iterator<T>
     {
         return Iterator.take(this, maximumToTake);
+    }
+
+    public skip(maximumToSkip: number): Iterator<T>
+    {
+        return Iterator.skip(this, maximumToSkip);
     }
 }

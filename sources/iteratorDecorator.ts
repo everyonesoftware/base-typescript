@@ -79,9 +79,14 @@ export abstract class IteratorDecorator<T> implements Iterator<T>
         return Iterator.where(this, condition);
     }
 
-    public whereInstanceOf<U extends T>(type: Type<U>): Iterator<U>
+    public whereInstanceOf<U extends T>(typeCheck: (value: T) => value is U): Iterator<U>
     {
-        return Iterator.whereInstanceOf(this, type);
+        return Iterator.whereInstanceOf(this, typeCheck);
+    }
+
+    public whereInstanceOfType<U extends T>(type: Type<U>): Iterator<U>
+    {
+        return Iterator.whereInstanceOfType(this, type);
     }
 
     public map<TOutput>(mapping: (value: T) => TOutput): MapIterator<T, TOutput>
@@ -107,5 +112,10 @@ export abstract class IteratorDecorator<T> implements Iterator<T>
     public take(maximumToTake: number): Iterator<T>
     {
         return Iterator.take(this, maximumToTake);
+    }
+
+    public skip(maximumToSkip: number): Iterator<T>
+    {
+        return Iterator.skip(this, maximumToSkip);
     }
 }
