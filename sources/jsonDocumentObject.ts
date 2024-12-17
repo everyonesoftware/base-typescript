@@ -98,11 +98,24 @@ export class JsonDocumentObject implements JsonDocumentValue
      * {@link NotFoundError}. If the {@link JsonDocumentProperty} is found but it doesn't have a
      * value, then undefined will be returned.
      * @param propertyName The name of the {@link JsonDocumentProperty} to get the value of.
+     * @param additionalPathParts The additional path parts to traverse.
      */
-    public getValue(propertyName: string): Result<JsonDocumentValue | undefined>
+    public getValue(propertyName: string, ...additionalPathParts: (string | number)[]): Result<JsonDocumentValue | undefined>
     {
-        return this.getProperty(propertyName)
-            .then((property: JsonDocumentProperty) => property.getValue());
+        return Result.create(() =>
+        {
+            let result: JsonDocumentValue | undefined;
+            if (additionalPathParts.length === 0)
+            {
+                const property: JsonDocumentProperty = this.getProperty(propertyName).await();
+                result = property.getValue();
+            }
+            else
+            {
+                result = JsonDocumentValue.getValue(this, [propertyName, ...additionalPathParts]).await();
+            }
+            return result;
+        });
     }
 
     /**
@@ -113,9 +126,10 @@ export class JsonDocumentObject implements JsonDocumentValue
      * @param propertyName The name of the {@link JsonDocumentProperty} to get the value of.
      * @param type The {@link Type} that the value is expected to be.
      */
-    private getAs<T extends JsonDocumentValue>(propertyName: string, type: Type<T>, expectedTypeName: string): Result<T>
+    private getAs<T extends JsonDocumentValue>(propertyName: string, additionalPathParts: (string | number)[], type: Type<T>, expectedTypeName: string): Result<T>
     {
         Pre.condition.assertNotUndefinedAndNotNull(propertyName, "propertyName");
+        Pre.condition.assertNotUndefinedAndNotNull(additionalPathParts, "additionalPathParts");
         Pre.condition.assertNotUndefinedAndNotNull(type, "type");
         Pre.condition.assertNotEmpty(expectedTypeName, "expectedTypeName");
 
@@ -135,18 +149,18 @@ export class JsonDocumentObject implements JsonDocumentValue
      * @param propertyName The name of the property to get the value of as a
      * {@link JsonDocumentString}.
      */
-    public getStringValue(propertyName: string): Result<JsonDocumentString>
+    public getStringValue(propertyName: string, ...additionalPathParts: (string | number)[]): Result<JsonDocumentString>
     {
-        return this.getAs(propertyName, JsonDocumentString, "a string");
+        return this.getAs(propertyName, additionalPathParts, JsonDocumentString, "a string");
     }
 
     /**
      * Get the value of the property with the provided name as a {@link string}.
      * @param propertyName The name of the property to get the value of as a {@link string}.
      */
-    public getString(propertyName: string): Result<string>
+    public getString(propertyName: string, ...additionalPathParts: (string | number)[]): Result<string>
     {
-        return this.getStringValue(propertyName)
+        return this.getStringValue(propertyName, ...additionalPathParts)
             .then((json: JsonDocumentString) => json.getValue());
     }
 
@@ -155,35 +169,35 @@ export class JsonDocumentObject implements JsonDocumentValue
      * @param propertyName The name of the property to get the value of as a
      * {@link JsonDocumentBoolean}.
      */
-    public getBooleanValue(propertyName: string): Result<JsonDocumentBoolean>
+    public getBooleanValue(propertyName: string, ...additionalPathParts: (string | number)[]): Result<JsonDocumentBoolean>
     {
-        return this.getAs(propertyName, JsonDocumentBoolean, "a boolean");
+        return this.getAs(propertyName, additionalPathParts, JsonDocumentBoolean, "a boolean");
     }
 
-    public getBoolean(propertyName: string): Result<boolean>
+    public getBoolean(propertyName: string, ...additionalPathParts: (string | number)[]): Result<boolean>
     {
-        return this.getBooleanValue(propertyName)
+        return this.getBooleanValue(propertyName, ...additionalPathParts)
             .then((propertyValue: JsonDocumentBoolean) => propertyValue.getValue());
     }
 
-    public getNumberValue(propertyName: string): Result<JsonDocumentNumber>
+    public getNumberValue(propertyName: string, ...additionalPathParts: (string | number)[]): Result<JsonDocumentNumber>
     {
-        return this.getAs(propertyName, JsonDocumentNumber, "a number");
+        return this.getAs(propertyName, additionalPathParts, JsonDocumentNumber, "a number");
     }
 
-    public getNumber(propertyName: string): Result<number>
+    public getNumber(propertyName: string, ...additionalPathParts: (string | number)[]): Result<number>
     {
-        return this.getNumberValue(propertyName)
+        return this.getNumberValue(propertyName, ...additionalPathParts)
             .then((propertyValue: JsonDocumentNumber) => propertyValue.getValue());
     }
 
-    public getObject(propertyName: string): Result<JsonDocumentObject>
+    public getObject(propertyName: string, ...additionalPathParts: (string | number)[]): Result<JsonDocumentObject>
     {
-        return this.getAs(propertyName, JsonDocumentObject, "an object");
+        return this.getAs(propertyName, additionalPathParts, JsonDocumentObject, "an object");
     }
 
-    public getArray(propertyName: string): Result<JsonDocumentArray>
+    public getArray(propertyName: string, ...additionalPathParts: (string | number)[]): Result<JsonDocumentArray>
     {
-        return this.getAs(propertyName, JsonDocumentArray, "an array");
+        return this.getAs(propertyName, additionalPathParts, JsonDocumentArray, "an array");
     }
 }

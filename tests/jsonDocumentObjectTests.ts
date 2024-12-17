@@ -191,6 +191,35 @@ export function test(runner: TestRunner): void
                     ),
                 );
 
+                function getValueWithAdditionalPathPartsErrorTest(object: JsonDocumentObject, propertyName: string, additionalPathParts: (string | number)[], expected: Error): void
+                {
+                    runner.test(`with ${runner.andList([object.getText(), propertyName, additionalPathParts])}`, (test: Test) =>
+                    {
+                        test.assertThrows(() => object.getValue(propertyName, ...additionalPathParts).await(), expected);
+                    });
+                }
+
+                getValueWithAdditionalPathPartsErrorTest(
+                    JsonDocumentObject.parse(`{"a":1}`).await()!,
+                    "A",
+                    ["b"],
+                    new NotFoundError(
+                        "No property with the name \"A\" found.",
+                    ),
+                );
+                getValueWithAdditionalPathPartsErrorTest(
+                    JsonDocumentObject.parse(`{"a":1}`).await()!,
+                    "a",
+                    ["b"],
+                    new WrongTypeError("Expected the value at \"a.b\" to be an object, but was 1 instead."),
+                );
+                getValueWithAdditionalPathPartsErrorTest(
+                    JsonDocumentObject.parse(`{"a":1}`).await()!,
+                    "a",
+                    [3],
+                    new WrongTypeError("Expected the value at \"a.3\" to be an array, but was 1 instead."),
+                );
+
                 function getValueTest(object: JsonDocumentObject, propertyName: string, expected: JsonDocumentValue | undefined): void
                 {
                     runner.test(`with ${runner.andList([object.getText(), propertyName])}`, (test: Test) =>
@@ -218,6 +247,39 @@ export function test(runner: TestRunner): void
                     JsonDocumentObject.parse(`{  "a" : "b" ,`, () => {}).await()!,
                     "a",
                     JsonDocumentValue.parse(`"b"`).await()!,
+                );
+
+                function getValueWithAdditionalPathPartsTest(object: JsonDocumentObject, propertyName: string, additionalPathParts: (string|number)[], expected: JsonDocumentValue | undefined): void
+                {
+                    runner.test(`with ${runner.andList([object.getText(), propertyName])}`, (test: Test) =>
+                    {
+                        test.assertEqual(object.getValue(propertyName, ...additionalPathParts).await(), expected);
+                    });
+                }
+
+                getValueWithAdditionalPathPartsTest(
+                    JsonDocumentObject.parse(`{"a":"b"}`).await()!,
+                    "a",
+                    [],
+                    JsonDocumentValue.parse(`"b"`).await()!,
+                );
+                getValueWithAdditionalPathPartsTest(
+                    JsonDocumentObject.parse(`{"a":{"b":{"c":true}}}`).await()!,
+                    "a",
+                    ["b"],
+                    JsonDocumentObject.parse(`{"c":true}`).await()!,
+                );
+                getValueWithAdditionalPathPartsTest(
+                    JsonDocumentObject.parse(`{"a":{"b":{"c":true}}}`).await()!,
+                    "a",
+                    ["b", "c"],
+                    JsonDocumentBoolean.create(Token.letters("true")),
+                );
+                getValueWithAdditionalPathPartsTest(
+                    JsonDocumentObject.parse(`{"a":{"b":["c",true]}}`).await()!,
+                    "a",
+                    ["b", 1],
+                    JsonDocumentBoolean.create(Token.letters("true")),
                 );
             });
 

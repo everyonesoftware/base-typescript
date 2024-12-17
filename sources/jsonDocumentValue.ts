@@ -6,6 +6,11 @@ import { JsonDocumentParser } from "./jsonDocumentParser";
 import { Pre } from "./pre";
 import { JavascriptIterable } from "./javascript";
 import { JsonDocumentProperty } from "./jsonDocumentProperty";
+import { JsonDocumentObject } from "./jsonDocumentObject";
+import { JsonDocumentArray } from "./jsonDocumentArray";
+import { instanceOfType, isString } from "./types";
+import { escapeAndQuote } from "./strings";
+import { WrongTypeError } from "./wrongTypeError";
 
 /**
  * An individual value from a {@link JsonDocument} that is composed of one or more {@link Token}s.
@@ -89,5 +94,44 @@ export abstract class JsonDocumentValue
         Pre.condition.assertNotUndefinedAndNotNull(value, "value");
 
         return value.getText();
+    }
+
+    /**
+     * Get the value at the provided path from the provided container.
+     * @param value The value to get a value from.
+     * @param path The path to the value.
+     */
+    public static getValue(value: JsonDocumentValue | undefined, path: (string | number)[]): Result<JsonDocumentValue | undefined>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(value, "container");
+
+        return Result.create(() =>
+        {
+            let currentPath = "";
+            for (const pathPart of path)
+            {
+                currentPath = currentPath === ""
+                    ? pathPart.toString()
+                    : `${currentPath}.${pathPart}`;
+
+                if (isString(pathPart))
+                {
+                    if (!instanceOfType(value, JsonDocumentObject))
+                    {
+                        throw new WrongTypeError(`Expected the value at ${escapeAndQuote(currentPath)} to be an object, but was ${value} instead.`);
+                    }
+                    value = value.getValue(pathPart).await();
+                }
+                else
+                {
+                    if (!instanceOfType(value, JsonDocumentArray))
+                    {
+                        throw new WrongTypeError(`Expected the value at ${escapeAndQuote(currentPath)} to be an array, but was ${value} instead.`);
+                    }
+                    value = value.getValue(pathPart).await();
+                }
+            }
+            return value;
+        });
     }
 }

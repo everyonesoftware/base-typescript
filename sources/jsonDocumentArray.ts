@@ -75,13 +75,26 @@ export class JsonDocumentArray implements JsonDocumentValue
      * Get the {@link JsonDocumentValue} at the provided index of this {@link JsonDocumentArray}.
      * @param index The index of the {@link JsonDocumentValue} to return.
      */
-    public getValue(index: number): Result<JsonDocumentValue | undefined>
+    public getValue(index: number, ...additionalPathParts: (string | number)[]): Result<JsonDocumentValue | undefined>
     {
         Pre.condition.assertNotUndefinedAndNotNull(index, "index");
         Pre.condition.assertInteger(index, "index");
         Pre.condition.assertAccessIndex(index, this.getElementCount(), "index");
+        Pre.condition.assertNotUndefinedAndNotNull(additionalPathParts, "additionalPathParts");
 
-        return this.iterateElements().skip(index).first();
+        return Result.create(() =>
+        {
+            let result: JsonDocumentValue | undefined;
+            if (additionalPathParts.length === 0)
+            {
+                result = this.iterateElements().skip(index).first().await();
+            }
+            else
+            {
+                result = JsonDocumentValue.getValue(this, [index, ...additionalPathParts]).await();
+            }
+            return result;
+        });
     }
 
     /**
@@ -90,15 +103,16 @@ export class JsonDocumentArray implements JsonDocumentValue
      * @param index The index of the element to return.
      * @param type The {@link Type} that the element is expected to be.
      */
-    private getAs<T extends JsonDocumentValue>(index: number, type: Type<T>, expectedTypeName: string): Result<T>
+    private getAs<T extends JsonDocumentValue>(index: number, additionalPathParts: (string | number)[], type: Type<T>, expectedTypeName: string): Result<T>
     {
         Pre.condition.assertAccessIndex(index, this.getElementCount(), "index");
+        Pre.condition.assertNotUndefinedAndNotNull(additionalPathParts, "additionalPathParts");
         Pre.condition.assertNotUndefinedAndNotNull(type, "type");
         Pre.condition.assertNotEmpty(expectedTypeName, "expectedTypeName");
 
         return Result.create(() =>
         {
-            const value: JsonDocumentValue | undefined = this.getValue(index).await();
+            const value: JsonDocumentValue | undefined = this.getValue(index, ...additionalPathParts).await();
             if (!instanceOfType(value, type))
             {
                 throw new WrongTypeError(`Expected value at index ${index} to be ${expectedTypeName}, but was ${value} instead.`);
@@ -111,18 +125,18 @@ export class JsonDocumentArray implements JsonDocumentValue
      * Get the value at the provided index as a {@link JsonDocumentString}.
      * @param index The index of the value to return as a {@link JsonDocumentString}.
      */
-    public getStringValue(index: number): Result<JsonDocumentString>
+    public getStringValue(index: number, ...additionalPathParts: (string | number)[]): Result<JsonDocumentString>
     {
-        return this.getAs(index, JsonDocumentString, "a string");
+        return this.getAs(index, additionalPathParts, JsonDocumentString, "a string");
     }
 
     /**
      * Get the value at the provided index as a {@link string}.
      * @param index The index of the value to return as a {@link string}.
      */
-    public getString(index: number): Result<string>
+    public getString(index: number, ...additionalPathParts: (string | number)[]): Result<string>
     {
-        return this.getStringValue(index)
+        return this.getStringValue(index, ...additionalPathParts)
             .then((json: JsonDocumentString) => json.getValue());
     }
 
@@ -130,18 +144,18 @@ export class JsonDocumentArray implements JsonDocumentValue
      * Get the value at the provided index as a {@link JsonDocumentBoolean}.
      * @param index The index of the value to return as a {@link JsonDocumentBoolean}.
      */
-    public getBooleanValue(index: number): Result<JsonDocumentBoolean>
+    public getBooleanValue(index: number, ...additionalPathParts: (string | number)[]): Result<JsonDocumentBoolean>
     {
-        return this.getAs(index, JsonDocumentBoolean, "a boolean");
+        return this.getAs(index, additionalPathParts, JsonDocumentBoolean, "a boolean");
     }
 
     /**
      * Get the value at the provided index as a {@link boolean}.
      * @param index The index of the value to return as a {@link boolean}.
      */
-    public getBoolean(index: number): Result<boolean>
+    public getBoolean(index: number, ...additionalPathParts: (string | number)[]): Result<boolean>
     {
-        return this.getBooleanValue(index)
+        return this.getBooleanValue(index, ...additionalPathParts)
             .then((propertyValue: JsonDocumentBoolean) => propertyValue.getValue());
     }
 
@@ -149,18 +163,18 @@ export class JsonDocumentArray implements JsonDocumentValue
      * Get the value at the provided index as a {@link JsonDocumentNumber}.
      * @param index The index of the value to return as a {@link JsonDocumentNumber}.
      */
-    public getNumberValue(index: number): Result<JsonDocumentNumber>
+    public getNumberValue(index: number, ...additionalPathParts: (string | number)[]): Result<JsonDocumentNumber>
     {
-        return this.getAs(index, JsonDocumentNumber, "a number");
+        return this.getAs(index, additionalPathParts, JsonDocumentNumber, "a number");
     }
 
     /**
      * Get the value at the provided index as a {@link number}.
      * @param index The index of the value to return as a {@link number}.
      */
-    public getNumber(index: number): Result<number>
+    public getNumber(index: number, ...additionalPathParts: (string | number)[]): Result<number>
     {
-        return this.getNumberValue(index)
+        return this.getNumberValue(index, ...additionalPathParts)
             .then((propertyValue: JsonDocumentNumber) => propertyValue.getValue());
     }
 
@@ -168,17 +182,17 @@ export class JsonDocumentArray implements JsonDocumentValue
      * Get the value at the provided index as a {@link JsonDocumentObject}.
      * @param index The index of the value to return as a {@link JsonDocumentObject}.
      */
-    public getObject(index: number): Result<JsonDocumentObject>
+    public getObject(index: number, ...additionalPathParts: (string | number)[]): Result<JsonDocumentObject>
     {
-        return this.getAs(index, JsonDocumentObject, "an object");
+        return this.getAs(index, additionalPathParts, JsonDocumentObject, "an object");
     }
 
     /**
      * Get the value at the provided index as a {@link JsonDocumentArray}.
      * @param index The index of the value to return as a {@link JsonDocumentArray}.
      */
-    public getArray(index: number): Result<JsonDocumentArray>
+    public getArray(index: number, ...additionalPathParts: (string | number)[]): Result<JsonDocumentArray>
     {
-        return this.getAs(index, JsonDocumentArray, "an array");
+        return this.getAs(index, additionalPathParts, JsonDocumentArray, "an array");
     }
 }
