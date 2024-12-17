@@ -96,13 +96,23 @@ export class MapIterator<TInput,TOutput> implements Iterator<TOutput>
         return Iterator.where(this, condition);
     }
 
-    public whereInstanceOf<U extends TOutput>(type: Type<U>): Iterator<U>
+    public whereInstanceOf<U extends TOutput>(typeCheck: (value: TOutput) => value is U): Iterator<U>
     {
-        return Iterator.whereInstanceOf(this, type);
+        return Iterator.whereInstanceOf(this, typeCheck);
+    }
+
+    public whereInstanceOfType<U extends TOutput>(type: Type<U>): Iterator<U>
+    {
+        return Iterator.whereInstanceOfType(this, type);
     }
 
     public take(maximumToTake: number): Iterator<TOutput>
     {
         return Iterator.take(this, maximumToTake);
+    }
+
+    public skip(maximumToSkip: number): Iterator<TOutput>
+    {
+        return Iterator.skip(this, maximumToSkip);
     }
 }

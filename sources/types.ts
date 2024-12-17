@@ -44,6 +44,12 @@ export function instanceOf<T>(value: unknown, typeOrTypeCheck: Type<T> | ((value
     return result;
 }
 
+/**
+ * Get whether the provided value is an instance of the provided {@link Type}. This will return
+ * false if value only implements the provided {@link Type} but doesn't extend it.
+ * @param value The value to check.
+ * @param type The {@link Type} to see if value is an instance of.
+ */
 export function instanceOfType<T>(value: unknown, type: Type<T>): value is T
 {
     return value instanceof type;

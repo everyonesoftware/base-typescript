@@ -287,12 +287,14 @@ export abstract class ConditionBase implements Condition
     public assertAccessIndex(index: number, count: number, expression?: string, message?: string): void
     {
         this.assertGreaterThanOrEqualTo(count, 1, "count");
+        this.assertInteger(index, expression);
         this.assertBetween(0, index, count - 1, expression, message);
     }
 
     public assertInsertIndex(index: number, count: number, expression?: string, message?: string): void
     {
         this.assertGreaterThanOrEqualTo(count, 0, "count");
+        this.assertInteger(index, expression);
         this.assertBetween(0, index, count, expression, message);
     }
 

@@ -58,9 +58,14 @@ export abstract class Tokenizer implements Iterator<Token>
         return Iterator.map(this, mapping);
     }
 
-    public whereInstanceOf<U extends Token>(type: Type<U>): Iterator<U>
+    public whereInstanceOf<U extends Token>(typeCheck: (value: Token) => value is U): Iterator<U>
     {
-        return Iterator.whereInstanceOf(this, type);
+        return Iterator.whereInstanceOf(this, typeCheck);
+    }
+
+    public whereInstanceOfType<U extends Token>(type: Type<U>): Iterator<U>
+    {
+        return Iterator.whereInstanceOfType(this, type);
     }
 
     public first(condition?: (value: Token) => boolean): Result<Token>
@@ -76,6 +81,11 @@ export abstract class Tokenizer implements Iterator<Token>
     public take(maximumToTake: number): Iterator<Token>
     {
         return Iterator.take(this, maximumToTake);
+    }
+
+    public skip(maximumToSkip: number): Iterator<Token>
+    {
+        return Iterator.skip(this, maximumToSkip);
     }
 
     public [Symbol.iterator](): IteratorToJavascriptIteratorAdapter<Token>

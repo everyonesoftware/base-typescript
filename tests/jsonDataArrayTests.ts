@@ -149,7 +149,7 @@ export function test(runner: TestRunner): void
                     50,
                     new PreConditionError(
                         "Expression: index",
-                        "Expected: 0",
+                        "Expected: integer",
                         "Actual: undefined",
                     ),
                 );

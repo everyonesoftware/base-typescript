@@ -7,10 +7,11 @@ import { JavascriptIteratorToIteratorAdapter } from "./javascriptIteratorToItera
 import { Result } from "./result";
 import { EmptyError } from "./emptyError";
 import { WhereIterator } from "./whereIterator";
-import { Type, isJavascriptIterator, isUndefinedOrNull } from "./types";
+import { Type, instanceOfType, isJavascriptIterator, isUndefinedOrNull } from "./types";
 import { Comparable } from "./comparable";
 import { TakeIterator } from "./takeIterator";
 import { NotFoundError } from "./notFoundError";
+import { SkipIterator } from "./skipIterator";
 
 /**
  * A type that can be used to iterate over a collection.
@@ -221,20 +222,38 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
 
     /**
      * Get an {@link Iterator} that will filter this {@link Iterator} to only the values that are
+     * instances of {@link U} based on the provided type check {@link Function}.
+     * @param typeCheck The {@link Function} that will be used to determine if values are of type
+     * {@link U}.
+     */
+    public whereInstanceOf<U extends T>(typeCheck: (value: T) => value is U): Iterator<U>
+    {
+        return Iterator.whereInstanceOf(this, typeCheck);
+    }
+
+    public static whereInstanceOf<T,U extends T>(iterator: Iterator<T>, typeCheck: (value: T) => value is U): Iterator<U>
+    {
+        Pre.condition.assertNotUndefinedAndNotNull(typeCheck, "typeCheck");
+
+        return iterator.where(typeCheck)
+            .map((value: T) => value as U);
+    }
+
+    /**
+     * Get an {@link Iterator} that will filter this {@link Iterator} to only the values that are
      * instances of the provided {@link Type}.
      * @param type The type of values to return from the new {@link Iterator}.
      */
-    public whereInstanceOf<U extends T>(type: Type<U>): Iterator<U>
+    public whereInstanceOfType<U extends T>(type: Type<U>): Iterator<U>
     {
-        return Iterator.whereInstanceOf(this, type);
+        return Iterator.whereInstanceOfType(this, type);
     }
 
-    public static whereInstanceOf<T,U extends T>(iterator: Iterator<T>, type: Type<U>): Iterator<U>
+    public static whereInstanceOfType<T,U extends T>(iterator: Iterator<T>, type: Type<U>): Iterator<U>
     {
         Pre.condition.assertNotUndefinedAndNotNull(type, "type");
 
-        return iterator.where((value: T) => value instanceof type)
-            .map((value: T) => value as U);
+        return iterator.whereInstanceOf((value: T) => instanceOfType(value, type));
     }
 
     /**
@@ -351,8 +370,7 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
     /**
      * Get a new {@link Iterator} that wraps around this {@link Iterator} and only
      * returns a maximum number of values from this {@link Iterator}.
-     * @param maximumToTake The maximum number of values to take from this
-     * {@link Iterator}.
+     * @param maximumToTake The maximum number of values to take from this {@link Iterator}.
      */
     public take(maximumToTake: number): Iterator<T>
     {
@@ -362,5 +380,20 @@ export abstract class Iterator<T> implements JavascriptIterable<T>
     public static take<T>(iterator: Iterator<T>, maximumToTake: number): Iterator<T>
     {
         return TakeIterator.create(iterator, maximumToTake);
+    }
+
+    /**
+     * Get a new {@link Iterator} that wraps around this {@link Iterator} and will skip the initial
+     * provided number of values before beginning to return values.
+     * @param maximumToSkip The maximum number of values to skip from this {@link Iterator}.
+     */
+    public skip(maximumToSkip: number): Iterator<T>
+    {
+        return Iterator.skip(this, maximumToSkip);
+    }
+
+    public static skip<T>(iterator: Iterator<T>, maximumToSkip: number): Iterator<T>
+    {
+        return SkipIterator.create(iterator, maximumToSkip);
     }
 }

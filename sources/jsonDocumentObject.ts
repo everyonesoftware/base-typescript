@@ -68,7 +68,7 @@ export class JsonDocumentObject implements JsonDocumentValue
     public iterateProperties(): Iterator<JsonDocumentProperty>
     {
         return Iterator.create(this.tokensValuesAndProperties)
-            .whereInstanceOf(JsonDocumentProperty);
+            .whereInstanceOfType(JsonDocumentProperty);
     }
 
     /**
