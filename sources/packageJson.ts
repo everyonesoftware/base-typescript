@@ -1,7 +1,10 @@
+import { DocumentIssue } from "./documentIssue";
+import { JavascriptIterable } from "./javascript";
 import { JsonDocument } from "./jsonDocument";
 import { JsonDocumentObject } from "./jsonDocumentObject";
 import { Pre } from "./pre";
 import { Result } from "./result";
+import { Tokenizer } from "./tokenizer";
 
 /**
  * An object that provides methods for interacting with a parsed package.json document.
@@ -26,11 +29,11 @@ export class PackageJson
      * Parse a {@link PackageJson} object from the provided text.
      * @param text The text to parse.
      */
-    public static parse(text: string): Result<PackageJson>
+    public static parse(text: string | JavascriptIterable<string> | Tokenizer, onIssue?: (issue: DocumentIssue) => void): Result<PackageJson>
     {
         Pre.condition.assertNotUndefinedAndNotNull(text, "text");
 
-        return JsonDocument.parse(text)
+        return JsonDocument.parse(text, onIssue)
             .then((jsonDocument: JsonDocument) => PackageJson.create(jsonDocument));
     }
 
@@ -44,21 +47,12 @@ export class PackageJson
         return this.getDocument().getRootObject();
     }
 
-    // private getAs<T extends JsonDocumentValue>(propertyName: string, type: Type<T>): Result<T>
-    // {
-    //     return Result.create(() =>
-    //     {
-    //         const root: JsonDocumentObject = this.getRootObject().await();
-    //         return root.getAs(propertyName, type).await();
-    //     });
-    // }
-
-    // public getString(propertyName: string): Result<JsonDocumentString>
+    // public getString(propertyName: string): Result<string>
     // {
     //     return this.getAs(propertyName, JsonDocumentString);
     // }
 
-    // public getStringValue(propertyName: string): Result<string>
+    // public getStringValue(propertyName: string): Result<JsonDocumentString>
     // {
     //     return this.getString(propertyName)
     //         .then((json: JsonDocumentString) => json.getValue());
