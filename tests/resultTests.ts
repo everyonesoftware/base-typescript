@@ -961,6 +961,90 @@ export function test(runner: TestRunner): void
                     }
                 });
             });
+
+            runner.testFunction("toPromise()", () =>
+            {
+                runner.test("with void return type that doesn't throw", async (test: Test) =>
+                {
+                    let value: number = 0;
+                    const result: Result<void> = Result.create(() => { value++; });
+                    test.assertEqual(value, 1);
+
+                    const promise: PromiseLike<void> = result.toPromise();
+                    test.assertEqual(value, 1);
+
+                    for (let i = 0; i < 3; i++)
+                    {
+                        const promiseResult: void = await promise;
+                        test.assertUndefined(promiseResult);
+                        test.assertEqual(value, 1);
+                    }
+                });
+
+                runner.test("with void return type that throws", async (test: Test) =>
+                {
+                    let value: number = 0;
+                    const result: Result<void> = Result.create(() =>
+                    {
+                        value++;
+                        throw new Error("oops!");
+                    });
+                    test.assertEqual(value, 1);
+
+                    const promise: PromiseLike<void> = result.toPromise();
+                    test.assertEqual(value, 1);
+
+                    for (let i = 0; i < 3; i++)
+                    {
+                        await test.assertThrowsAsync(async () => await promise, new Error("oops!"));
+                        test.assertEqual(value, 1);
+                    }
+                });
+
+                runner.test("with non-void return type that doesn't throw", async (test: Test) =>
+                {
+                    let value: string = "";
+                    const result: Result<number> = Result.create(() =>
+                    {
+                        value += "a";
+                        return value.length;
+                    });
+                    test.assertEqual(value, "a");
+
+                    const promise: PromiseLike<number> = result.toPromise();
+                    test.assertEqual(value, "a");
+
+                    for (let i = 0; i < 3; i++)
+                    {
+                        const promiseResult: number = await promise;
+                        test.assertEqual(promiseResult, 1);
+                        test.assertEqual(value, "a");
+                    }
+                });
+
+                runner.test("with non-void return type that throws", async (test: Test) =>
+                {
+                    let value: string = "";
+                    const result: Result<number> = Result.create(() =>
+                    {
+                        value += "a";
+                        if (value === "a")
+                        {
+                            throw new Error("oops again!");
+                        }
+                        return value.length;
+                    });
+                    test.assertEqual(value, "a");
+
+                    const promise: PromiseLike<number> = result.toPromise();
+                    test.assertEqual(value, "a");
+
+                    for (let i = 0; i < 3; i++)
+                    {
+                        await test.assertThrowsAsync(async () => await promise, new Error("oops again!asdf"));
+                    }
+                });
+            });
         });
     });
 }
