@@ -91,4 +91,28 @@ export abstract class Result<T>
      * @param convertErrorFunction The function that will return the new error. 
      */
     public abstract convertError<TError>(errorType: Type<TError>, convertErrorFunction: (() => unknown) | ((error: TError) => unknown)): Result<T>;
+
+    /**
+     * Convert this {@link Result} to a {@link PromiseLike} object.
+     */
+    public abstract toPromise(): PromiseLike<T>;
+
+    /**
+     * Convert the provided {@link Result} to a {@link PromiseLike}.
+     * @param result The {@link Result} to convert to a {@link PromiseLike}.
+     */
+    public static toPromise<T>(result: Result<T>): PromiseLike<T>
+    {
+        return new Promise((resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) =>
+        {
+            try
+            {
+                resolve(result.await());
+            }
+            catch (error)
+            {
+                reject(error);
+            }
+        });
+    }
 }

@@ -214,4 +214,9 @@ export class SyncResult<T> implements Result<T>
         }
         return result;
     }
+
+    public toPromise(): PromiseLike<T>
+    {
+        return Result.toPromise(this);
+    }
 }
